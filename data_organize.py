@@ -7,7 +7,7 @@ import  pymysql
 from sqlalchemy import create_engine
 
 
-def upload_data(df,name,method):
+def upload_data(df,name,method="append"):
     df= df
     name = name
     method = method
