@@ -16,9 +16,15 @@ import json
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-json_io=r"geojson-map-china\china.json"
+
+json_io=r"城投地图_test\geojson-map-china\china.json"
 gs_data = open(json_io, encoding='utf8').read()
 gs_data = json.loads(gs_data)
+
+
+credit_assistant_io=r"城投地图_test\Credit_Assistant.xlsx"
+
+
 #整理plotly需要的格式：
 for i in range(len(gs_data["features"])):
     gs_data["features"][i]["id"]=gs_data["features"][i]["properties"]["id"]#id前置
@@ -30,8 +36,8 @@ for i in range(len(gs_data["features"])):
     geo_id.append(gs_data["features"][i]["id"])
     geo_name.append(gs_data["features"][i]['properties']["name"])
 geo_data=pd.DataFrame({"id":geo_id,"区域":geo_name})
-data = pd.read_excel("城投债数据_t.xlsx")
-GK=pd.read_excel("Credit_Assistant.xlsx",sheet_name="国开可比基准",skiprows=1,index_col=0).iloc[2:,:]
+data = pd.read_excel("城投地图_test\城投债数据_t.xlsx")
+GK=pd.read_excel(credit_assistant_io,sheet_name="国开可比基准",skiprows=1,index_col=0).iloc[2:,:]
 GK_yield_base=GK.tail(1).T
 GK_yield_base.columns=["GK_yield"]
 GK_yield_base["期限"]=[1,2,3,4,5]
@@ -42,9 +48,9 @@ def weighted_premium(dff_VS_GK):
     return round(weighted_premium,2)
 
 def get_credit_premium():
-    data= pd.read_excel("Credit_Assistant.xlsx",skiprows=1,index_col=0).iloc[2:,:]
-    index_code=pd.read_excel("Credit_Assistant.xlsx",skiprows=1,index_col=0).iloc[1,:].tolist()
-    index_name=pd.read_excel("Credit_Assistant.xlsx").iloc[0,1:].tolist()
+    data= pd.read_excel(credit_assistant_io,skiprows=1,index_col=0).iloc[2:,:]
+    index_code=pd.read_excel(credit_assistant_io,skiprows=1,index_col=0).iloc[1,:].tolist()
+    index_name=pd.read_excel(credit_assistant_io).iloc[0,1:].tolist()
     str=","
     err,df=w.edb(str.join(index_code),"2019-01-01", dt.datetime.today().strftime("%Y-%m-%d"),"Fill=Previous",usedf=True)
     df.columns=index_name
@@ -144,7 +150,7 @@ def compare_figure(cities):
     return fig
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run_server(debug=True)
 
 
 

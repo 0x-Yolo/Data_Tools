@@ -16,7 +16,7 @@ import json
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-json_io=r"geojson-map-china\china.json"
+json_io=r"城投地图_test\geojson-map-china\china.json"
 gs_data = open(json_io, encoding='utf8').read()
 gs_data = json.loads(gs_data)
 #整理plotly需要的格式：
@@ -30,8 +30,8 @@ for i in range(len(gs_data["features"])):
     geo_id.append(gs_data["features"][i]["id"])
     geo_name.append(gs_data["features"][i]['properties']["name"])
 geo_data=pd.DataFrame({"id":geo_id,"区域":geo_name})
-data = pd.read_excel("城投债数据_t.xlsx")
-GK=pd.read_excel("Credit_Assistant.xlsx",sheet_name="国开可比基准",skiprows=1,index_col=0).iloc[2:,:]
+data = pd.read_excel("城投地图_test\城投债数据_t.xlsx")
+GK=pd.read_excel("城投地图_test\Credit_Assistant.xlsx",sheet_name="国开可比基准",skiprows=1,index_col=0).iloc[2:,:]
 GK_yield_base=GK.tail(1).T
 GK_yield_base.columns=["GK_yield"]
 GK_yield_base["期限"]=[1,2,3,4,5]
@@ -144,7 +144,7 @@ def compare_figure(cities):
     return fig
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run_server(debug=True)
 
 
 
