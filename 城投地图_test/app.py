@@ -75,7 +75,7 @@ df["期限_匹配"]=((data[["含权债行权期限","剩余期限(天)\n[日期]
 dff_VS_GK=pd.merge(df[df["期限"]<5],GK_yield_base,left_on=["期限_匹配"],right_on=["期限"],how="left")
 dff_VS_GK["券种利差"]=(dff_VS_GK["债券估值(YY)\n[单位] %"]-dff_VS_GK["GK_yield"])*100
 dff_VS_GK=dff_VS_GK[dff_VS_GK["券种利差"].isna()==False]
-info_dimension="券种利差","债券余额\n[日期] 最新\n[单位] 亿"
+info_dimension=["券种利差","债券余额\n[日期] 最新\n[单位] 亿"]
 province_credit_premium=dff_VS_GK.groupby("区域")[info_dimension].apply(lambda x : weighted_premium(x))
 dff_province_credit_premium=pd.merge(pd.DataFrame(province_credit_premium,columns=["信用利差"]),geo_data,left_on="区域",right_on="区域")
 # 每个省份对应的城市
