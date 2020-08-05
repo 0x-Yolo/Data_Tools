@@ -9,11 +9,13 @@ import flask
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from numpy.matrixlib import test
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 import json
+import demjson
 
 server = flask.Flask(__name__) 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -65,21 +67,6 @@ def get_credit_vs_gk_data():
 
 
 
-def province_credit_premium_fig():
-    fig = px.choropleth_mapbox(dff_province_credit_premium, geojson=gs_data, locations='id', color='信用利差',
-            range_color=(20, 400),
-           zoom=3, center = {"lat": 37.4189, "lon": 116.4219},
-           mapbox_style='carto-positron',
-           hover_data = ["区域"],
-           custom_data=["区域"]
-           )
- #   layout = dict(margin={"r":0,"t":0,"l":0,"b":0},clickmode="event+select")
-
-    fig.update_geos(fitbounds="locations", visible=True)  
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-    fig.update_layout(clickmode="event+select")
-
-    return fig
 
 
 info_dimension="券种利差","债券余额\n[日期] 最新\n[单位] 亿"
@@ -114,27 +101,48 @@ available_cities = dff_VS_GK['城市'].unique()
 info_dimension="券种利差","债券余额\n[日期] 最新\n[单位] 亿"
 app.layout = html.Div(
     
-    [
-        html.Div(
-        [dcc.Graph(id='China-bond-map',figure=province_credit_premium_fig()
- #             clickData = {'points': [{'区域':'江苏省'}]},     
- #             figure = fig
-              ),
-         dcc.Graph( id='bond-by-city')]
-        ,style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-        
+    [   html.Pre(id='selected-data')
+        html.Div([
+        dcc.Dropdown(id = 'test',
+                  options = [{'label': 0, 'value': 0}],
+                  value=['1'],
+                  placeholder="是否显示地图",
+                  multi = False),
+        dcc.Graph(id='China-bond-map',clickData = {'points': [{'区域':'江苏省'}]})
+        ],style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
+        dcc.Graph( id='bond-by-city'),
         dcc.Dropdown(id = 'choose-of-cities',
                   options = [{'label': i, 'value': i} for i in available_cities],
                   value=['上海市','北京市'],
                   placeholder="请选择选择想要比较的城市",
                   multi = True),
 
-        dcc.Graph(id = 'compare-bond-by-city')
+        dcc.Graph(id = 'compare-bond-by-city'),
+        
     ]
-    
 )
 
 
+@app.callback(
+    dash.dependencies.Output('China-bond-map', 'figure'),
+    [dash.dependencies.Input('test', 'value')]
+    )
+def province_credit_premium_fig(test):
+    fig = px.choropleth_mapbox(dff_province_credit_premium, geojson=gs_data, locations='id', color='信用利差',
+            range_color=(20, 400),
+           zoom=3, center = {"lat": 37.4189, "lon": 116.4219},
+           mapbox_style='carto-positron',
+           hover_data = ["区域"],
+           custom_data=["区域"]
+           )
+ #   layout = dict(margin={"r":0,"t":0,"l":0,"b":0},clickmode="event+select")
+    A=test
+    fig.update_geos(fitbounds="locations", visible=True)  
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.update_layout(clickmode="event+select")
+    fig.update_traces(customdata=dff_province_credit_premium["区域"])
+
+    return fig
 
 @app.callback(
     dash.dependencies.Output('bond-by-city', 'figure'),
@@ -142,36 +150,38 @@ app.layout = html.Div(
     dash.dependencies.Input('China-bond-map', 'figure')],
     )
 def update_figure(clickData,figure):
-    if clickData is None:
-        clickData = {'points':[{'location':'江苏省'}]}
-        province = clickData['points'][0]['location']
+    province = clickData["points"][0]["customdata"]
 
-        df_province = dff_VS_GK[dff_VS_GK['区域'] == province]
-        dff = df_province.groupby("城市")["券种利差","债券余额\n[日期] 最新\n[单位] 亿"].apply(lambda x : weighted_premium(x))
-        dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
-        fig = px.bar(dff2, x="城市", y="信用利差")
+    df_province = dff_VS_GK[dff_VS_GK['区域'] == province]
+    dff = df_province.groupby("城市")["券种利差","债券余额\n[日期] 最新\n[单位] 亿"].apply(lambda x : weighted_premium(x))
+    dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
+    fig = px.bar(dff2, x="城市", y="信用利差")
 
     #  fig.update_layout(transition_duration=500)
 
-        return fig
-
-    if clickData is not None:
-        return px.line(data=1)
+    return fig
 
 
-
-    
- 
 
 @app.callback(
-    dash.dependencies.Output('compare-bond-by-city', 'figure'),
-    [dash.dependencies.Input('choose-of-cities', 'value')])
-def compare_figure(cities):
-    df_cities = dff_VS_GK[dff_VS_GK['城市'].isin(cities)]
-    dff = df_cities.groupby("城市")["券种利差","债券余额\n[日期] 最新\n[单位] 亿"].apply(lambda x : weighted_premium(x))
-    dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
-    fig = px.bar(dff2, x="城市", y="信用利差")
-    return fig
+    dash.dependencies.Output('selected-data', 'children'),
+    [dash.dependencies.Input('China-bond-map', 'clickData')],
+    )
+def update_figure(clickData):
+    result = clickData["points"]
+    return result
+
+ 
+
+# @app.callback(
+#     dash.dependencies.Output('compare-bond-by-city', 'figure'),
+#     [dash.dependencies.Input('choose-of-cities', 'value')])
+# def compare_figure(cities):
+#     df_cities = dff_VS_GK[dff_VS_GK['城市'].isin(cities)]
+#     dff = df_cities.groupby("城市")["券种利差","债券余额\n[日期] 最新\n[单位] 亿"].apply(lambda x : weighted_premium(x))
+#     dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
+#     fig = px.bar(dff2, x="城市", y="信用利差")
+#     return fig
 
 
 
