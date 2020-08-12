@@ -22,10 +22,12 @@ from datetime import datetime as dt
 
 import modular.config as conf
 import modular.mkt_behavior as mkt_b
+import modular.city_bond as city_bond
 
 import P1_mkt_behavior_page
 import P2_economy_following_page
 import P3_mkt_pattern_playbook
+import P4_city_bond_page
 
 #导入数据
 
@@ -106,7 +108,7 @@ sidebar = html.Div(
                 dbc.NavLink("金融市场行为数据", href="/page-1", id="page-1-link"),
                 dbc.NavLink("基本面高频跟踪", href="/page-2", id="page-2-link"),
                 dbc.NavLink("算法拟合与预测", href="/page-3", id="page-3-link"),
-                dbc.NavLink("我们的观点", href="/page-4", id="page-4-link"),
+                dbc.NavLink("城投债数据跟踪", href="/page-4", id="page-4-link"),
             ],
             vertical=True,
             pills=True,
@@ -134,14 +136,14 @@ app.layout = html.Div([navbar,dcc.Location(id="url"),sidebar,content])
 #########定义交互的方式
 
 @app.callback(
-    [Output(f"page-{i}-link", "active") for i in range(1, 4)],
+    [Output(f"page-{i}-link", "active") for i in range(1, 5)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
-        return True, False, False
-    return [pathname == f"/page-{i}" for i in range(1, 4)]
+        return [True, False, False,False]
+    return [pathname == f"/page-{i}" for i in range(1, 5)]
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -153,7 +155,7 @@ def render_page_content(pathname):
     elif pathname == "/page-3":
         return P3_mkt_pattern_playbook.create_mkt_pattern_playbook_page()
     elif pathname == "/page-4":
-        return html.P("敬请期待")
+        return P4_city_bond_page.create_city_bond_page()
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -195,6 +197,56 @@ def update_graph_buy(bond_buyer,bond_duration,bond_type):
 # def update_fig_net_assets_fund_type(date_slider_fig_net_assets_fund_type):
 #     fig=mkt_b.fig_net_assets_fund_type(date_slider_fig_net_assets_fund_type)
 #     return fig
+
+# %%
+@app.callback(
+    dash.dependencies.Output('China_bond_map', 'figure'),
+    [dash.dependencies.Input('choose_of_aggregating_method', 'value'),
+     dash.dependencies.Input('choose_of_level_or_change', 'value')]
+    )
+def province_credit_premium_fig(agg_method,value):
+    
+    return city_bond.fig_province_credit_premium(agg_method,value)
+
+# %%
+
+@app.callback(
+    dash.dependencies.Output('bond_by_city', 'figure'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
+    )
+def update_figure_city_premium(clickData,figure):
+
+    return city_bond.fig_city_credit_premium(clickData,figure)
+    
+# %%
+@app.callback(
+    dash.dependencies.Output('compare_bond_by_city', 'figure'),
+    [dash.dependencies.Input('choose_of_cities', 'value')])
+def update_figure_compare_city(cities):  
+    
+    return city_bond.fig_compare_city_bond(cities)
+
+# %%
+    
+@app.callback(
+    dash.dependencies.Output('bond_by_issuer', 'figure'),
+    [dash.dependencies.Input('compare_bond_by_city', 'clickData'),
+    dash.dependencies.Input('compare_bond_by_city', 'figure')],
+    )
+def update_figure_compare_issuer(clickData,figure):
+    
+    return city_bond.fig_compare_issuer(clickData,figure)
+
+# %%
+@app.callback(
+     dash.dependencies.Output('individual_bond_table', 'data'),
+     [dash.dependencies.Input('bond_by_issuer', 'clickData'),
+     dash.dependencies.Input('bond_by_issuer', 'figure')],
+     )
+def update_individual_table(clickData,figure):
+
+    return city_bond.tab_individual_bond(clickData,figure)
 
 
 
