@@ -16,16 +16,14 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 import json
-<<<<<<< HEAD
 import data_organize as do
 import demjson
 from datetime import datetime
 from datetime import timedelta
 import pymysql
 
-=======
+
 import demjson
->>>>>>> c7662c1628dfd8440531c3205299ec251384e7ff
 
 server = flask.Flask(__name__) 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -89,10 +87,8 @@ df["期限_匹配"]=((df[["含权债行权期限","剩余期限(天)\n[日期] �
 GK_yield_base = ir[['中债国开债到期收益率:1年','中债国开债到期收益率:2年','中债国开债到期收益率:3年','中债国开债到期收益率:4年','中债国开债到期收益率:5年']].T
 GK_yield_base.columns=["GK_yield"]
 GK_yield_base["期限"]=[1,2,3,4,5]
-<<<<<<< HEAD
 GK_yield_base = GK_yield_base.reset_index(drop = True)
 # 合并城投债数据和基准利率
-=======
 
 ## 定义根据债券余额加权的点乘积：
 def weighted_premium(dff_VS_GK):
@@ -131,7 +127,6 @@ data["含权债行权期限"]=data["含权债行权期限"]*365
 df=pd.DataFrame(data=data)
 df["期限"]=((data[["含权债行权期限","剩余期限(天)\n[日期] 最新\n[单位] 天"]].min(axis=1))/365).round(2)
 df["期限_匹配"]=((data[["含权债行权期限","剩余期限(天)\n[日期] 最新\n[单位] 天"]].min(axis=1))/365).round(0)
->>>>>>> c7662c1628dfd8440531c3205299ec251384e7ff
 dff_VS_GK=pd.merge(df[df["期限"]<5],GK_yield_base,left_on=["期限_匹配"],right_on=["期限"],how="left")
 # 计算利差
 dff_VS_GK["券种利差"]=(dff_VS_GK["债券估值(YY)\n[单位] %"]-dff_VS_GK["GK_yield"])*100
@@ -166,7 +161,6 @@ available_cities = dff_VS_GK['城市'].unique()
 
 # 布局
 app.layout = html.Div(
-<<<<<<< HEAD
     className="container scalable",
     children = [
         html.Div(
@@ -284,29 +278,8 @@ app.layout = html.Div(
             )
         ]
     )
-=======
-    
-    [   html.Pre(id='selected-data')
-        html.Div([
-        dcc.Dropdown(id = 'test',
-                  options = [{'label': 0, 'value': 0}],
-                  value=['1'],
-                  placeholder="是否显示地图",
-                  multi = False),
-        dcc.Graph(id='China-bond-map',clickData = {'points': [{'区域':'江苏省'}]})
-        ],style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
-        dcc.Graph( id='bond-by-city'),
-        dcc.Dropdown(id = 'choose-of-cities',
-                  options = [{'label': i, 'value': i} for i in available_cities],
-                  value=['上海市','北京市'],
-                  placeholder="请选择选择想要比较的城市",
-                  multi = True),
 
-        dcc.Graph(id = 'compare-bond-by-city'),
-        
-    ]
-)
->>>>>>> c7662c1628dfd8440531c3205299ec251384e7ff
+    
 
  
 
@@ -336,7 +309,6 @@ def province_credit_premium_fig(test):
     [dash.dependencies.Input('choose_of_aggregating_method', 'value'),
      dash.dependencies.Input('choose_of_level_or_change', 'value')]
     )
-<<<<<<< HEAD
 def province_credit_premium_fig(agg_method,value):
     if agg_method == 'by_volumn':
         fig = px.choropleth_mapbox(dff_province_credit_premium, 
@@ -353,7 +325,6 @@ def province_credit_premium_fig(agg_method,value):
         fig.update_layout(clickmode="event+select")
         fig.update_traces(customdata=dff_province_credit_premium["区域"])
     return fig
-=======
 def update_figure(clickData,figure):
     province = clickData["points"][0]["customdata"]
 
@@ -366,7 +337,6 @@ def update_figure(clickData,figure):
 
     return fig
 
->>>>>>> c7662c1628dfd8440531c3205299ec251384e7ff
 
 @app.callback(
     dash.dependencies.Output('bond_by_city', 'figure'),
@@ -419,7 +389,6 @@ def update_figure(clickData):
     result = clickData["points"]
     return result
 
-<<<<<<< HEAD
 # @app.callback(
 #     dash.dependencies.Output('selected-data', 'children'),
 #     [dash.dependencies.Input('China-bond-map', 'clickData')]
@@ -514,7 +483,6 @@ def update_figure(clickData,figure):
     fig.update_layout(clickmode="event+select")
     fig.update_traces(customdata=dff2["主体名称"])       
     return fig
-=======
  
 
 # @app.callback(
@@ -526,7 +494,6 @@ def update_figure(clickData,figure):
 #     dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
 #     fig = px.bar(dff2, x="城市", y="信用利差")
 #     return fig
->>>>>>> c7662c1628dfd8440531c3205299ec251384e7ff
 
 
 @app.callback(
