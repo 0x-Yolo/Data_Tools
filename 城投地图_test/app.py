@@ -182,8 +182,7 @@ app.layout = html.Div(
                                                     value="by_medium",
                                                     placeholder="请选择省份利差计算方法"
                                                 ),
-                                            ],style={'width': '33%', 'display': 'inline-block'}
-                                            
+                                            ],style={'width': '33%','display': 'inline-block'}
                                         ),
                                         html.Div(    
                                             [
