@@ -69,7 +69,7 @@ conn.close()
 
 # ----------------------------------从本地读取数据--------------------------------
 
-xyct = pd.read_excel('信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+xyct = pd.read_excel('城投地图_test\信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
 xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
 # 将省份名称和地图数据对应
 province = []
@@ -162,7 +162,7 @@ app.layout = html.Div(
                                                 dcc.Dropdown(
                                                     id="choose_of_aggregating_method",
                                                     options=[
-                                                        {"label": "兴业研究利差数据（中位数）", "value": "by_medium"},
+                                                        {"label": "利差数据（中位数）", "value": "by_medium"},
                                                         {"label": "其他", "value": "other_methods"},
                                                     ],
                                                     value="by_medium",
