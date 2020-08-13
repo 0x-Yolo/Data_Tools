@@ -35,7 +35,7 @@ def weighted_premium(dff_VS_GK):
     return round(weighted_premium,2)
 
 # ------------------------------------地图所需数据------------------------------
-json_io=r"geojson-map-china\china.json"
+json_io=r"城投地图_test\geojson-map-china\china.json"
 gs_data = open(json_io, encoding='utf8').read()
 gs_data = json.loads(gs_data)
 # 整理plotly需要的格式：
