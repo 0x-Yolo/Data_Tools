@@ -27,7 +27,7 @@ server = flask.Flask(__name__)
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__,server=server,external_stylesheets=external_stylesheets)
 
-# ------------------------------------新建函数----------------------------------
+# # ------------------------------------新建函数----------------------------------
 
 ## 定义根据债券余额加权的点乘积：
 def weighted_premium(dff_VS_GK):
@@ -66,6 +66,25 @@ data=pd.read_sql('select * from Credit_Premium',conn)
 sql_cmd = 'SELECT * FROM interest_rate_day ORDER BY interest_rate_day.index desc LIMIT 1'
 ir = pd.read_sql(sql_cmd,conn)
 conn.close()
+
+# ----------------------------------从本地读取数据--------------------------------
+
+xyct = pd.read_excel('信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
+# 将省份名称和地图数据对应
+province = []
+for i in range(xyct.shape[1]):
+    for j in geo_data['区域']:
+        if xyct.columns[i] in j:
+            province.append(j)
+xyct.columns = province
+# 整理成周数据
+xyct_w = xyct.resample('W').mean()
+xyct_m = xyct.resample('M').mean()
+# 计算分位数
+xyct_quantile = xyct.apply(lambda x:np.nanquantile(x,[0.25,0.5,0.75]), axis = 0)
+xyct_quantile.index = ['25%分位数','中位数','75%分位数']
+
 
 # -----------------------------------数据处理------------------------------------
 # 城投债数据筛选非PPN
@@ -126,88 +145,117 @@ app.layout = html.Div(
         html.Div(
             id = 'banner',
             className = 'banner',
-            children = html.H6(children='城投债利差地图：请点击省份查看具体城市利差')         
+            children = html.H6(children='城投债利差地图')         
             ),
         html.Div(
-            className="app_main_content",
+            id = 'top_row',
             children = [
                 html.Div(
-                    id="choose_of_aggregating_method_outer",
-                    children=[
-                        
-                        html.Div(
-                            [
-                                dcc.Dropdown(
-                                    id="choose_of_aggregating_method",
-                                    options=[
-                                        {"label": "按照债券余额加权平均", "value": "by_volumn"},
-                                        {"label": "其他", "value": "other_methods"},
-                                    ],
-                                    value="by_volumn",
-                                    placeholder="请选择省份利差计算方法"
-                                ),
-                            ],
-                            className="three columns",
-                        ),
-                        html.Div(    
-                            [
-                                dcc.Dropdown(
-                                    id="choose_of_level_or_change",
-                                    options=[
-                                        {"label": "利差水平", "value": "ir_diff_level"},
-                                        {"label": "利差变化", "value": "ir_diff_change"},
-                                    ],
-                                    value="ir_diff_level",
-                                    placeholder="请选择利差水平/利差变化"
-                                )
-                            ],
-                            id="choose_of_level_or_change_outer",
-                            className="three columns",
-                            )
-                        
-                        ]
-                    ),
-                html.Div(
-                    id = 'top_row',
-                   className = 'row', 
-                   children = [        
-                      html.Div(
-                          className = 'seven columns',
-                          children = dcc.Graph(id='China_bond_map')
-                          ),
-                      html.Div(
-                          className = 'five columns',
-                          children = dcc.Graph( id='bond_by_city')
-                          )
-                      ]
-                    ),
-                html.Div(children=html.H6("请选择想要比较的城市：")),
-                html.Div(
-                    children = dcc.Dropdown(id = 'choose_of_cities',
-                                              options = [{'label': i, 'value': i} for i in available_cities],
-                                              value=['上海市','北京市','苏州市','南京市','杭州市','宁波市'],
-                                              placeholder="请选择想要比较的城市",
-                                              multi = True)
-                    ),
+                            
+                            children = [
+                                html.Div(
+                                    id="choose_of_aggregating_method_outer",
+                                    children=[
+                                        
+                                        html.Div(
+                                            [
+                                                dcc.Dropdown(
+                                                    id="choose_of_aggregating_method",
+                                                    options=[
+                                                        {"label": "兴业研究利差数据（中位数）", "value": "by_medium"},
+                                                        {"label": "其他", "value": "other_methods"},
+                                                    ],
+                                                    value="by_medium",
+                                                    placeholder="请选择省份利差计算方法"
+                                                ),
+                                            ],style={'width': '49%', 'display': 'inline-block'}
+                                            
+                                        ),
+                                        html.Div(    
+                                            [
+                                                dcc.Dropdown(id = 'choose_of_frequency',
+                                                              options = [{'label': "1周", 'value': "1_week"},
+                                                                         {'label': "2周", 'value': "2_week"},
+                                                                         {'label': "3周", 'value': "3_week"},
+                                                                         {'label': "1个月", 'value': "1_month"},
+                                                                         {'label': "2个月", 'value': "2_month"},
+                                                                         {'label': "3个月", 'value': "3_month"},
+                                                                         {'label': "半年", 'value': "6_month"},
+                                                                         {'label': "一年", 'value': "12_month"}],
+                                                              value='1_week',
+                                                              placeholder="请选择想要比较的时间频率",
+                                                              multi = False)
+                                                    
+                                            ],style={'width': '49%', 'display': 'inline-block'}
+                                            )
+                                        
+                                        ],style={
+                                                'borderBottom': 'thin lightgrey solid',
+                                                'backgroundColor': 'rgb(250, 250, 250)',
+                                                'padding': '10px 5px'
+                                            }
+                                    ),
+                                 html.Div(
+                                
+                                     children = dcc.Graph(id='China_bond_map')
+                                     )
+                                 ], style={'width': '49%', 'display': 'inline-block'}),
+                                      
+                                html.Div(
+                                   
+                                   children = [ 
+                                      html.Div(children=html.H6("请选择想要比较的省份：")),
+                                      html.Div(
+                                          children = dcc.Dropdown(id = 'choose_of_province',
+                                                              options = [{'label': i, 'value': i} for i in province],
+                                                              value=['上海市','江苏省','浙江省'],
+                                                              placeholder="请选择想要比较的省份",
+                                                              multi = True)
+                                          ,style={'display': 'inline-block',
+                                                   'borderBottom': 'thin lightgrey solid',
+                                                'backgroundColor': 'rgb(250, 250, 250)',
+                                                'padding': '10px 5px'}
+                                          ),
+                                      html.Div(          
+                                          children = dcc.Graph( id='bond_by_province')
+                                          
+                                          )
+                                      ],style={'width': '49%', 'display': 'inline-block'}
+                                    ),
+                    ]
+                ),
                 
                 html.Div(
                     id = 'second_row',
-                    className = 'row', 
-                    children = [        
+                    children = [ 
+                     
+                      html.Div(children=html.H6("请选择想要比较的城市：")),
+                      html.Div(
+                                    children = dcc.Dropdown(id = 'choose_of_cities',
+                                                              options = [{'label': i, 'value': i} for i in available_cities],
+                                                              value=['上海市','北京市','苏州市','南京市','杭州市','宁波市'],
+                                                              placeholder="请选择想要比较的城市",
+                                                              multi = True)
+                                    ),
                       
                       html.Div(
-                          className = 'six columns',
-                          children = dcc.Graph(id = 'compare_bond_by_city')
+                          [
+                              html.Div(
+                          children = dcc.Graph(id = 'compare_bond_by_city'),
+                          style={'width': '49%', 'display': 'inline-block'}
                           ),
-                      html.Div(
-                          className = 'six columns',
-                          children = dcc.Graph(id='bond_by_issuer')
+                              html.Div(
+                          children = dcc.Graph(id='bond_by_issuer'),
+                          style={'width': '49%', 'display': 'inline-block'}
+
                           )
+                              ]
+                          )
+                      
                       ]
                     ),
                 html.Div(
                     id = 'third_row',
-                    className = 'row',
                     children = dash_table.DataTable(
                               id = 'individual_bond_table',
                               columns=[
@@ -236,33 +284,115 @@ app.layout = html.Div(
                             )
                 ]
             )
-        ]
-    )
+                                            
+        
+    
 
  
 
 
 @app.callback(
     dash.dependencies.Output('China_bond_map', 'figure'),
-    [dash.dependencies.Input('choose_of_aggregating_method', 'value'),
-     dash.dependencies.Input('choose_of_level_or_change', 'value')]
+    [dash.dependencies.Input('choose_of_frequency', 'value')]
     )
-def province_credit_premium_fig(agg_method,value):
-    if agg_method == 'by_volumn':
-        fig = px.choropleth_mapbox(dff_province_credit_premium, 
-                geojson=gs_data, locations='id', color='信用利差',
-                range_color=(20, 400),
-               zoom=2, center = {"lat": 37.4189, "lon": 116.4219},
-               mapbox_style='white-bg',
-               hover_data = ["区域"],
-               custom_data = ["区域"]
-           )
+def province_credit_premium_fig(freq):
+    num,frequncy = freq.split('_')
+    if frequncy == 'week':
+        week_num = int(num)
+        xyct_now = np.array(xyct_w.iloc[-week_num:,:]).mean(axis = 0)
+        xyct_pre = np.array(xyct_w.iloc[-week_num*2:-week_num,:]).mean(axis = 0)
+    else:
+        month_num = int(num)
+        xyct_now = np.array(xyct_m.iloc[-month_num:,:]).mean(axis = 0)
+        xyct_pre = np.array(xyct_m.iloc[-month_num*2:-month_num,:]).mean(axis = 0)
+    # 计算利差变化
+    xyct_now_change = pd.DataFrame(((xyct_now-xyct_pre)/xyct_pre*100).round(2),
+                           index = province).reset_index()
+    xyct_now_change.columns = ['省份','信用利差变化(%)']
+    # 合并画地图所需的数据框
+    xyct_now_change_map=pd.merge(xyct_now_change,geo_data,left_on="省份",right_on="区域")
+    fig = px.choropleth_mapbox(xyct_now_change_map, 
+            geojson=gs_data, locations='id', color='信用利差变化(%)',
+     #       range_color=(-20,20),
+           zoom=2, center = {"lat": 37.4189, "lon": 116.4219},
+           mapbox_style='white-bg',
+           hover_data = ["区域"],
+           custom_data = ["区域"]
+       )
  #   layout = dict(margin={"r":0,"t":0,"l":0,"b":0},clickmode="event+select")
-        fig.update_geos(fitbounds="locations", visible=True)  
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-        fig.update_layout(clickmode="event+select")
-        fig.update_traces(customdata=dff_province_credit_premium["区域"])
+    fig.update_geos(fitbounds="locations", visible=True)  
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.update_layout(clickmode="event+select")
+ #   fig.update_traces(customdata=xyct_now_change_map["区域"])
     return fig
+ 
+@app.callback(
+    dash.dependencies.Output('bond_by_province', 'figure'),
+    [dash.dependencies.Input('choose_of_province', 'value')],
+    )
+def update_figure(provinces):
+    df = xyct.loc[:,provinces]
+    color = ['#5b9bd5' ,'#ed7d31' , '#70ad47' , '#ffc000' , '#4472c4' , '#91d024' , '#b235e6'  '#02ae75']
+    data = []
+    for index,i in enumerate(provinces):
+        
+        trace0 = go.Scatter(
+            x = df.index,
+            y = df[i],
+            mode = 'lines',
+            name = i+'信用利差走势',
+            line = dict(
+                color = color[index]
+                )   
+        )
+        trace1 = go.Scatter(
+            x = df.index,
+            y = np.tile(xyct_quantile.loc['25%分位数',i],1000),
+            mode = 'lines',
+            name = i+'信用利差下四分位数',
+            line = dict(
+                 width = 1,
+                dash ="dash",
+                color = color[index]
+                )   
+        )
+        trace2 = go.Scatter(
+            x = df.index,
+            y = np.tile(xyct_quantile.loc['中位数',i],1000),
+            mode = 'lines',
+            name = i+'信用利差中位数',
+            line = dict(
+                 width = 2,
+                dash ="dash",
+                color = color[index]
+                )   
+        )
+        trace3 = go.Scatter(
+            x = df.index,
+            y = np.tile(xyct_quantile.loc['75%分位数',i],1000),
+            mode = 'lines',
+            name = i+'信用利差上四分位数',
+            line = dict(
+                 width = 1,
+                dash ="dash",
+                color = color[index]
+                )   
+        ) 
+        trace = [trace0,trace1,trace2,trace3]      
+        data.extend(trace)
+
+        layout = go.Layout(
+            title = {'text':'各省份利差水平对比',
+                     'x':0.5},
+            yaxis = {'title':'信用利差'},
+            legend = dict(orientation="h"))
+        fig = go.Figure(data = data,layout = layout)
+        # fig.update_layout(clickmode="event+select")
+        # fig.update_traces(customdata=dff["城市"])         
+        
+    return fig
+        
+        
 
 @app.callback(
     dash.dependencies.Output('bond_by_city', 'figure'),
