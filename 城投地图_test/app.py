@@ -208,12 +208,13 @@ app.layout = html.Div(
                                                 'padding': '10px 5px'
                                             }
                                     ),
-                                 html.Div(
-                                     children = dcc.Graph(id='China_bond_map')
-                                     )
-                                 ],style={'width': '49%', 'display': 'inline-block'}),
+                                
+                                 ]),
                                             
-                                      
+                html.Div(
+                        children = dcc.Graph(id='China_bond_map'),
+                        style={'width': '49%', 'display': 'inline-block'}
+                    ),                     
                 html.Div(
                         
                         children = dcc.Graph( id='bond_by_province'),
