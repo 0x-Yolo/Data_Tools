@@ -149,6 +149,7 @@ app.layout = html.Div(
             ),
         html.Div(
             id = 'top_row',
+            
             children = [
                 html.Div(
                             
@@ -156,7 +157,20 @@ app.layout = html.Div(
                                 html.Div(
                                     id="choose_of_aggregating_method_outer",
                                     children=[
-                                        
+                                        html.Div(
+                                            [
+                                                dcc.Dropdown(
+                                                    id="choose_of_level_or_change",
+                                                    options=[
+                                                        {"label": "利差水平", "value": "by_level"},
+                                                        {"label": "利差变化", "value": "by_change"},
+                                                    ],
+                                                    value="by_level",
+                                                    placeholder="请选择利差水平或变化"
+                                                ),
+                                            ],style={'width': '33%', 'display': 'inline-block'}
+                                            
+                                        ),
                                         html.Div(
                                             [
                                                 dcc.Dropdown(
@@ -168,7 +182,7 @@ app.layout = html.Div(
                                                     value="by_medium",
                                                     placeholder="请选择省份利差计算方法"
                                                 ),
-                                            ],style={'width': '49%', 'display': 'inline-block'}
+                                            ],style={'width': '33%', 'display': 'inline-block'}
                                             
                                         ),
                                         html.Div(    
@@ -186,7 +200,7 @@ app.layout = html.Div(
                                                               placeholder="请选择想要比较的时间频率",
                                                               multi = False)
                                                     
-                                            ],style={'width': '49%', 'display': 'inline-block'}
+                                            ],style={'width': '33%', 'display': 'inline-block'}
                                             )
                                         
                                         ],style={
@@ -196,32 +210,17 @@ app.layout = html.Div(
                                             }
                                     ),
                                  html.Div(
-                                
                                      children = dcc.Graph(id='China_bond_map')
                                      )
-                                 ], style={'width': '49%', 'display': 'inline-block'}),
+                                 ],style={'width': '49%', 'display': 'inline-block'}),
+                                            
                                       
-                                html.Div(
-                                   
-                                   children = [ 
-                                      html.Div(children=html.H6("请选择想要比较的省份：")),
-                                      html.Div(
-                                          children = dcc.Dropdown(id = 'choose_of_province',
-                                                              options = [{'label': i, 'value': i} for i in province],
-                                                              value=['上海市','江苏省','浙江省'],
-                                                              placeholder="请选择想要比较的省份",
-                                                              multi = True)
-                                          ,style={'display': 'inline-block',
-                                                   'borderBottom': 'thin lightgrey solid',
-                                                'backgroundColor': 'rgb(250, 250, 250)',
-                                                'padding': '10px 5px'}
-                                          ),
-                                      html.Div(          
-                                          children = dcc.Graph( id='bond_by_province')
-                                          
-                                          )
-                                      ],style={'width': '49%', 'display': 'inline-block'}
-                                    ),
+                html.Div(
+                        
+                        children = dcc.Graph( id='bond_by_province'),
+                        style={'width': '49%', 'display': 'inline-block'}
+                      
+                    ),
                     ]
                 ),
                 
@@ -323,70 +322,68 @@ def province_credit_premium_fig(freq):
     fig.update_geos(fitbounds="locations", visible=True)  
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     fig.update_layout(clickmode="event+select")
- #   fig.update_traces(customdata=xyct_now_change_map["区域"])
+    fig.update_traces(customdata=xyct_now_change_map["区域"])
     return fig
  
 @app.callback(
     dash.dependencies.Output('bond_by_province', 'figure'),
-    [dash.dependencies.Input('choose_of_province', 'value')],
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
     )
-def update_figure(provinces):
-    df = xyct.loc[:,provinces]
-    color = ['#5b9bd5' ,'#ed7d31' , '#70ad47' , '#ffc000' , '#4472c4' , '#91d024' , '#b235e6'  '#02ae75']
-    data = []
-    for index,i in enumerate(provinces):
-        
-        trace0 = go.Scatter(
-            x = df.index,
-            y = df[i],
-            mode = 'lines',
-            name = i+'信用利差走势',
-            line = dict(
-                color = color[index]
-                )   
-        )
-        trace1 = go.Scatter(
-            x = df.index,
-            y = np.tile(xyct_quantile.loc['25%分位数',i],1000),
-            mode = 'lines',
-            name = i+'信用利差下四分位数',
-            line = dict(
-                 width = 1,
-                dash ="dash",
-                color = color[index]
-                )   
-        )
-        trace2 = go.Scatter(
-            x = df.index,
-            y = np.tile(xyct_quantile.loc['中位数',i],1000),
-            mode = 'lines',
-            name = i+'信用利差中位数',
-            line = dict(
-                 width = 2,
-                dash ="dash",
-                color = color[index]
-                )   
-        )
-        trace3 = go.Scatter(
-            x = df.index,
-            y = np.tile(xyct_quantile.loc['75%分位数',i],1000),
-            mode = 'lines',
-            name = i+'信用利差上四分位数',
-            line = dict(
-                 width = 1,
-                dash ="dash",
-                color = color[index]
-                )   
-        ) 
-        trace = [trace0,trace1,trace2,trace3]      
-        data.extend(trace)
-
-        layout = go.Layout(
-            title = {'text':'各省份利差水平对比',
-                     'x':0.5},
-            yaxis = {'title':'信用利差'},
-            legend = dict(orientation="h"))
-        fig = go.Figure(data = data,layout = layout)
+def update_figure(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'江苏省'}]}
+    province = clickData["points"][0]["customdata"]
+    df = xyct[[province]]
+    trace0 = go.Scatter(
+        x = df.index,
+        y = df[province],
+        mode = 'lines',
+        name = province+'信用利差走势',
+        line = dict(
+            color = '#9370DB'
+            )   
+    )
+    trace1 = go.Scatter(
+        x = df.index,
+        y = np.tile(xyct_quantile.loc['25%分位数',province],5000),
+        mode = 'lines',
+        name = '下四分位数',
+        line = dict(
+             width = 1,
+            dash ="dash",
+            color = '#DA70D6'
+            )   
+    )
+    trace2 = go.Scatter(
+        x = df.index,
+        y = np.tile(xyct_quantile.loc['中位数',province],5000),
+        mode = 'lines',
+        name = '中位数',
+        line = dict(
+             width = 2,
+            dash ="dash",
+            color = '#DA70D6'
+            )   
+    )
+    trace3 = go.Scatter(
+        x = df.index,
+        y = np.tile(xyct_quantile.loc['75%分位数',province],5000),
+        mode = 'lines',
+        name = '上四分位数',
+        line = dict(
+             width = 1,
+            dash ="dash",
+            color = '#DA70D6'
+            )   
+    ) 
+    data = [trace0,trace1,trace2,trace3]      
+    layout = go.Layout(
+        title = {'text':province+'利差走势',
+                 'x':0.5},
+        yaxis = {'title':'信用利差'},
+        legend = dict(orientation="h"))
+    fig = go.Figure(data = data,layout = layout)
         # fig.update_layout(clickmode="event+select")
         # fig.update_traces(customdata=dff["城市"])         
         
