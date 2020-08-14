@@ -201,31 +201,43 @@ def update_graph_buy(bond_buyer,bond_duration,bond_type):
 # %%
 @app.callback(
     dash.dependencies.Output('China_bond_map', 'figure'),
-    [dash.dependencies.Input('choose_of_aggregating_method', 'value'),
-     dash.dependencies.Input('choose_of_level_or_change', 'value')]
+    [dash.dependencies.Input('choose_of_frequency', 'value')]
     )
-def province_credit_premium_fig(agg_method,value):
+def province_credit_premium_fig(freq): 
     
-    return city_bond.fig_province_credit_premium(agg_method,value)
+    return city_bond.fig_province_credit_premium(freq)
 
 # %%
 
 @app.callback(
-    dash.dependencies.Output('bond_by_city', 'figure'),
+    dash.dependencies.Output('bond_by_province', 'figure'),
     [dash.dependencies.Input('China_bond_map', 'clickData'),
     dash.dependencies.Input('China_bond_map', 'figure')],
     )
-def update_figure_city_premium(clickData,figure):
+def update_figure(clickData,figure):
 
-    return city_bond.fig_city_credit_premium(clickData,figure)
+    return city_bond.fig_province_credit_premium_hist(clickData,figure)
     
 # %%
 @app.callback(
+    dash.dependencies.Output('choose_of_cities', 'value'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
+    )
+def update_dropdown(clickData,figure): 
+    
+    return city_bond.dropdown_city(clickData,figure)
+
+
+# %%
+ 
+@app.callback(
     dash.dependencies.Output('compare_bond_by_city', 'figure'),
     [dash.dependencies.Input('choose_of_cities', 'value')])
-def update_figure_compare_city(cities):  
-    
+def compare_figure(cities):
+
     return city_bond.fig_compare_city_bond(cities)
+
 
 # %%
     
@@ -234,9 +246,11 @@ def update_figure_compare_city(cities):
     [dash.dependencies.Input('compare_bond_by_city', 'clickData'),
     dash.dependencies.Input('compare_bond_by_city', 'figure')],
     )
-def update_figure_compare_issuer(clickData,figure):
+def update_figure(clickData,figure):
     
     return city_bond.fig_compare_issuer(clickData,figure)
+
+
 
 # %%
 @app.callback(

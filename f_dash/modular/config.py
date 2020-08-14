@@ -89,4 +89,17 @@ def get_ir_diff():
     dff_VS_GK=dff_VS_GK[dff_VS_GK["券种利差"].isna()==False]
     return dff_VS_GK
     
+# %%
+def get_xyct():  
+    geo_data = get_geo_data()[0]
+    xyct = pd.read_excel('modular/信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+    xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
+    # 将省份名称和地图数据对应
+    province = []
+    for i in range(xyct.shape[1]):
+        for j in geo_data['区域']:
+            if xyct.columns[i] in j:
+                province.append(j)
+    xyct.columns = province
+    return xyct
 
