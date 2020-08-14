@@ -21,15 +21,20 @@ import demjson
 from datetime import datetime
 from datetime import timedelta
 import pymysql
-
-
 import demjson
+from datetime import datetime
+from datetime import timedelta
+import pymysql
+
 
 server = flask.Flask(__name__) 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__,server=server,external_stylesheets=external_stylesheets)
 
-# ------------------------------------新建函数----------------------------------
+
+
+# # ------------------------------------新建函数----------------------------------
+
 
 ## 定义根据债券余额加权的点乘积：
 def weighted_premium(dff_VS_GK):
@@ -68,6 +73,26 @@ data=pd.read_sql('select * from Credit_Premium',conn)
 sql_cmd = 'SELECT * FROM interest_rate_day ORDER BY interest_rate_day.index desc LIMIT 1'
 ir = pd.read_sql(sql_cmd,conn)
 conn.close()
+
+
+# ----------------------------------从本地读取数据--------------------------------
+
+xyct = pd.read_excel('信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
+# 将省份名称和地图数据对应
+province = []
+for i in range(xyct.shape[1]):
+    for j in geo_data['区域']:
+        if xyct.columns[i] in j:
+            province.append(j)
+xyct.columns = province
+# 整理成周数据
+xyct_w = xyct.resample('W').mean()
+xyct_m = xyct.resample('M').mean()
+# 计算分位数
+xyct_quantile = xyct.apply(lambda x:np.nanquantile(x,[0.25,0.5,0.75]), axis = 0)
+xyct_quantile.index = ['25%分位数','中位数','75%分位数']
+
 
 # -----------------------------------数据处理------------------------------------
 # 城投债数据筛选非PPN
@@ -154,6 +179,12 @@ df_table['券种利差'] = round(df_table['券种利差'],2)
 city_province = {}
 for name,group in dff_VS_GK.groupby("城市")['区域']:
     city_province[name] = group.tolist()[0]
+
+province_city = {}
+for name,group in dff_VS_GK.groupby("区域")['城市']:
+    province_city[name] = group.unique().tolist()
+
+
 # 所有城市
 available_cities = dff_VS_GK['城市'].unique()
 
@@ -243,11 +274,122 @@ app.layout = html.Div(
                           className = 'six columns',
                           children = dcc.Graph(id='bond_by_issuer')
                           )
+            ),
+        html.Div(
+            id = 'top_row',
+            
+            children = [
+                html.Div(
+                            
+                            children = [
+                                html.Div(
+                                    id="choose_of_aggregating_method_outer",
+                                    children=[
+                                        html.Div(
+                                            [
+                                                dcc.Dropdown(
+                                                    id="choose_of_level_or_change",
+                                                    options=[
+                                                        {"label": "利差水平", "value": "by_level"},
+                                                        {"label": "利差变化", "value": "by_change"},
+                                                    ],
+                                                    value="by_level",
+                                                    placeholder="请选择利差水平或变化"
+                                                ),
+                                            ],style={'width': '33%', 'display': 'inline-block'}
+                                            
+                                        ),
+                                        html.Div(
+                                            [
+                                                dcc.Dropdown(
+                                                    id="choose_of_aggregating_method",
+                                                    options=[
+                                                        {"label": "兴业研究利差数据（中位数）", "value": "by_medium"},
+                                                        {"label": "其他", "value": "other_methods"},
+                                                    ],
+                                                    value="by_medium",
+                                                    placeholder="请选择省份利差计算方法"
+                                                ),
+                                            ],style={'width': '33%', 'display': 'inline-block'}
+                                            
+                                        ),
+                                        html.Div(    
+                                            [
+                                                dcc.Dropdown(id = 'choose_of_frequency',
+                                                              options = [{'label': "1周", 'value': "1_week"},
+                                                                         {'label': "2周", 'value': "2_week"},
+                                                                         {'label': "3周", 'value': "3_week"},
+                                                                         {'label': "1个月", 'value': "1_month"},
+                                                                         {'label': "2个月", 'value': "2_month"},
+                                                                         {'label': "3个月", 'value': "3_month"},
+                                                                         {'label': "半年", 'value': "6_month"},
+                                                                         {'label': "一年", 'value': "12_month"}],
+                                                              value='1_week',
+                                                              placeholder="请选择想要比较的时间频率",
+                                                              multi = False)
+                                                    
+                                            ],style={'width': '33%', 'display': 'inline-block'}
+                                            )
+                                        
+                                        ],style={
+                                                'borderBottom': 'thin lightgrey solid',
+                                                'backgroundColor': 'rgb(250, 250, 250)',
+                                                'padding': '10px 5px'
+                                            }
+                                    ),
+                                
+                                 ]),
+                                            
+                html.Div(
+                        children = dcc.Graph(id='China_bond_map'),
+                        style={'width': '49%', 'display': 'inline-block'}
+                    ),                     
+                html.Div(
+                        
+                        children = dcc.Graph( id='bond_by_province'),
+                        style={'width': '49%', 'display': 'inline-block'}
+                      
+                    ),
+                    ]
+                ),
+                
+                html.Div(
+                    id = 'second_row',
+                    children = [ 
+                     
+                      html.Div(children=html.H6("请选择想要比较的城市：")
+                               ,style={
+                                        'borderBottom': 'thin lightgrey solid',
+                                        'backgroundColor': 'rgb(250, 250, 250)',
+                                        'padding': '10px 5px'
+                                            }),
+                      html.Div(
+                                    children = dcc.Dropdown(id = 'choose_of_cities',
+                                                              options = [{'label': i, 'value': i} for i in available_cities],
+                                                              placeholder="请选择想要比较的城市",
+                                                              multi = True)
+                                    ),
+                      
+                      html.Div(
+                          [
+                              html.Div(
+                          children = dcc.Graph(id = 'compare_bond_by_city'),
+                          style={'width': '49%', 'display': 'inline-block'}
+                          ),
+                              html.Div(
+                          children = dcc.Graph(id='bond_by_issuer'),
+                          style={'width': '49%', 'display': 'inline-block'}
+
+                          )
+                              ]
+                          )
+                      
                       ]
                     ),
                 html.Div(
                     id = 'third_row',
                     className = 'row',
+
                     children = dash_table.DataTable(
                               id = 'individual_bond_table',
                               columns=[
@@ -280,34 +422,56 @@ app.layout = html.Div(
     )
 
     
+                                            
+        
+    
+
+ 
 
  
 
 @app.callback(
-    dash.dependencies.Output('China-bond-map', 'figure'),
-    [dash.dependencies.Input('test', 'value')]
+    dash.dependencies.Output('China_bond_map', 'figure'),
+    [dash.dependencies.Input('choose_of_frequency', 'value')]
     )
-def province_credit_premium_fig(test):
-    fig = px.choropleth_mapbox(dff_province_credit_premium, geojson=gs_data, locations='id', color='信用利差',
-            range_color=(20, 400),
-           zoom=3, center = {"lat": 37.4189, "lon": 116.4219},
-           mapbox_style='carto-positron',
+def province_credit_premium_fig(freq):
+    num,frequncy = freq.split('_')
+    if frequncy == 'week':
+        week_num = int(num)
+        xyct_now = np.array(xyct_w.iloc[-week_num:,:]).mean(axis = 0)
+        xyct_pre = np.array(xyct_w.iloc[-week_num*2:-week_num,:]).mean(axis = 0)
+    else:
+        month_num = int(num)
+        xyct_now = np.array(xyct_m.iloc[-month_num:,:]).mean(axis = 0)
+        xyct_pre = np.array(xyct_m.iloc[-month_num*2:-month_num,:]).mean(axis = 0)
+    # 计算利差变化
+    xyct_now_change = pd.DataFrame(((xyct_now-xyct_pre)/xyct_pre*100).round(2),
+                           index = province).reset_index()
+    xyct_now_change.columns = ['省份','信用利差变化(%)']
+    # 合并画地图所需的数据框
+    xyct_now_change_map=pd.merge(xyct_now_change,geo_data,left_on="省份",right_on="区域")
+    fig = px.choropleth_mapbox(xyct_now_change_map, 
+            geojson=gs_data, locations='id', color='信用利差变化(%)',
+     #       range_color=(-20,20),
+           zoom=2, center = {"lat": 37.4189, "lon": 116.4219},
+           mapbox_style='white-bg',
            hover_data = ["区域"],
-           custom_data=["区域"]
-           )
+           custom_data = ["区域"]
+       )
  #   layout = dict(margin={"r":0,"t":0,"l":0,"b":0},clickmode="event+select")
-    A=test
     fig.update_geos(fitbounds="locations", visible=True)  
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     fig.update_layout(clickmode="event+select")
-    fig.update_traces(customdata=dff_province_credit_premium["区域"])
-
+    fig.update_traces(customdata=xyct_now_change_map["区域"])
     return fig
-
+ 
 @app.callback(
     dash.dependencies.Output('China_bond_map', 'figure'),
     [dash.dependencies.Input('choose_of_aggregating_method', 'value'),
      dash.dependencies.Input('choose_of_level_or_change', 'value')]
+    dash.dependencies.Output('bond_by_province', 'figure'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
     )
 def province_credit_premium_fig(agg_method,value):
     if agg_method == 'by_volumn':
@@ -326,15 +490,120 @@ def province_credit_premium_fig(agg_method,value):
         fig.update_traces(customdata=dff_province_credit_premium["区域"])
     return fig
 def update_figure(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'江苏省'}]}
     province = clickData["points"][0]["customdata"]
+    df = xyct[[province]]
+    trace0 = go.Scatter(
+        x = df.index,
+        y = df[province],
+        mode = 'lines',
+        name = province+'信用利差走势',
+        line = dict(
+            color = '#9370DB'
+            )   
+    )
+    trace1 = go.Scatter(
+        x = df.index,
+        y = np.tile(xyct_quantile.loc['25%分位数',province],5000),
+        mode = 'lines',
+        name = '下四分位数',
+        line = dict(
+             width = 1,
+            dash ="dash",
+            color = '#DA70D6'
+            )   
+    )
+    trace2 = go.Scatter(
+        x = df.index,
+        y = np.tile(xyct_quantile.loc['中位数',province],5000),
+        mode = 'lines',
+        name = '中位数',
+        line = dict(
+             width = 2,
+            dash ="dash",
+            color = '#DA70D6'
+            )   
+    )
+    trace3 = go.Scatter(
+        x = df.index,
+        y = np.tile(xyct_quantile.loc['75%分位数',province],5000),
+        mode = 'lines',
+        name = '上四分位数',
+        line = dict(
+             width = 1,
+            dash ="dash",
+            color = '#DA70D6'
+            )   
+    ) 
+    data = [trace0,trace1,trace2,trace3]      
+    layout = go.Layout(
+        title = {'text':province+'利差走势',
+                 'x':0.5},
+        yaxis = {'title':'信用利差'},
+        legend = dict(orientation="h"))
+    fig = go.Figure(data = data,layout = layout)
+        # fig.update_layout(clickmode="event+select")
+        # fig.update_traces(customdata=dff["城市"])         
+        
+    return fig
 
+@app.callback(
+    dash.dependencies.Output('choose_of_cities', 'value'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
+    )
+def update_dropdown(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'江苏省'}]}
+    value = province_city[clickData["points"][0]["customdata"]]
+    return value
+    
+    
+         
+        
+
+@app.callback(
+    dash.dependencies.Output('bond_by_city', 'figure'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
+    )
+def update_figure(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'江苏省'}]}
+    province = clickData["points"][0]["customdata"]
     df_province = dff_VS_GK[dff_VS_GK['区域'] == province]
-    dff = df_province.groupby("城市")["券种利差","债券余额\n[日期] 最新\n[单位] 亿"].apply(lambda x : weighted_premium(x))
+    dff = df_province.groupby("城市")[info_dimension].apply(lambda x : weighted_premium(x))
     dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
-    fig = px.bar(dff2, x="城市", y="信用利差")
-
-    #  fig.update_layout(transition_duration=500)
-
+    dff3 = province_credit_premium_df.reset_index()
+    trace1 = go.Bar(
+            x = dff2['城市'],
+            y = dff2['信用利差'],
+            name = '各城市',
+            marker = dict(
+                color = '#9370DB'
+                )   
+        )
+    trace2 = go.Scatter(
+            x = dff2['城市'],
+            y = np.tile(dff3[dff3['区域'] == clickData["points"][0]["customdata"]]['信用利差'].tolist()[0],100),
+            mode = 'lines',
+            line = dict(
+                width = 2,
+                dash ="dash"
+                ),
+            name = clickData["points"][0]["customdata"],
+            )
+    data = [trace1,trace2]  
+    layout = go.Layout(
+        title = {
+            'text':''.join((clickData["points"][0]["customdata"],'各城市信用利差')),
+            'x':0.5
+            }      
+)
+    fig = go.Figure(data = data,layout = layout)    
+          
+    
     return fig
 
 
@@ -380,14 +649,100 @@ def update_figure(clickData,figure):
           
     
     return fig
+# @app.callback(
+#     dash.dependencies.Output('selected-data', 'children'),
+#     [dash.dependencies.Input('China-bond-map', 'clickData')]
+#     )
+# def update_figure(clickData):
+#     result = clickData["points"]
+#     return result
+    
 
 @app.callback(
-    dash.dependencies.Output('selected-data', 'children'),
-    [dash.dependencies.Input('China-bond-map', 'clickData')],
+    dash.dependencies.Output('compare_bond_by_city', 'figure'),
+    [dash.dependencies.Input('choose_of_cities', 'value')])
+def compare_figure(cities):
+    dff = city_credit_premium_df[city_credit_premium_df['城市'].isin(cities)]
+    provinces = set([city_province[i] for i in cities])
+    dff2 = province_credit_premium_df.reset_index()
+    trace1 = go.Bar(
+            x = dff['城市'],
+            y = dff['信用利差'],
+            name = '各城市',
+            marker = dict(
+                color = '#9370DB'
+                )   
+        )
+    data = [trace1]    
+    for i in provinces:
+        data.append(
+            
+            go.Scatter(
+            x = dff['城市'],
+            y = np.tile(dff2[dff2['区域'] == i]['信用利差'].tolist()[0],1000),
+            mode = 'lines',
+            line = dict(
+                width = 2,
+                dash ="dash"
+                ),
+            name = i
+            )
+            
+        )
+        layout = go.Layout(
+            title = {'text':'各城市利差对比',
+                     'x':0.5},
+            yaxis = {'title':'利差'})
+        fig = go.Figure(data = data,layout = layout)
+        fig.update_layout(clickmode="event+select")
+        fig.update_traces(customdata=dff["城市"])         
+        
+    return fig
+
+@app.callback(
+    dash.dependencies.Output('bond_by_issuer', 'figure'),
+    [dash.dependencies.Input('compare_bond_by_city', 'clickData'),
+    dash.dependencies.Input('compare_bond_by_city', 'figure')],
     )
-def update_figure(clickData):
-    result = clickData["points"]
-    return result
+def update_figure(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'上海市'}]}
+    city = clickData["points"][0]["customdata"]
+    df_city = dff_VS_GK[dff_VS_GK['城市'] == city]
+    dff = df_city.groupby("主体名称")[info_dimension].apply(lambda x : weighted_premium(x))
+    dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
+    trace1 = go.Scatter(
+            x = dff2['主体名称'],
+            y = dff2['信用利差'],
+            mode = 'markers',
+            name = '各主体',
+            marker = dict(
+                color = '#DA70D6',
+                size = 10,
+                opacity = 0.8
+                )   
+        )
+    trace2 = go.Scatter(
+            x = dff2['主体名称'],
+            y = np.tile(city_credit_premium_df[city_credit_premium_df['城市'] == clickData["points"][0]["customdata"]]['信用利差'].tolist()[0],100),
+            mode = 'lines',
+            line = dict(
+                width = 2,
+                dash ="dash"
+                ),
+            name = clickData["points"][0]["customdata"]
+            )
+    data = [trace1,trace2]     
+    layout = go.Layout(
+        yaxis = {'title':'利差'},
+        xaxis = {'title':'各主体',
+                 'visible':False},
+        title = {'text':''.join((clickData["points"][0]["customdata"],'各主体信用利差')),
+                 'x':0.5})
+    fig = go.Figure(data = data,layout = layout)
+    fig.update_layout(clickmode="event+select")
+    fig.update_traces(customdata=dff2["主体名称"])       
+    return fig
 
 # @app.callback(
 #     dash.dependencies.Output('selected-data', 'children'),
@@ -485,15 +840,19 @@ def update_figure(clickData,figure):
     return fig
  
 
-# @app.callback(
-#     dash.dependencies.Output('compare-bond-by-city', 'figure'),
-#     [dash.dependencies.Input('choose-of-cities', 'value')])
-# def compare_figure(cities):
-#     df_cities = dff_VS_GK[dff_VS_GK['城市'].isin(cities)]
-#     dff = df_cities.groupby("城市")["券种利差","债券余额\n[日期] 最新\n[单位] 亿"].apply(lambda x : weighted_premium(x))
-#     dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
-#     fig = px.bar(dff2, x="城市", y="信用利差")
-#     return fig
+
+@app.callback(
+    dash.dependencies.Output('individual_bond_table', 'data'),
+    [dash.dependencies.Input('bond_by_issuer', 'clickData'),
+    dash.dependencies.Input('bond_by_issuer', 'figure')],
+    )
+def update_figure(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'上海大宁资产经营(集团)有限公司'}]}
+    dff = df_table[df_table['主体名称'] == clickData["points"][0]["customdata"]]
+#    dff2 = dff.drop(['主体名称'],axis = 1)
+    return dff.to_dict("records")
+    
 
 
 @app.callback(
