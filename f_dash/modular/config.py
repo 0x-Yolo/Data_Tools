@@ -32,7 +32,7 @@ class Inter_Graph:
 
 # %%
 def get_geo_data():
-    json_io=r"modular\geojson-map-china\china.json"
+    json_io=r"f_dash\modular\geojson-map-china\china.json"
     gs_data = open(json_io, encoding='utf8').read()
     gs_data = json.loads(gs_data)
     # 整理plotly需要的格式：

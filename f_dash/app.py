@@ -265,8 +265,8 @@ def update_individual_table(clickData,figure):
 
 
 if __name__ == '__main__':
-    #app.run_server(debug=True)#线上使用
-    server.run()#本地调试用
+    app.run_server(debug=True)#线上使用
+    #server.run()#本地调试用
 
 
 
