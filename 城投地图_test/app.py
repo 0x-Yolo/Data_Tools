@@ -340,7 +340,7 @@ def province_credit_premium_fig(freq):
 def update_figure(clickData,figure):
     if clickData == None:
         clickData = {'points':[{'customdata':'江苏省'}]}
-    province = clickData["points"][0]["customdata"]
+    province = clickData['points'][0]['customdata']
     df = xyct[[province]]
     trace0 = go.Scatter(
         x = df.index,
