@@ -133,6 +133,10 @@ df_table['券种利差'] = round(df_table['券种利差'],2)
 city_province = {}
 for name,group in dff_VS_GK.groupby("城市")['区域']:
     city_province[name] = group.tolist()[0]
+province_city = {}
+for name,group in dff_VS_GK.groupby("区域")['城市']:
+    province_city[name] = group.unique().tolist()
+
 # 所有城市
 available_cities = dff_VS_GK['城市'].unique()
 
@@ -228,11 +232,15 @@ app.layout = html.Div(
                     id = 'second_row',
                     children = [ 
                      
-                      html.Div(children=html.H6("请选择想要比较的城市：")),
+                      html.Div(children=html.H6("请选择想要比较的城市：")
+                               ,style={
+                                        'borderBottom': 'thin lightgrey solid',
+                                        'backgroundColor': 'rgb(250, 250, 250)',
+                                        'padding': '10px 5px'
+                                            }),
                       html.Div(
                                     children = dcc.Dropdown(id = 'choose_of_cities',
                                                               options = [{'label': i, 'value': i} for i in available_cities],
-                                                              value=['上海市','北京市','苏州市','南京市','杭州市','宁波市'],
                                                               placeholder="请选择想要比较的城市",
                                                               multi = True)
                                     ),
@@ -388,7 +396,20 @@ def update_figure(clickData,figure):
         # fig.update_traces(customdata=dff["城市"])         
         
     return fig
-        
+
+@app.callback(
+    dash.dependencies.Output('choose_of_cities', 'value'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
+    )
+def update_dropdown(clickData,figure):
+    if clickData == None:
+        clickData = {'points':[{'customdata':'江苏省'}]}
+    value = province_city[clickData["points"][0]["customdata"]]
+    return value
+    
+    
+         
         
 
 @app.callback(
