@@ -32,7 +32,7 @@ def weighted_premium(dff_VS_GK):
 # %% 读数
 geo_data,gs_data = conf.get_geo_data()
 dff_VS_GK = conf.get_ir_diff()
-xyct = pd.read_excel('modular/信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+xyct = pd.read_excel('modular\信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
 xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
 # 将省份名称和地图数据对应
 province = []
