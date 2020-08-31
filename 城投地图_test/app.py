@@ -35,7 +35,7 @@ def weighted_premium(dff_VS_GK):
     return round(weighted_premium,2)
 
 # ------------------------------------地图所需数据------------------------------
-json_io=r"geojson-map-china\china.json"
+json_io=r"城投地图_test\geojson-map-china\china.json"
 gs_data = open(json_io, encoding='utf8').read()
 gs_data = json.loads(gs_data)
 # 整理plotly需要的格式：
@@ -69,7 +69,7 @@ conn.close()
 
 # ----------------------------------从本地读取数据--------------------------------
 
-xyct = pd.read_excel('信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+xyct = pd.read_excel('城投地图_test\信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
 xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
 # 将省份名称和地图数据对应
 province = []
@@ -136,11 +136,9 @@ for name,group in dff_VS_GK.groupby("城市")['区域']:
 province_city = {}
 for name,group in dff_VS_GK.groupby("区域")['城市']:
     province_city[name] = group.unique().tolist()
-
 # 所有城市
 available_cities = dff_VS_GK['城市'].unique()
-
-# --------------------------------------构建app---------------------------------------
+# ----------------------c----------------构建app---------------------------------------
 
 # 布局
 app.layout = html.Div(
@@ -180,14 +178,13 @@ app.layout = html.Div(
                                                 dcc.Dropdown(
                                                     id="choose_of_aggregating_method",
                                                     options=[
-                                                        {"label": "兴业研究利差数据（中位数）", "value": "by_medium"},
+                                                        {"label": "利差数据（中位数）", "value": "by_medium"},
                                                         {"label": "其他", "value": "other_methods"},
                                                     ],
                                                     value="by_medium",
                                                     placeholder="请选择省份利差计算方法"
                                                 ),
-                                            ],style={'width': '33%', 'display': 'inline-block'}
-                                            
+                                            ],style={'width': '33%','display': 'inline-block'}
                                         ),
                                         html.Div(    
                                             [
@@ -342,7 +339,7 @@ def province_credit_premium_fig(freq):
 def update_figure(clickData,figure):
     if clickData == None:
         clickData = {'points':[{'customdata':'江苏省'}]}
-    province = clickData["points"][0]["customdata"]
+    province = clickData['points'][0]['customdata']
     df = xyct[[province]]
     trace0 = go.Scatter(
         x = df.index,
@@ -413,48 +410,6 @@ def update_dropdown(clickData,figure):
          
         
 
-@app.callback(
-    dash.dependencies.Output('bond_by_city', 'figure'),
-    [dash.dependencies.Input('China_bond_map', 'clickData'),
-    dash.dependencies.Input('China_bond_map', 'figure')],
-    )
-def update_figure(clickData,figure):
-    if clickData == None:
-        clickData = {'points':[{'customdata':'江苏省'}]}
-    province = clickData["points"][0]["customdata"]
-    df_province = dff_VS_GK[dff_VS_GK['区域'] == province]
-    dff = df_province.groupby("城市")[info_dimension].apply(lambda x : weighted_premium(x))
-    dff2 = pd.DataFrame(dff,columns = ['信用利差']).reset_index()
-    dff3 = province_credit_premium_df.reset_index()
-    trace1 = go.Bar(
-            x = dff2['城市'],
-            y = dff2['信用利差'],
-            name = '各城市',
-            marker = dict(
-                color = '#9370DB'
-                )   
-        )
-    trace2 = go.Scatter(
-            x = dff2['城市'],
-            y = np.tile(dff3[dff3['区域'] == clickData["points"][0]["customdata"]]['信用利差'].tolist()[0],100),
-            mode = 'lines',
-            line = dict(
-                width = 2,
-                dash ="dash"
-                ),
-            name = clickData["points"][0]["customdata"],
-            )
-    data = [trace1,trace2]  
-    layout = go.Layout(
-        title = {
-            'text':''.join((clickData["points"][0]["customdata"],'各城市信用利差')),
-            'x':0.5
-            }      
-)
-    fig = go.Figure(data = data,layout = layout)    
-          
-    
-    return fig
 
 
 # @app.callback(
@@ -558,7 +513,7 @@ def update_figure(clickData,figure):
     [dash.dependencies.Input('bond_by_issuer', 'clickData'),
     dash.dependencies.Input('bond_by_issuer', 'figure')],
     )
-def update_figure(clickData,figure):
+def update_table(clickData,figure):
     if clickData == None:
         clickData = {'points':[{'customdata':'上海大宁资产经营(集团)有限公司'}]}
     dff = df_table[df_table['主体名称'] == clickData["points"][0]["customdata"]]
