@@ -2,6 +2,7 @@ import re
 import sys
 import datetime as dt
 import pandas as pd
+import numpy as np
 import  pymysql
 
 #导入plotly库
@@ -12,6 +13,10 @@ import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
+
+from modular import data_organize as do
+
+import datetime as dt
 
 # from WindPy import w
 
@@ -215,4 +220,26 @@ def fig_net_assets_fund_type(date_slider_fig_net_assets_fund_type):
     fig = go.Figure(data=[go.Pie(labels=labels, values=values, pull=[0, 0.2, 0,0])])
     fig.update_layout(showlegend=False,title="存量基金占比（亿元，%）")
     return fig
-        
+
+
+def fig_bank_debt_resource():
+    today = dt.datetime.today()
+    io=r"C:\Users\86156\Desktop\坚果云\我的工作\Git\代码笔记\资产配置分析框架\P2-流动性观察框架.xlsx"
+    data=do.get_data("P2_流动性观察框架")
+    index_name=pd.read_excel(io,sheet_name="中期流动性").loc[0]
+    index_list=data.columns[1:]
+    data.columns=index_name
+    ## wind读取数据
+    data["指标名称"]=pd.to_datetime(data["指标名称"])
+    data.set_index("指标名称",inplace=True)
+
+    df=data.replace(0,np.nan).fillna(method="ffill")["2017":(today-dt.timedelta(3))]
+
+    trace_list=[]
+    col_list=["中期借贷便利(MLF):利率:3个月","中期借贷便利(MLF):利率:6个月","中债商业银行同业存单到期收益率(AAA):3个月","同业存单(股份制银行)到期收益率:6个月",]
+    for col in col_list:
+        trace_list.append(
+                go.Scatter(x=df.index, y=df[col], name=col)
+        )
+    fig = go.Figure(data=trace_list)
+    return fig
