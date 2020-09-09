@@ -27,10 +27,7 @@ from itertools import product
 
 #
 from datetime import datetime
-#
-sys.path.append('C:/Users/User/Desktop/tpy/Data_Tools/f_dash/modular')
-import db_management.data_organize as do
-
+from modular import data_organize as do
 #%%
 def change_freq(df,freq = 'M',how = 'mean', percent = None):
     '''

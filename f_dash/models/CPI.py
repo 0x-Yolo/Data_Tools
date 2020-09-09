@@ -153,14 +153,6 @@ def CPI_model2(df,date):
 #%%
 
 def main():
-       
-    
-    
-    return fig
-
-#%%
-    
-if __name__ == '__main__':
     hf = do.get_data('high_frequency_for_prediction')
     hf.set_index(['date'],inplace = True)
     hf.index = pd.DatetimeIndex(hf.index)
@@ -199,6 +191,12 @@ if __name__ == '__main__':
     fig = go.Figure(data = d)
     graph = dcc.Graph(id='CPI',figure=fig)
     
+    return graph
+
+#%%
+    
+if __name__ == '__main__':
+    main()
     
     
     
