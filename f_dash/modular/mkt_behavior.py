@@ -14,7 +14,7 @@ from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 
-from modular import data_organize as do
+import do4myself.data_organize as do
 
 import datetime as dt
 
@@ -223,23 +223,36 @@ def fig_net_assets_fund_type(date_slider_fig_net_assets_fund_type):
 
 
 def fig_bank_debt_resource():
-    today = dt.datetime.today()
-    io=r"C:\Users\86156\Desktop\坚果云\我的工作\Git\代码笔记\资产配置分析框架\P2-流动性观察框架.xlsx"
-    data=do.get_data("P2_流动性观察框架")
-    index_name=pd.read_excel(io,sheet_name="中期流动性").loc[0]
-    index_list=data.columns[1:]
-    data.columns=index_name
-    ## wind读取数据
+    #资金预期系数  <span class="mark">这里需要平稳性检验？</span>
+    data=do.get_data("P2_流动性观察框架_短期流动性")
     data["指标名称"]=pd.to_datetime(data["指标名称"])
+    latest_day=pd.to_datetime(data["指标名称"].tail(1).values[0])
     data.set_index("指标名称",inplace=True)
+    df=data.replace(0,np.nan).fillna(method="ffill")["2016":(latest_day-dt.timedelta(3))]
 
-    df=data.replace(0,np.nan).fillna(method="ffill")["2017":(today-dt.timedelta(3))]
+    y = (df["利率互换:FR007:1年"]-df["银行间质押式回购加权利率:7天"]).rolling(30).mean()
+    trace1 = go.Scatter(x=df.index,y=y)
+    trace2 = go.Scatter(x=df.index,y=np.tile(y.quantile(q=0.75),len(df)),
+                        mode = 'lines',
+                        name = '3/4分位数',
+                        line = dict(
+                                width = 2,
+                                dash ="dash",
+                                color = 'red'
+                        )   
+                    )
+    #1/4分位数
+    trace3 = go.Scatter(x=df.index,y=np.tile(y.quantile(q=0.25),len(df)),
+                        mode = 'lines',
+                        name = '1/4分位数',
+                        line = dict(
+                                width = 2,
+                                dash ="dash",
+                                color = "green"
+                        )   
+                    )
 
-    trace_list=[]
-    col_list=["中期借贷便利(MLF):利率:3个月","中期借贷便利(MLF):利率:6个月","中债商业银行同业存单到期收益率(AAA):3个月","同业存单(股份制银行)到期收益率:6个月",]
-    for col in col_list:
-        trace_list.append(
-                go.Scatter(x=df.index, y=df[col], name=col)
-        )
-    fig = go.Figure(data=trace_list)
+    fig = go.Figure(data=[trace1,trace2,trace3])
+
+    fig.update_layout(title="资金面预期系数"+latest_day.strftime("%Y-%m-%d"))
     return fig
