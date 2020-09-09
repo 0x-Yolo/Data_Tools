@@ -24,10 +24,12 @@ import modular.config as conf
 import modular.mkt_behavior as mkt_b
 import modular.city_bond as city_bond
 
+
 import P1_mkt_behavior_page
 import P2_economy_following_page
 import P3_mkt_pattern_playbook
 import P4_city_bond_page
+import P5_macro_prediction_page
 
 #导入数据
 
@@ -109,6 +111,7 @@ sidebar = html.Div(
                 dbc.NavLink("基本面高频跟踪", href="/page-2", id="page-2-link"),
                 dbc.NavLink("算法拟合与预测", href="/page-3", id="page-3-link"),
                 dbc.NavLink("城投债数据跟踪", href="/page-4", id="page-4-link"),
+                dbc.NavLink("宏观经济数据跟踪", href="/page-5", id="page-5-link")
             ],
             vertical=True,
             pills=True,
@@ -136,14 +139,14 @@ app.layout = html.Div([navbar,dcc.Location(id="url"),sidebar,content])
 #########定义交互的方式
 
 @app.callback(
-    [Output(f"page-{i}-link", "active") for i in range(1, 5)],
+    [Output(f"page-{i}-link", "active") for i in range(1, 6)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
-        return [True, False, False,False]
-    return [pathname == f"/page-{i}" for i in range(1, 5)]
+        return [True, False, False,False,False]
+    return [pathname == f"/page-{i}" for i in range(1, 6)]
 
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -156,6 +159,8 @@ def render_page_content(pathname):
         return P3_mkt_pattern_playbook.create_mkt_pattern_playbook_page()
     elif pathname == "/page-4":
         return P4_city_bond_page.create_city_bond_page()
+    elif pathname == "/page-5":
+        return P5_macro_prediction_page.create_macro_prediction_page()
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -263,7 +268,9 @@ def update_individual_table(clickData,figure):
     return city_bond.tab_individual_bond(clickData,figure)
 
 
+    
 
+#%%
 if __name__ == '__main__':
     #app.run_server(debug=True)#线上使用
     server.run()#本地调试用
