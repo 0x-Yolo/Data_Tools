@@ -95,8 +95,9 @@ def seasonal(series):
     for i in range(1,13):
         data_month = series[series.index.month == i]
         n = len(data_month)
-        weights = np.arange(1,n+1)/(n*(n+1)/2)
-        sea[sea.index.month == i] = np.average(np.asarray(data_month,'float32'), weights=weights)
+        # weights = np.arange(1,n+1)/(n*(n+1)/2)
+        weights = np.ones(n)/n
+        sea[sea.index.month == i] = np.average(np.asarray(data_month,'float32'),weights = weights)
     return sea
 
 

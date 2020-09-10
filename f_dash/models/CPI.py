@@ -17,12 +17,15 @@ import dash_bootstrap_components as dbc
 import dash_html_components as html
 import numpy as np
 import pandas as pd
+from datetime import datetime
+from datetime import timedelta
 #导入模型库
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import statsmodels.tsa.stattools as st
 from statsmodels.tsa.arima_model import ARMA,ARIMA
 from itertools import product
+
 
 #%%
     
@@ -57,9 +60,8 @@ def CPI_model(df,date,verbose = 0):
     CPI_non_food_x = pd.concat([x_PPI_lag8,x_blent,x_blent_lag1,x_gas_lag2],axis = 1).fillna(0)
     CPI_non_food_x = add_SF(CPI_non_food_x)
     CPI_non_food_x = CPI_non_food_x[CPI_non_food_x.index>'2013-12-01']
-    CPI_non_food2 = pd.Series(CPI_non_food,index = pd.DatetimeIndex(CPI_non_food.index))
-    sea = seasonal(CPI_non_food2)
-    trend = CPI_non_food2-sea
+    sea = seasonal(CPI_non_food[CPI_non_food.index<date])
+    trend = CPI_non_food[CPI_non_food.index<date]-sea
     y_non_food = np.asarray(trend[trend.index<date],'float32')
     x_non_food = np.asarray(CPI_non_food_x[CPI_non_food_x.index<date],'float32')
     x_non_food_test = np.asarray(CPI_non_food_x[CPI_non_food_x.index==date],'float32').reshape(1,-1)
@@ -161,37 +163,99 @@ def main():
     mv.index = pd.DatetimeIndex(mv.index)
     hf_month = change_freq(hf, freq = 'M', how = 'mean', percent = 'mom')
     macro_data_all = pd.concat([hf_month,mv],axis = 1)
-    pre_date = ['2019-11-30','2019-12-31','2020-01-31','2020-02-29','2020-03-31','2020-04-30','2020-05-31','2020-06-30','2020-07-31']
-    pred = np.zeros(shape = (9,2))
-    for i,date in enumerate(pre_date):
-        pred[i,0] = CPI_model2(macro_data_all,date).iloc[-1,-1]
-        pred[i,1] = CPI_model(macro_data_all,date).iloc[-1,-1]
-    pred_df = pd.DataFrame(pred,columns = ['七分项预测值','四分项预测值'])
-    pred_df['date'] = pre_date
+    today = datetime.now()
+    end_date = today.strftime('%Y-%m-%d')
+    begin_date = (today-timedelta(days=180)).strftime('%Y-%m-%d')
+    date_index = pd.date_range(begin_date, end_date,freq = 'M')
+    pre_Date = [pd.Timestamp(x).strftime("%Y-%m-%d") for x in date_index.values]
+    train = macro_data_all[(macro_data_all.index > '2015-01-01')&(macro_data_all.index < pre_Date[0])][['CPI:当月同比','CPI:环比']]
+    test = macro_data_all[macro_data_all.index >= pre_Date[0]][['CPI:当月同比','CPI:环比']]
+    pred = np.zeros(shape = (len(pre_Date),4))
+    for i,date in enumerate(pre_Date):
+        pred[i,[0,2]] = CPI_model2(macro_data_all,date).iloc[-1,:]
+        pred[i,[1,3]] = CPI_model(macro_data_all,date).iloc[-1,:]
+    pred_df = pd.DataFrame(pred,columns = ['环比预测1','环比预测2','同比预测1','同比预测2'])
+    pred_df['date'] = pre_Date
+    pred_df['CPI同比真实值'] = list(test[(test.index >= pre_Date[0])&(test.index <= pre_Date[-1])]['CPI:当月同比'])
+    pred_df['CPI环比真实值'] = list(test[(test.index >= pre_Date[0])&(test.index <= pre_Date[-1])]['CPI:环比'])
+    
     trace1 = go.Scatter(
-            x=macro_data_all[macro_data_all.index > '2013-12-31']['CPI:当月同比'].index,
-            y=macro_data_all[macro_data_all.index > '2013-12-31']['CPI:当月同比'],
-            name = 'CPI同比'
+            x=train.index,
+            y=train['CPI:当月同比'],
+            name = '训练集真实值'
         )
     trace2 = go.Scatter(
-            x=pred_df['date'],
-            y=pred_df['七分项预测值'],
-            name = '七分项预测值', 
-            mode="markers"
-           )
+        x=test.index,
+        y=test['CPI:当月同比'],
+        name = '测试集真实值'
+    )
     trace3 = go.Scatter(
             x=pred_df['date'],
-            y=pred_df['四分项预测值'],
-            name = '四分项预测值', 
+            y=pred_df['同比预测1'],
+            name = '模型一（七分项）预测值', 
+            mode="markers"
+           )
+    trace4 = go.Scatter(
+            x=pred_df['date'],
+            y=pred_df['同比预测2'],
+            name = '模型二（四分项）预测值', 
             mode="markers"
            )
     
-    d = [trace1,trace2, trace3]
+    d = [trace1,trace2, trace3,trace4]
+    layout = go.Layout(title =dict(text = 'CPI跟踪与预测',
+                                    x = 0.5),
+                       legend=dict(orientation="h")
+)
+    fig = go.Figure(data = d,layout = layout)
+    graph = dcc.Graph(id='CPI_fig',figure=fig)
+    table = dash_table.DataTable(
+                              id = 'CPI_table',
+                              columns=[
+        {"name": ["", "日期"], "id": "date"},
+        {"name": ["环比", "真实值"], "id": "CPI环比真实值"},
+        {"name": ["环比", "模型一(七分项)"], "id": "环比预测1"},
+        {"name": ["环比", "模型二(四分项)"], "id": "环比预测2"},
+        {"name": ["同比", "真实值"], "id": "CPI同比真实值"},
+        {"name": ["同比", "模型一(七分项)"], "id": "同比预测1"},
+        {"name": ["同比", "模型二(四分项)"], "id": "同比预测2"},
+    ]
+                                  ,
+                              data=round(pred_df,2).to_dict('record'),
+                              merge_duplicate_headers=True,
+                              style_cell={
+        # all three widths are needed
+        'minWidth': '120px', 'width': '120px', 'maxWidth': '120px',
+        'overflow': 'hidden',
+        'textOverflow': 'ellipsis',
+    }
+ #                             style_as_list_view=True,
+                              # style_cell_conditional=[
+                              #                   {
+                              #                       'if': {'column_id': c},
+                              #                       'textAlign': 'left'
+                              #                   } for c in ['Date', 'Region']
+                              #               ],
+                              #               style_data_conditional=[
+                              #                   {
+                              #                       'if': {'row_index': 'odd'},
+                              #                       'backgroundColor': 'rgb(248, 248, 248)'
+                              #                   }
+                              #               ],
+                              #               style_header={
+                              #                   'backgroundColor': 'rgb(230, 230, 230)',
+                              #                   'fontWeight': 'bold'
+                              #               }
+                              )
+                            
+    CPI_layout = html.Div(
+        [
+            html.H6(children='CPI'),
+            html.Div(graph),
+            html.Div(table)]
+        )
     
-    fig = go.Figure(data = d)
-    graph = dcc.Graph(id='CPI',figure=fig)
-    
-    return graph
+    return CPI_layout
 
 #%%
     
@@ -199,8 +263,6 @@ if __name__ == '__main__':
     main()
     
     
-    
-    
-    
+
     
     

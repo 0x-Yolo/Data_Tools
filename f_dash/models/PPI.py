@@ -10,6 +10,7 @@ import sys
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from datetime import timedelta
 from modular.macro_prediction import change_freq,seasonal,add_SF
 import modular.db_management.data_organize as do
  
@@ -25,6 +26,8 @@ import dash
 import dash_table
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
+import dash_html_components as html
+
 
 
 #%%
@@ -268,16 +271,21 @@ def main():
         'PMI数据': mv[['PMI:主要原材料购进价格','PPI:全部工业品:当月同比','PPI:全部工业品:环比']] 
     
         }
-    train = mv[mv.index < '2020-01-31'][['PPI:全部工业品:当月同比']]
-    test = mv[mv.index >= '2020-01-31'][['PPI:全部工业品:当月同比']]
-    pre_date = ['2020-01-31','2020-02-29','2020-03-31','2020-04-30','2020-05-31','2020-06-30','2020-07-31']
-    
-    pred = np.zeros(shape = (7,2))
-    for i,date in enumerate(pre_date):
-        pred[i,0] = PPI_model(PPI_data,date).PPI_by_Industry().iloc[-1,-1]
-        pred[i,1] = PPI_model(PPI_data,date).PPI_by_PMI().iloc[-1,-1]
-    pred_df = pd.DataFrame(pred,columns = ['分行业预测值','PMI预测值'])
-    pred_df['date'] = pre_date   
+    today = datetime.now()
+    end_date = today.strftime('%Y-%m-%d')
+    begin_date = (today-timedelta(days=180)).strftime('%Y-%m-%d')
+    date_index = pd.date_range(begin_date, end_date,freq = 'M')
+    pre_Date = [pd.Timestamp(x).strftime("%Y-%m-%d") for x in date_index.values]
+    train = mv[(mv.index > '2015-01-01')&(mv.index < pre_Date[0])][['PPI:全部工业品:当月同比','PPI:全部工业品:环比']]
+    test = mv[mv.index >= pre_Date[0]][['PPI:全部工业品:当月同比','PPI:全部工业品:环比']]
+    pred = np.zeros(shape = (len(pre_Date),4))
+    for i,date in enumerate(pre_Date):
+        pred[i,[0,2]] = PPI_model(PPI_data,date).PPI_by_Industry().iloc[-1,:]
+        pred[i,[1,3]] = PPI_model(PPI_data,date).PPI_by_PMI().iloc[-1,:]
+    pred_df = pd.DataFrame(pred,columns = ['环比预测1','环比预测2','同比预测1','同比预测2'])
+    pred_df['date'] = pre_Date
+    pred_df['PPI同比真实值'] = list(test[(test.index >= pre_Date[0])&(test.index <= pre_Date[-1])]['PPI:全部工业品:当月同比'])
+    pred_df['PPI环比真实值'] = list(test[(test.index >= pre_Date[0])&(test.index <= pre_Date[-1])]['PPI:全部工业品:环比'])
         
     trace1 = go.Scatter(
             x=train.index,
@@ -287,36 +295,85 @@ def main():
     trace2 = go.Scatter(
             x=test.index,
             y=test['PPI:全部工业品:当月同比'],
-            name = '预测集真实值'
+            name = '测试集真实值'
         )
     trace3 = go.Scatter(
             x=pred_df['date'],
-            y=pred_df['分行业预测值'],
+            y=pred_df['同比预测1'],
             name = '分行业预测值', 
             mode="markers"
            )
     trace4 = go.Scatter(
             x=pred_df['date'],
-            y=pred_df['PMI预测值'],
+            y=pred_df['同比预测2'],
             name = 'PMI预测值',  
             mode="markers"
            )
     
     d = [trace1,trace2,trace3,trace4]
-    
-    fig = go.Figure(data = d)    
+    layout = go.Layout(title =dict(text = 'PPI跟踪与预测',
+                                x = 0.5),
+                   legend=dict(orientation="h")
+)
+    fig = go.Figure(data = d,layout = layout)    
     graph = dcc.Graph(
-        id='PPI',
+        id='PPI_fig',
         figure=fig
     )
+    table = dash_table.DataTable(
+                         id = 'PPI_table',
+                         columns=[
+   {"name": ["", "日期"], "id": "date"},
+   {"name": ["环比", "真实值"], "id": "PPI环比真实值"},
+   {"name": ["环比", "模型一(分行业)"], "id": "环比预测1"},
+   {"name": ["环比", "模型二(PMI)"], "id": "环比预测2"},
+   {"name": ["同比", "真实值"], "id": "PPI同比真实值"},
+   {"name": ["同比", "模型一(分行业)"], "id": "同比预测1"},
+   {"name": ["同比", "模型二(PMI)"], "id": "同比预测2"},
+   ]
+                             ,
+                         data=round(pred_df,2).to_dict('record'),
+                         merge_duplicate_headers=True,
+                         style_cell={
+        # all three widths are needed
+        'minWidth': '120px', 'width': '120px', 'maxWidth': '120px',
+        'overflow': 'hidden',
+        'textOverflow': 'ellipsis',
+    }
+   
+#                             style_as_list_view=True,
+                         # style_cell_conditional=[
+                         #                   {
+                         #                       'if': {'column_id': c},
+                         #                       'textAlign': 'left'
+                         #                   } for c in ['Date', 'Region']
+                         #               ],
+                         #               style_data_conditional=[
+                         #                   {
+                         #                       'if': {'row_index': 'odd'},
+                         #                       'backgroundColor': 'rgb(248, 248, 248)'
+                         #                   }
+                         #               ],
+                         #               style_header={
+                         #                   'backgroundColor': 'rgb(230, 230, 230)',
+                         #                   'fontWeight': 'bold'
+                         #               }
+                         )
+                            
+    PPI_layout = html.Div(
+        [
+            html.H6(children='PPI'),
+            html.Div(graph),
+            html.Div(table)]
+        )
     
-    return graph
+    return PPI_layout
     
 
 #%%
     
 if __name__ == '__main__':
-    graph=main()
+    main()
     
     
     

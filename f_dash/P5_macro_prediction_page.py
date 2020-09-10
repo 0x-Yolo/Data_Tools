@@ -17,19 +17,30 @@ import os
 import pandas as pd
 import numpy as np
 from models import CPI as cpi
+from models import PPI as ppi
+
+
 
 #%%
-path = os.getcwd()+'\\models'
-files = os.listdir(path)
-dcc_graph_list = []
-dcc_graph_list.append(cpi.main())
+
+dcc_graph_list = [ppi.main()]
+
 
 def create_macro_prediction_page():
 
-    layout = html.Div(children = dcc_graph_list)
+    layout = html.Div(children = [
+        html.Div(
+            id = 'banner',
+            className = 'banner',
+            children = html.H4(children='宏观经济数据预测')
+            ),
+        cpi.main(),
+        ppi.main()
+        ]
+        )
+
     
     return layout
-
 
 
 
