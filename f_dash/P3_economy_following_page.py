@@ -13,16 +13,16 @@ import modular.config as conf
 PATH = pathlib.Path(__file__).parent
 DATA_PATH = PATH.joinpath("../data").resolve()
 
-def create_mkt_pattern_playbook_page():
-    gauge=create_mkt_pattern_playbook_gauge("123")
+def create_economy_following_page():
+    gauge=create_economy_following_gauge("123")
     
     container = html.Div([
             dbc.Row([
                 dbc.Col([
-                    create_mkt_pattern_playbook_card("123")
+                    create_economy_following_card("123")
                 ]),
                 dbc.Col([
-                    create_mkt_pattern_playbook_card("123")
+                    create_economy_following_card("123")
                 ]),
             ]),
         ])
@@ -32,7 +32,7 @@ def create_mkt_pattern_playbook_page():
     return page
 
 
-def create_mkt_pattern_playbook_card(title):
+def create_economy_following_card(title):
     title=title
     card = html.Div([
         dbc.CardHeader(html.H6(title)),
@@ -50,7 +50,7 @@ def create_mkt_pattern_playbook_card(title):
     ])
     return card
 
-def create_mkt_pattern_playbook_gauge(title):
+def create_economy_following_gauge(title):
     title=title
     
     GAUGE = html.Div([

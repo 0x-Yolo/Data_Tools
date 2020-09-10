@@ -2,6 +2,7 @@ import re
 import sys
 import datetime as dt
 import pandas as pd
+import numpy as np
 import  pymysql
 
 #导入plotly库
@@ -12,6 +13,10 @@ import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
+
+import do4myself.data_organize as do
+
+import datetime as dt
 
 # from WindPy import w
 
@@ -215,4 +220,39 @@ def fig_net_assets_fund_type(date_slider_fig_net_assets_fund_type):
     fig = go.Figure(data=[go.Pie(labels=labels, values=values, pull=[0, 0.2, 0,0])])
     fig.update_layout(showlegend=False,title="存量基金占比（亿元，%）")
     return fig
-        
+
+
+def fig_bank_debt_resource():
+    #资金预期系数  <span class="mark">这里需要平稳性检验？</span>
+    data=do.get_data("P2_流动性观察框架_短期流动性")
+    data["指标名称"]=pd.to_datetime(data["指标名称"])
+    latest_day=pd.to_datetime(data["指标名称"].tail(1).values[0])
+    data.set_index("指标名称",inplace=True)
+    df=data.replace(0,np.nan).fillna(method="ffill")["2016":(latest_day-dt.timedelta(3))]
+
+    y = (df["利率互换:FR007:1年"]-df["银行间质押式回购加权利率:7天"]).rolling(30).mean()
+    trace1 = go.Scatter(x=df.index,y=y)
+    trace2 = go.Scatter(x=df.index,y=np.tile(y.quantile(q=0.75),len(df)),
+                        mode = 'lines',
+                        name = '3/4分位数',
+                        line = dict(
+                                width = 2,
+                                dash ="dash",
+                                color = 'red'
+                        )   
+                    )
+    #1/4分位数
+    trace3 = go.Scatter(x=df.index,y=np.tile(y.quantile(q=0.25),len(df)),
+                        mode = 'lines',
+                        name = '1/4分位数',
+                        line = dict(
+                                width = 2,
+                                dash ="dash",
+                                color = "green"
+                        )   
+                    )
+
+    fig = go.Figure(data=[trace1,trace2,trace3])
+
+    fig.update_layout(title="资金面预期系数"+latest_day.strftime("%Y-%m-%d"))
+    return fig

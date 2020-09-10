@@ -18,19 +18,20 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-from datetime import datetime as dt
+import datetime as dt
 
 import modular.config as conf
 import modular.mkt_behavior as mkt_b
 import modular.city_bond as city_bond
 
 import P1_mkt_behavior_page
-import P2_economy_following_page
-import P3_mkt_pattern_playbook
+import P2_mkt_pattern_playbook
+import P3_economy_following_page
 import P4_city_bond_page
 
 #导入数据
 
+today = dt.datetime.today()
 
 # %%
 
@@ -106,8 +107,8 @@ sidebar = html.Div(
         dbc.Nav(
             [
                 dbc.NavLink("金融市场行为数据", href="/page-1", id="page-1-link"),
-                dbc.NavLink("基本面高频跟踪", href="/page-2", id="page-2-link"),
-                dbc.NavLink("算法拟合与预测", href="/page-3", id="page-3-link"),
+                dbc.NavLink("指针前瞻与预测", href="/page-2", id="page-2-link"),
+                dbc.NavLink("基本面高陪频率跟踪", href="/page-3", id="page-3-link"),
                 dbc.NavLink("城投债数据跟踪", href="/page-4", id="page-4-link"),
             ],
             vertical=True,
@@ -151,9 +152,9 @@ def render_page_content(pathname):
     if pathname in ["/", "/page-1"]:
         return P1_mkt_behavior_page.create_mkt_behavior_page()
     elif pathname == "/page-2":
-        return P2_economy_following_page.create_economy_following_page()
+        return P2_mkt_pattern_playbook.create_mkt_pattern_playbook_page()
     elif pathname == "/page-3":
-        return P3_mkt_pattern_playbook.create_mkt_pattern_playbook_page()
+        return P3_economy_following_page.create_economy_following_page()
     elif pathname == "/page-4":
         return P4_city_bond_page.create_city_bond_page()
     # If the user tries to reach a different page, return a 404 message
@@ -201,31 +202,43 @@ def update_graph_buy(bond_buyer,bond_duration,bond_type):
 # %%
 @app.callback(
     dash.dependencies.Output('China_bond_map', 'figure'),
-    [dash.dependencies.Input('choose_of_aggregating_method', 'value'),
-     dash.dependencies.Input('choose_of_level_or_change', 'value')]
+    [dash.dependencies.Input('choose_of_frequency', 'value')]
     )
-def province_credit_premium_fig(agg_method,value):
+def province_credit_premium_fig(freq): 
     
-    return city_bond.fig_province_credit_premium(agg_method,value)
+    return city_bond.fig_province_credit_premium(freq)
 
 # %%
 
 @app.callback(
-    dash.dependencies.Output('bond_by_city', 'figure'),
+    dash.dependencies.Output('bond_by_province', 'figure'),
     [dash.dependencies.Input('China_bond_map', 'clickData'),
     dash.dependencies.Input('China_bond_map', 'figure')],
     )
-def update_figure_city_premium(clickData,figure):
+def update_figure(clickData,figure):
 
-    return city_bond.fig_city_credit_premium(clickData,figure)
+    return city_bond.fig_province_credit_premium_hist(clickData,figure)
     
 # %%
 @app.callback(
+    dash.dependencies.Output('choose_of_cities', 'value'),
+    [dash.dependencies.Input('China_bond_map', 'clickData'),
+    dash.dependencies.Input('China_bond_map', 'figure')],
+    )
+def update_dropdown(clickData,figure): 
+    
+    return city_bond.dropdown_city(clickData,figure)
+
+
+# %%
+ 
+@app.callback(
     dash.dependencies.Output('compare_bond_by_city', 'figure'),
     [dash.dependencies.Input('choose_of_cities', 'value')])
-def update_figure_compare_city(cities):  
-    
+def compare_figure(cities):
+
     return city_bond.fig_compare_city_bond(cities)
+
 
 # %%
     
@@ -234,9 +247,11 @@ def update_figure_compare_city(cities):
     [dash.dependencies.Input('compare_bond_by_city', 'clickData'),
     dash.dependencies.Input('compare_bond_by_city', 'figure')],
     )
-def update_figure_compare_issuer(clickData,figure):
+def update_figure(clickData,figure):
     
     return city_bond.fig_compare_issuer(clickData,figure)
+
+
 
 # %%
 @app.callback(
@@ -252,7 +267,7 @@ def update_individual_table(clickData,figure):
 
 if __name__ == '__main__':
     #app.run_server(debug=True)#线上使用
-    server.run()#本地调试用
+    server.run(debug=True)#本地调试用
 
 
 
