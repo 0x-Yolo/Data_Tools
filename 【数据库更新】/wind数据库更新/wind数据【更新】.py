@@ -17,14 +17,7 @@ def upload_date(name):
     """
     输出需要更新的起始时间（数据库最后日期+1天）和终止时间（今天日期）
     """
-    conn = pymysql.connect(	
-    host = '47.116.3.109',	
-    user = 'dngj',	
-    passwd = '603603',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8'	
-    )	
+    
     dir_date = []
     df = pd.read_sql('select * from {}'.format(name) , conn)
     last_date = df.iloc[-1 , -1]
@@ -176,10 +169,37 @@ def daily_fig_credit_premium():
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
+def get_db_conn(io):
+    with open(io, 'r') as f1:
+        config = f1.readlines()
+    for i in range(0, len(config)):
+        config[i] = config[i].rstrip('\n')
+
+    host = config[0]  
+    username = config[1]  # 用户名 
+    password = config[2]  # 密码
+    schema = config[3]
+    port = int(config[4])
+    engine_txt = config[5]
+
+    conn = pymysql.connect(	
+        host = host,	
+        user = username,	
+        passwd = password,	
+        db = schema,	
+        port=port,	
+        charset = 'utf8'	
+    )	
+    engine = create_engine(engine_txt)
+    return conn, engine
 
 def main():
     w.start()
-    engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
+
+    # @ 读取db.txt内的邮箱信息
+    db_path = "/Users/wdt/Desktop/tpy/db.txt"
+    conn , engine = get_db_conn(db_path)
+
     l =    [daily_fig_SRDI(),
             daily_fig_bond_leverage(),
             daily_fig_credit_premium(),

@@ -36,23 +36,6 @@ def organize(df):
 
     return df
 
-'''
-def upload_data_list():
-    dir_date=[]
-    data=do.get_data("Net_buy_bond",how="raw")
-    start_data,end_data=do.data_time_range(data)
-    end_data=pd.to_datetime(end_data) #获取云端最后的时间
-
-    for dir in os.listdir(input_path):
-        attach_time = re.match(".*\\d{8}\\.",dir).group()[-9:-1]
-        attach_datetime = pd.to_datetime(attach_time)
-        if attach_datetime >= end_data:
-            dir_date.append(attach_datetime.strftime("%Y%m%d"))
-        else:
-            pass
-
-    return dir_date
-'''
 
 Net_buy_bond = pd.DataFrame()
 def get_Net_buy_bond(input_path):#每天数据的转换
@@ -151,11 +134,34 @@ def get_Repo_amt_prc_for_collateral(input_path):
     return Repo_amt_prc_for_collateral
 Repo_amt_prc_for_collateral = get_Repo_amt_prc_for_collateral(test_path)
 
+def get_db_conn(io):
+    with open(io, 'r') as f1:
+        config = f1.readlines()
+    for i in range(0, len(config)):
+        config[i] = config[i].rstrip('\n')
 
+    host = config[0]  
+    username = config[1]  # 用户名 
+    password = config[2]  # 密码
+    schema = config[3]
+    port = int(config[4])
+    engine_txt = config[5]
+
+    conn = pymysql.connect(	
+        host = host,	
+        user = username,	
+        passwd = password,	
+        db = schema,	
+        port=port,	
+        charset = 'utf8'	
+    )	
+    engine = create_engine(engine_txt)
+    return conn, engine
+
+db_path = "/Users/wdt/Desktop/tpy/db.txt"
+conn , engine = get_db_conn(db_path)
 
 ## * 将现券交易净买入数据上传数据库
-engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
-
 name = "Net_buy_bond"
 columns_type=[#图表的数据口径
     String(30),

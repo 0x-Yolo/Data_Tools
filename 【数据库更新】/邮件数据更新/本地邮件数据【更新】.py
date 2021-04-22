@@ -39,14 +39,6 @@ def upload_date_list():
     输出一个待更新日期的列表
     最后依照此列表逐个上传
     '''
-    conn = pymysql.connect(	
-    host = '47.116.3.109',	
-    user = 'dngj',	
-    passwd = '603603',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8'	
-    )	
     dir_date=[]
     df = pd.read_sql('select * from Net_buy_bond' , conn)
     last_date = df.iloc[-1 , -1]
@@ -174,11 +166,40 @@ def daily_Repo_amt_prc_for_collateral(date):
     dtypelist = dict(zip(df.columns,columns_type))#变成字典形式       
     return df,name,dtypelist
 
+def get_db_conn(io):
+    with open(io, 'r') as f1:
+        config = f1.readlines()
+    for i in range(0, len(config)):
+        config[i] = config[i].rstrip('\n')
+
+    host = config[0]  
+    username = config[1]  # 用户名 
+    password = config[2]  # 密码
+    schema = config[3]
+    port = int(config[4])
+    engine_txt = config[5]
+
+    conn = pymysql.connect(	
+        host = host,	
+        user = username,	
+        passwd = password,	
+        db = schema,	
+        port=port,	
+        charset = 'utf8'	
+    )	
+    engine = create_engine(engine_txt)
+    return conn, engine
+
 def main():
+
+    # * 读取db.txt内的邮箱信息
+    db_path = "/Users/wdt/Desktop/tpy/db.txt"
+    conn , engine = get_db_conn(db_path)
+
     for date in upload_date_list():
-        engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
+        # engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
         l = [daily_Net_buy_bond(date)]
         for a,b,c in l:
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
         print("成功上传"+date+"的本地数据")
-main()
+#main()
