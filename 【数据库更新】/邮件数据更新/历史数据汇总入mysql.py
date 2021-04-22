@@ -1,0 +1,179 @@
+import pymysql
+from sqlalchemy.types import String, Float, Integer
+from sqlalchemy import DateTime
+from sqlalchemy import create_engine
+from sqlalchemy import exc
+import os
+import re
+import pandas as pd
+import numpy as np
+import datetime as dt#准备工作，配置环境。
+# from do4myself import data_organize as do
+
+input_path = '/Users/wdt/Desktop/tpy/raw_data_pool'
+test_path = '/Users/wdt/Desktop/tpy/raw_data_pool/download data'
+
+
+def organize(df):
+    ''' 整理数据 '''
+    df["Unnamed: 0"].fillna(method="ffill",inplace=True)#填充机构名字
+    #df["date"]=pd.to_datetime(df["date"],format="%Y-%m-%d")#整理格式
+    columns_names=[]
+    for j in range(len(df.columns)):#去掉换行和英文
+        columns_name = re.match(".*",df.columns[j]).group()
+        columns_names.append(columns_name)
+    df.columns = columns_names
+
+    investors = []
+    durations = []
+    for i in range(len(df)):#去掉换行和英文
+        investor = re.match(".*",df["Unnamed: 0"][i]).group()
+        investors.append(investor)
+        duration = re.match(".*",df["期限"][i]).group()
+        durations.append(duration)
+    df["Unnamed: 0"]=investors
+    df["期限"]=durations
+
+    return df
+
+'''
+def upload_data_list():
+    dir_date=[]
+    data=do.get_data("Net_buy_bond",how="raw")
+    start_data,end_data=do.data_time_range(data)
+    end_data=pd.to_datetime(end_data) #获取云端最后的时间
+
+    for dir in os.listdir(input_path):
+        attach_time = re.match(".*\\d{8}\\.",dir).group()[-9:-1]
+        attach_datetime = pd.to_datetime(attach_time)
+        if attach_datetime >= end_data:
+            dir_date.append(attach_datetime.strftime("%Y%m%d"))
+        else:
+            pass
+
+    return dir_date
+'''
+
+Net_buy_bond = pd.DataFrame()
+def get_Net_buy_bond(input_path):#每天数据的转换
+    """
+    现券市场交易日报
+    """
+    global Net_buy_bond
+    #excel_io= input_path+"/现券市场交易情况总结/日报/"+"现券市场交易情况总结日报_"+date+".xls"
+    path = input_path+"/现券市场交易情况总结/日报"
+    # 读取path下所有的文件名，并从按日期远到近排序
+    dir_list = os.listdir(path)
+    dir_list.sort()
+
+    for dir in dir_list:
+        if 'DS' in dir:# 跳过系统内的DS_store 
+            continue
+        excel_io = path + '/' + dir
+        date = re.match(".*\d{8}\.",dir).group()[-9:-1] # 获取文件名中的date
+        sheet_name = "机构净买入债券成交金额统计表_"+re.match(".*\d{8}\.",dir).group()[-9:-1]#读取sheet路径
+        df = pd.read_excel(excel_io, header=4, sheet_name=sheet_name,nrows = 120)#
+        df["date"] = date # 加盖时间戳
+        df = organize(df)
+        df=df.replace("—",0)
+        Net_buy_bond = Net_buy_bond.append(df)
+
+    Net_buy_bond.columns.name
+    Net_buy_bond.rename(columns={'Unnamed: 0':'机构名称'},inplace=True)
+    Net_buy_bond.reset_index(drop=True) 
+    return Net_buy_bond
+Net_buy_bond = get_Net_buy_bond(input_path)
+
+
+Repo_price_for_investors = pd.DataFrame()
+def get_Repo_price_for_investors(input_path):#每天数据的        
+    """
+    From质押式回购市场交易情况总结日报
+    正/逆回购方-利率
+    """ 
+    global Repo_price_for_investors
+    for dir in os.listdir(input_path):
+        if '质押式' not in dir:
+            continue
+        excel_io = input_path + '/' + dir
+        date = re.match(".*\d{8}\.",dir).group()[-9:-1]
+        df=pd.read_excel(excel_io,header=1,nrows = 5).iloc[:,1:7]
+        df.columns.name="正回购方"
+        df["date"]=date
+        df=df.replace("—",0)
+        Repo_price_for_investors = Repo_price_for_investors.append(df)
+    Repo_price_for_investors.reset_index(drop=True) 
+    Repo_price_for_investors.rename(columns={'Unnamed: 1':'机构名称'},inplace=True)
+    return Repo_price_for_investors
+Repo_price_for_investors = get_Repo_price_for_investors(test_path)
+
+
+Repo_amt_prc_for_terms = pd.DataFrame()
+def get_Repo_amt_prc_for_terms(input_path):
+    """
+    机构类型-期限品种 —— 正逆回购利率/金额？
+    """
+    global Repo_amt_prc_for_terms
+    for dir in os.listdir(input_path):
+        if '质押式' not in dir:
+            continue
+        excel_io = input_path + '/' + dir
+        date = re.match(".*\d{8}\.",dir).group()[-9:-1]
+        df = pd.read_excel(excel_io,header=8,nrows = 99)
+        df["date"]=date
+        df["机构类型"].fillna(method="ffill",inplace=True)
+        df=df.replace("-",0)
+        Repo_amt_prc_for_terms = Repo_amt_prc_for_terms.append(df)
+    Repo_amt_prc_for_terms.reset_index(drop=True)
+    Repo_amt_prc_for_terms = Repo_amt_prc_for_terms.replace("-",0)
+    return Repo_amt_prc_for_terms
+Repo_amt_prc_for_terms = get_Repo_amt_prc_for_terms(test_path)
+
+
+Repo_amt_prc_for_collateral = pd.DataFrame()
+def get_Repo_amt_prc_for_collateral(input_path):
+    """
+    机构类型-债券类型 —— 
+    """
+    global Repo_amt_prc_for_collateral
+    for dir in os.listdir(input_path):
+        if '质押式' not in dir:
+            continue
+        excel_io = input_path + '/' + dir
+        date = re.match(".*\d{8}\.",dir).group()[-9:-1]
+        df=pd.read_excel(excel_io,header=110,nrows =27).iloc[:,:6]
+        df["date"]=date
+        df["机构类型"].fillna(method="ffill",inplace=True)
+        df.rename(columns={'债券类型':'抵押品类型'},inplace=True) 
+        Repo_amt_prc_for_collateral = Repo_amt_prc_for_collateral.append(df)
+    Repo_amt_prc_for_collateral.reset_index(drop=True)
+    Repo_amt_prc_for_collateral = Repo_amt_prc_for_collateral.replace("-",0)    
+    return Repo_amt_prc_for_collateral
+Repo_amt_prc_for_collateral = get_Repo_amt_prc_for_collateral(test_path)
+
+
+
+## * 将现券交易净买入数据上传数据库
+engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
+
+name = "Net_buy_bond"
+columns_type=[#图表的数据口径
+    String(30),
+    String(30),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    DateTime(),
+    String(30)]
+dtypelist = dict(zip(Net_buy_bond.columns,columns_type))
+
+Net_buy_bond.to_sql(name=name,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=dtypelist)
