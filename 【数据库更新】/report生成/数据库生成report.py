@@ -13,26 +13,6 @@ from sqlalchemy import exc
 import os
 import re
 
-conn = pymysql.connect(	
-    host = '47.116.3.109',	
-    user = 'dngj',	
-    passwd = '603603',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8'	
-)	
-## test
-'''
-# w.start()
-years = 10
-end = dt.datetime.today()
-start=dt.datetime.now() - dt.timedelta(days=years*365)
-start=start.strftime("%Y-%m-%d")
-end=end.strftime("%Y-%m-%d")
-err, data=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',start,end,
-                  "Fill=Previous",usedf=True) 
-data
-'''
 
 
 #基础的图像设置：
@@ -310,7 +290,35 @@ class Report():
             
         return data_bond_perpetual
 
+def get_db_conn(io):
+    with open(io, 'r') as f1:
+        config = f1.readlines()
+    for i in range(0, len(config)):
+        config[i] = config[i].rstrip('\n')
+
+    host = config[0]  
+    username = config[1]  # 用户名 
+    password = config[2]  # 密码
+    schema = config[3]
+    port = int(config[4])
+    engine_txt = config[5]
+
+    conn = pymysql.connect(	
+        host = host,	
+        user = username,	
+        passwd = password,	
+        db = schema,	
+        port=port,	
+        charset = 'utf8'	
+    )	
+    engine = create_engine(engine_txt)
+    return conn, engine
+
 if __name__=='__main__':
+
+    db_path = "/Users/wdt/Desktop/tpy/db.txt"
+    conn , engine = get_db_conn(db_path)
+
     report= Report()
     report.fig_liquidity_premium()
     report.pic_SRDI()
