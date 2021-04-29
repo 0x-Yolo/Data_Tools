@@ -260,8 +260,8 @@ class Report():
         
         return df
     
-    # 信用利差的数据
     def fig_credit_premium(self):
+        # 信用利差的数据
         end=self.end.strftime("%Y%m%d")
         start=self.start.strftime("%Y%m%d")
         #经济数据库(EDB)-利率走势数据-中债商业银行二级资本债到期收益率（AAA-）:3年;中债中短期票据到期收益率(AAA):3年;中债国开债到期收益率:3年-iFinD数据接口
@@ -290,6 +290,240 @@ class Report():
             
         return data_bond_perpetual
 
+    def fig_industrial_production(self):
+        # * 工业生产
+
+        # 近一年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        data = pd.read_sql("select * from fig_industrial_production  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data.index = data.date
+        # 绘图
+        fig, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
+        
+        ## p1
+        data[['日均产量：粗钢：国内']].dropna(axis = 0).plot(ax = ax[0])
+        ax[0].legend(loc='upper left')
+        ax_right = ax[0].twinx()
+        data[['日均产量：焦炭：重点企业(旬)']].dropna(axis = 0).plot(ax = ax_right, color = 'red')
+        ax[1].legend(loc='upper right')
+
+        ## p2
+        data[['高炉开工率(163家):全国']].dropna(axis = 0).plot(ax = ax[1])
+        ax[1].legend(loc = 'best')
+        ## p3
+        data[['产能利用率:电炉:全国']].dropna(axis = 0).plot(ax = ax[2])
+        ax[2].legend(loc = 'best')
+        # plt.suptitle("工业生产"+end)
+        self.pic_list.append(fig)
+
+        return data
+
+    def fig_cpi_ppi_related(self):
+        # * 物价（CPI/PPI相关）
+        # 近一年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        data = pd.read_sql("select * from fig_cpi_ppi_related  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data.index = data.date
+
+        # 画图 
+        ## P1 
+        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        data[['食用农产品价格指数:蛋类:周环比','食用农产品价格指数:蔬菜类:周环比', 
+        '食用农产品价格指数:禽类:周环比']].dropna(axis=0).plot(ax=ax[0][0])
+        ax00_ = ax[0][0].twinx()
+        data[['食用农产品价格指数']].dropna(axis=0).plot(ax=ax00_)
+        ax00_.legend(loc='best')
+        #ax[0][0].set_title('食用农产品价格指数')
+
+        data[['平均批发价:28种重点监测蔬菜']].dropna(axis=0).plot(ax=ax[0][1])
+        ax01_ = ax[0][1].twinx()
+        data[['平均批发价:7种重点监测水果']].dropna(axis=0).plot(ax=ax01_,color='red')
+        ax01_.legend(loc='upper right')
+
+        data[['平均价:猪肉:全国']].dropna(axis=0).plot(ax=ax[1][0])
+
+        data[['中国大宗商品价格指数:总指数']].dropna(axis=0).plot(ax=ax[1][1])
+
+        plt.tight_layout()
+        self.pic_list.append(fig1)
+
+
+        ## P2
+        fig2, ax = plt.subplots(nrows=1,ncols=2,figsize = (12,4), dpi=100)
+        data[['南华综合指数']].dropna(axis=0).plot(ax=ax[0])
+        data[['CRB现货指数:综合']].dropna(axis=0).plot(ax=ax[1])
+ 
+        plt.tight_layout()
+        self.pic_list.append(fig2)
+
+        return data
+
+    def fig_upstream(self):
+        # * 上游
+        # 近一年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        data = pd.read_sql("select * from fig_upstream  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data.index = data.date
+
+        # 画图
+        ## P1
+        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        data[['综合平均价格指数:环渤海动力煤']].dropna(axis=0).plot(ax=ax[0][0])
+        data[['炼焦煤库存:六港口合计']].dropna(axis=0).plot(ax=ax[0][1])
+        data[['现货价:原油:英国布伦特Dtd','现货价:原油:美国西德克萨斯中级轻质原油(WTI)']].\
+            dropna(axis=0).plot(ax=ax[1][0])
+        data[['Mylpic矿价指数:综合']].dropna(axis=0).plot(ax=ax[1][1])   
+        # plt.suptitle('')
+        plt.tight_layout()
+        self.pic_list.append(fig1)
+
+
+        ## P2
+        fig2, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        data[['国内铁矿石港口库存量']].dropna(axis=0).plot(ax=ax[0][0])
+        
+        data[['伦敦现货白银:以美元计价']].dropna(axis=0).plot(ax=ax[0][1])
+        ax01_=ax[0][1].twinx()
+        data[['伦敦现货黄金:以美元计价']].dropna(axis=0).plot(ax=ax01_,color = 'red')
+        
+        data[['期货收盘价(活跃合约):阴极铜']].dropna(axis=0).plot(ax=ax[1][0])
+        ax10_ = ax[1][0].twinx()
+        data[['期货收盘价(活跃合约):铝']].dropna(axis=0).plot(ax=ax10_,color='red')
+        ax10_.legend(loc = 'lower right')
+
+        data[['库存期货:阴极铜']].dropna(axis=0).plot(ax=ax[1][1])
+        ax11_ = ax[1][1].twinx()
+        data[['库存期货:铝']].dropna(axis=0).plot(ax=ax11_,color = 'red')
+
+        plt.tight_layout()
+        self.pic_list.append(fig2)
+
+        return data
+
+    def fig_midstream(self):
+        # * 中游
+        # 近一年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        data = pd.read_sql("select * from fig_midstream  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data.index = data.date
+
+        # 画图
+        ## P1
+        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        data[['Mylpic综合钢价指数']].dropna(axis=0).plot(ax=ax[0][0])
+        data[['库存:主要钢材品种:合计','库存:螺纹钢(含上海全部仓库)']].\
+            dropna(axis=0).plot(ax=ax[0][1])
+
+        data[['水泥价格指数:全国']].dropna(axis=0).plot(ax=ax[1][0])
+        ax10_ = ax[1][0].twinx()
+        data[['中国玻璃价格指数']].dropna(axis=0).plot(ax=ax10_,color='red')
+        ax10_.legend(loc = 'lower right')
+
+        data[['中国盛泽化纤价格指数']].dropna(axis=0).plot(ax=ax[1][1])
+
+        plt.tight_layout()
+        self.pic_list.append(fig1)
+
+        ## P2
+        fig2, ax = plt.subplots(nrows=1,ncols=1,figsize = (6,4), dpi=100)
+        data[['期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶']].\
+            dropna(axis=0).plot(ax = ax)
+        ax.legend(loc = 'upper left')
+        self.pic_list.append(fig2)
+
+        return data
+
+    def fig_downstream(self):
+        # * 下游
+        # 近一年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        data = pd.read_sql("select * from fig_downstream  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data.index = data.date
+
+        # 画图
+        ## P1
+        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        data[['30大中城市:商品房成交套数']].dropna(axis=0).plot(ax=ax[0][0])
+        ax00_ = ax[0][0].twinx()
+        data[['30大中城市:商品房成交面积']].dropna(axis=0).plot(ax=ax00_,color='red')
+
+        data[['100大中城市:成交土地溢价率:当周值']].dropna(axis=0).plot(ax=ax[0][1])
+        data[['当周日均销量:乘用车:厂家零售']].dropna(axis=0).plot(ax=ax[1][0])
+        data[['柯桥纺织:价格指数:总类']].dropna(axis=0).plot(ax=ax[1][1])
+
+        plt.tight_layout()
+        self.pic_list.append(fig1)
+
+        ## P2
+        fig2, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        data[['义乌中国小商品指数:总价格指数']].dropna(axis=0).plot(ax=ax[0][0])
+        data[['中关村电子价格产品指数']].dropna(axis=0).plot(ax=ax[0][1])
+        data[['中国公路物流运价指数']].dropna(axis=0).plot(ax=ax[1][0])
+        
+        data[['电影票房收入']].dropna(axis=0).plot(ax=ax[1][1])
+        ax11_ = ax[1][1].twinx()
+        data[['电影观影人次']].dropna(axis=0).plot(ax=ax11_,color='red')
+
+        plt.tight_layout()
+        self.pic_list.append(fig2)
+
+        ## P3
+        fig3, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
+        data[['CCFI:综合指数']].dropna(axis=0).plot(ax=ax[0])
+        data[['CICFI:综合指数']].dropna(axis=0).plot(ax=ax[1])
+        data[['波罗的海干散货指数(BDI)']].dropna(axis=0).plot(ax=ax[2])
+
+        plt.tight_layout()
+        self.pic_list.append(fig3)
+
+        return data
+    
+    def fig_bond_premium(self):
+        # * 1/3/5/10Y 国债到期收益率
+        # 近一年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        df = pd.read_sql("select * from fig_rates  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df.index = df.date
+
+        dff=df[['10年国债','5年国债','3年国债','1年国债']].dropna(axis=0)
+        dff["国债_10年-5年"]=df["10年国债"]-df["5年国债"]
+        dff["国债_10年-1年"]=df["10年国债"]-df["1年国债"]
+        dff["国债_10年-3年"]=df["10年国债"]-df["3年国债"]
+
+        ## P1 1/3/5/10Y 国债到期收益率
+        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        dff[['1年国债',"国债_10年-1年"]].plot(ax=ax[0][0])
+        dff[['3年国债',"国债_10年-3年"]].plot(ax=ax[0][1])
+        dff[['5年国债',"国债_10年-5年"]].plot(ax=ax[1][0])
+        dff[['10年国债']].plot(ax=ax[1][1])
+
+        plt.tight_layout()
+        self.pic_list.append(fig1)
+
 def get_db_conn(io):
     with open(io, 'r') as f1:
         config = f1.readlines()
@@ -316,13 +550,33 @@ def get_db_conn(io):
 
 if __name__=='__main__':
 
+    """
+    years = 10
+    end = dt.datetime.today()
+    start=dt.datetime.now() - dt.timedelta(days=years*365)
+    start=start.strftime("%Y-%m-%d")
+    end=end.strftime("%Y-%m-%d")
+    """
+
+    # 数据库私钥
     db_path = "/Users/wdt/Desktop/tpy/db.txt"
     conn , engine = get_db_conn(db_path)
 
+    '''    
     report= Report()
     report.fig_liquidity_premium()
     report.pic_SRDI()
     report.fig_bond_leverage()
     report.fig_rates()
     report.fig_credit_premium()
+    '''
+    
+    # 宏观
+    report = Report(years=1)
+    report.fig_industrial_production()
+    report.fig_cpi_ppi_related()
+    report.fig_upstream()
+    report.fig_midstream()
+    report.fig_downstream()
+    
     report.print_all_fig()

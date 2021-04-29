@@ -15,7 +15,8 @@ from WindPy import w
 
 def upload_date(name):
     """
-    输出需要更新的起始时间（数据库最后日期+1天）和终止时间（今天日期）
+    输入表名
+    输出该表的最新日期
     """
     
     dir_date = []
@@ -212,7 +213,7 @@ def main():
             print(b , '已是最新，无需更新')
             continue
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
-        print('成功更新表',name)
+        print('成功更新表',b)
 
 if __name__=='__main__':
     main()
