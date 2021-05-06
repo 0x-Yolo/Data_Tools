@@ -51,30 +51,27 @@ def daily_fig_SRDI():
     return df, name , dtypelist
 
 def daily_fig_liquidity_premium():
-    err,df=w.edb('M0017139,M0041653,M0220163,M0017142,M0048486,M1010889,M1010892,M0329545', 
+    err,df=w.edb('M0017139,M0041653,M0220163,\
+    M0017142,M0048486,M1010889,M1010892,M0329545,\
+    M1011048', 
                         start,end,"Fill=Previous",usedf=True)
     df.columns=["shibor_7d","质押回购利率_7天","存款类质押回购利率_7天",
-                                      "shibor_3m","IRS：FR007：1y","存单_AAA_3m","存单_AAA_1y","MLF：1年"]
+                "shibor_3m","IRS：FR007：1y","存单_AAA_3m","存单_AAA_1y","MLF：1年",
+                "国股银票转贴现收益率_3m"]
     df['date'] = df.index
-    df = df.dropna(axis = 0)
+    # df = df.dropna(axis = 0)
 
     name = 'fig_liquidity_premium'
-    columns_type=[Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
+    columns_type=[Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
 def daily_fig_bond_leverage():
-    err, df=w.edb('M0041739,M5639029',start,end,"Fill=Previous",usedf = True)
+    err, df=w.edb('M0041739,M5639029',start,end,usedf = True)
     df.columns = ['成交量:银行间质押式回购', '债券市场托管余额']
-    df = df.dropna(axis = 0)
+    # df = df.dropna(axis = 0)
     df['date'] = df.index
 
     name = 'fig_bond_leverage'
@@ -104,20 +101,28 @@ def daily_fig_rates():
     return df, name, dtypelist
 
 def daily_fig_credit_premium():
-    err,df=w.edb("M0048434,M0048424,M1004265,S0059746,M1010706,M1015080,S0059738",start,end,"Fill=Previous",usedf=True)
-    df.columns=["中债城投债到期收益率(AAA):3年","中债城投债到期收益率(AA+):3年","中债国开债到期收益率:3年","中债国债到期收益率:3年",
-                        "中债商业银行二级资本债到期收益率(AAA-):3年","中债可续期产业债到期收益率(AAA):3年","中债中短期票据到期收益率(AAA):3年"]
+    # 城投AAA135、AA+135，国开3、国债3，二级资本债AAA-135
+    err,df=w.edb("M0048432,M0048434,M0048435, \
+                  M0048422,M0048424,M0048425, \
+                  M0048412,M0048414,M0048415, \
+                  M1004265,S0059746,          \
+                  M1010704,M1010706,M1010708, \
+                  M1015080,S0059738",start,end,usedf=True)
+
+    df.columns=["中债城投债到期收益率(AAA):1年","中债城投债到期收益率(AAA):3年","中债城投债到期收益率(AAA):5年",
+                "中债城投债到期收益率(AA+):1年","中债城投债到期收益率(AA+):3年","中债城投债到期收益率(AA+):5年",
+                "中债城投债到期收益率(AA):1年","中债城投债到期收益率(AA):3年","中债城投债到期收益率(AA):5年",
+                "中债国开债到期收益率:3年","中债国债到期收益率:3年",
+                "中债商业银行二级资本债到期收益率(AAA-):1年","中债商业银行二级资本债到期收益率(AAA-):3年","中债商业银行二级资本债到期收益率(AAA-):5年",
+                "中债可续期产业债到期收益率(AAA):3年","中债中短期票据到期收益率(AAA):3年"]
     df['date'] = df.index
-    df = df.dropna(axis = 0)
+    #df = df.dropna(axis = 0)
 
     name = 'fig_credit_premium'
-    columns_type=[Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
+    columns_type=[Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
@@ -226,8 +231,21 @@ def rate_diff():
     return 
 
 def industrial_premium():
-    # 地产钢铁煤炭有色汽车 AAA二级资本债 AAA城投情绪 AA+城投情绪
+    # 地产/钢铁/煤炭/有色/汽车
+    err,df = w.edb("M1012893,M1012983,M1013073", 
+                   start, end, usedf = True) 
+    df.columns = []
+    df['date'] = df.index
+    name = 'fig_industial_premium'
+
+    columns_type = [Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+
     return
+
+# def 
 
 def get_db_conn(io):
     with open(io, 'r') as f1:
@@ -254,29 +272,30 @@ def get_db_conn(io):
     return conn, engine
 
 def main():
-    
+    """
     db_path = "/Users/wdt/Desktop/tpy/db.txt"
     conn , engine = get_db_conn(db_path)
-
+    
     l = [daily_fig_SRDI(),
      daily_fig_liquidity_premium(),
      daily_fig_bond_leverage(),
      daily_fig_rates(),
      daily_fig_credit_premium()
     ]
-    
+
 
     # DONE 宏观数据上传数据库
     l = [fig_industrial_production(),fig_cpi_ppi_related(),
          fig_upstream(),fig_midstream(),fig_downstream(),
          ]
-    
-    # TODO 这个数据错误，正确版本未上传
-    l = [daily_fig_rates()] 
+    """
+
+ 
+    # l = [daily_fig_bond_leverage()]
 
     for a,b,c in l:
         # for i in range(len(a)):
-            # try: 
+            # try:
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
         print(b, '写入完成')
         

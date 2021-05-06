@@ -22,7 +22,7 @@ set_style_A={'grid.linestyle': '--',
      'axes.spines.bottom': True,
      'axes.spines.right': False,
      'axes.spines.top': False}
-sns.set_style("whitegrid")
+# sns.set_style("whitegrid")
 plt.rcParams['font.family']=['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -72,7 +72,7 @@ class Report():
             pdf.savefig(pic)
             plt.close
         pdf.close()
-        print("成功打印"+"1"+"张图片,保存为\n" , os.getcwd() + self.title + '.pdf')
+        print("成功打印"+"1"+"张图片,保存为\n" , os.getcwd() +'/'+self.title + '.pdf')
 
     def pic_SRDI(self,window=14):
         start=self.start.strftime("%Y%m%d")
@@ -82,7 +82,8 @@ class Report():
         df = pd.read_sql("select * from fig_SRDI  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         print('SRDI的数据更新至' , df.iloc[-1,-1])
-        
+        df.index = df.date
+
         ## 处理数据
         df['成交总量'] = df.iloc[:,:-1].apply(lambda x: x.sum(), axis=1) #跳过date列
         df["R014+_成交总量"]=df[['成交量:R014', '成交量:R021','成交量:R1M', '成交量:R2M','成交量:R3M', 
@@ -93,8 +94,8 @@ class Report():
         dff["负债短期化_因子"]=(dff["成交量占比:R001"].diff(1)-dff["成交量占比:R007"].diff(1)-dff["R014+_成交总量占比"].diff(1))
         dff["加权利率_R001"]=df["加权利率:R001"]
         ## 去掉极值
-        dff["负债短期化_因子_去极值"]=winsorize_series(dff["负债短期化_因子"])
-        dff["负债短期化_因子_去极值Zscore"]=std_series(dff["负债短期化_因子_去极值"])
+        dff["负债短期化_因子_去极值"]=winsorize_series(dff["负债短期化_因子"]).tolist()
+        dff["负债短期化_因子_去极值Zscore"]=std_series(dff["负债短期化_因子_去极值"]).tolist()
         dff["SRDI"]=dff["负债短期化_因子_去极值Zscore"]
         factor_df=dff
         ## 绘制因子图像
@@ -162,8 +163,7 @@ class Report():
         self.pic_list.append(fig3)
         print("添加图片成功")
         return data_repo_volatility
-    
-    
+      
     def fig_bond_leverage(self):
         end=self.end.strftime("%Y%m%d")
         start=self.start.strftime("%Y-%m-%d")
@@ -171,6 +171,7 @@ class Report():
         df = pd.read_sql("select * from fig_bond_leverage  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         print('杠杆率的数据更新至' , df.iloc[-1,-1])
+        df.index = df.date
         
         ## 制作图片 
         df["杠杆率"]=winsorize_series(df["成交量:银行间质押式回购"]/(df["债券市场托管余额"]*100))
@@ -189,6 +190,7 @@ class Report():
         df = pd.read_sql("select * from fig_rates  \
         where date >= '{}' and date <= '{}';".format(start , end), conn)
         print('期限利差的数据更新至' , df.iloc[-1,-1])
+        df.index = df.date
         
         
         fig, ax = plt.subplots(nrows=3,ncols=1,figsize = (10,9), dpi=100)
@@ -269,6 +271,7 @@ class Report():
         data = pd.read_sql("select * from fig_credit_premium  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         print('信用利差的数据更新至' , data.iloc[-1,-1])
+        data.index = data.date
 
         # 绘图
         fig, ax = plt.subplots(nrows=3,ncols=1,figsize = (10,9), dpi=100)
@@ -499,8 +502,8 @@ class Report():
         return data
     
     def fig_bond_premium(self):
-        # * 1/3/5/10Y 国债到期收益率
-        # 近一年
+        # * 1/3/5/10Y 国债到期收益率走势与利差
+        # 近十年
         end=self.end.strftime("%Y%m%d")
         start=self.start.strftime("%Y%m%d")
 
@@ -514,16 +517,142 @@ class Report():
         dff["国债_10年-1年"]=df["10年国债"]-df["1年国债"]
         dff["国债_10年-3年"]=df["10年国债"]-df["3年国债"]
 
-        ## P1 1/3/5/10Y 国债到期收益率
-        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
-        dff[['1年国债',"国债_10年-1年"]].plot(ax=ax[0][0])
-        dff[['3年国债',"国债_10年-3年"]].plot(ax=ax[0][1])
-        dff[['5年国债',"国债_10年-5年"]].plot(ax=ax[1][0])
-        dff[['10年国债']].plot(ax=ax[1][1])
+        ## P1 1/3/5/10Y 国债到期收益率ZS
+        fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        dff[['1年国债',"国债_10年-1年"]].apply(std_series).plot(ax=ax[0][0])
+        dff[['3年国债',"国债_10年-3年"]].apply(std_series).plot(ax=ax[0][1])
+        dff[['5年国债',"国债_10年-5年"]].apply(std_series).plot(ax=ax[1][0])
+        dff[['10年国债']].apply(std_series).plot(ax=ax[1][1])
 
+        plt.suptitle('Z-Score')
+        plt.tight_layout()
+        self.pic_list.append(fig)
+    
+        return dff
+
+    def fig_industies_indice(self):
+        # TODO 行业情绪指数
+        # 地产钢铁煤炭有色汽车
+        # 近十年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        # df = pd.read_sql("select * from fig_  \
+        # where date >= '{}' and date <= '{}';".format(start , end),conn)
+        # df.index = df.date
+
+        # 绘图 
+        fig1, ax = plt.subplots(nrows=1,ncols=2,figsize = (12,4), dpi=100)
+        ax[0].set_title('地产情绪指数')
+        ax[1].set_title('钢铁情绪指数')
+        
         plt.tight_layout()
         self.pic_list.append(fig1)
 
+        fig2, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
+        ax[0].set_title('煤炭情绪指数')
+        ax[1].set_title('有色情绪指数')
+        ax[2].set_title('汽车情绪指数')
+        
+        plt.tight_layout()
+        self.pic_list.append(fig2)
+        return 
+
+
+    def fig_credit_premium_v2(self):
+        # * 城投等
+        # 近十年
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        df = pd.read_sql("select * from fig_credit_premium_v2  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df_rate = pd.read_sql("select * from fig_rates  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+
+        df.index = df.date; df_rate.index = df_rate.date
+        df = pd.merge(df,df_rate,how='inner',left_index=True,right_index=True)
+
+
+        dff = pd.DataFrame(index = df.index)
+        dff['二级资本债_AAA-_1Y利差'] = df['中债商业银行二级资本债到期收益率(AAA-):1年']-df['1年国开']
+        dff['二级资本债_AAA-_3Y利差'] = df['中债商业银行二级资本债到期收益率(AAA-):3年']-df['3年国开']
+        dff['二级资本债_AAA-_5Y利差'] = df['中债商业银行二级资本债到期收益率(AAA-):5年']-df['5年国开']
+        
+        dff['城投_AAA_1Y利差'] = df['中债城投债到期收益率(AAA):1年']-df['1年国开']
+        dff['城投_AAA_3Y利差'] = df['中债城投债到期收益率(AAA):3年']-df['3年国开']
+        dff['城投_AAA_5Y利差'] = df['中债城投债到期收益率(AAA):5年']-df['5年国开']
+        dff['城投_AA+_1Y利差'] = df['中债城投债到期收益率(AA+):1年']-df['1年国开']
+        dff['城投_AA+_3Y利差'] = df['中债城投债到期收益率(AA+):3年']-df['3年国开']
+        dff['城投_AA+_5Y利差'] = df['中债城投债到期收益率(AA+):5年']-df['5年国开']
+        dff['城投_AA_1Y利差'] = df['中债城投债到期收益率(AA):1年']-df['1年国开']
+        dff['城投_AA_3Y利差'] = df['中债城投债到期收益率(AA):3年']-df['3年国开']
+        dff['城投_AA_5Y利差'] = df['中债城投债到期收益率(AA):5年']-df['5年国开']
+
+        # 绘图 
+        fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        ## AAA二级资本债
+        dff[['二级资本债_AAA-_1Y利差', '二级资本债_AAA-_3Y利差', '二级资本债_AAA-_5Y利差']] \
+            .apply(std_series).plot(ax=ax[0,0])
+        ## AAA城投
+        dff[['城投_AAA_1Y利差','城投_AAA_3Y利差', '城投_AAA_5Y利差']].\
+        apply(std_series).plot(ax=ax[0,1])
+        ## AA+城投
+        dff[['城投_AA+_1Y利差', '城投_AA+_3Y利差', '城投_AA+_5Y利差']] \
+        .apply(std_series).plot(ax=ax[1,0])
+        ## AA城投
+        dff[['城投_AA_1Y利差', '城投_AA_3Y利差', '城投_AA_5Y利差']] \
+        .apply(std_series).plot(ax=ax[1,1]) 
+
+        plt.suptitle('利差Z-Score')
+        plt.tight_layout()
+        self.pic_list.append(fig)
+
+        return dff
+
+    def fig_liquid_v2(self):
+        # * 流动性v2
+        # 近十年
+
+        end=self.end.strftime("%Y%m%d")
+        start=self.start.strftime("%Y%m%d")
+
+        # 提取数据
+        df_liquidity = pd.read_sql("select * from fig_liquidity_premium_v2  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df_leverage= pd.read_sql("select * from fig_bond_leverage_v2  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df_rate = pd.read_sql("select * from fig_rates  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+
+
+        df_liquidity.index = df_liquidity.date
+        df_leverage.index = df_leverage.date
+        df_rate.index = df_rate.date
+
+        df = pd.merge(df_liquidity,df_leverage,how='inner',left_index=True,right_index=True)
+        df = pd.merge(df,df_rate,how='inner',left_index=True,right_index=True)
+
+        # dff = pd.DataFrame(index = df.index)
+        df['shibor_3m-10y'] = df['shibor_3m']-df['10年国开']
+        df['贴票利率波动率'] = std_series(df['国股银票转贴现收益率_3m'].dropna(axis=0))
+        df['同业存单-1年短债利差'] = df['存单_AAA_1y'] - df['MLF：1年']
+        df['1Y存单/短债比价'] = df['存单_AAA_1y'] / df['MLF：1年']
+        df['回购余额/债券托管余额'] = df['成交量:银行间质押式回购'] / df['债券市场托管余额']
+
+        fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        df[['shibor_3m-10y']].apply(std_series).plot(ax=ax[0,0])
+        df[['国股银票转贴现收益率_3m','贴票利率波动率']].dropna().plot(ax=ax[0,1])
+        df[['同业存单-1年短债利差','1Y存单/短债比价']].plot(ax=ax[1,0])
+        df[['回购余额/债券托管余额']].dropna().plot(ax=ax[1,1])
+
+        plt.tight_layout()
+        self.pic_list.append(fig)
+
+        return df
+        
 def get_db_conn(io):
     with open(io, 'r') as f1:
         config = f1.readlines()
@@ -579,4 +708,10 @@ if __name__=='__main__':
     report.fig_midstream()
     report.fig_downstream()
     
+    report.start=dt.datetime.now()-dt.timedelta(days=10*365)
+    report.fig_bond_premium()
+    report.fig_industies_indice()
+    report.fig_credit_premium_v2()
+    report.fig_liquid_v2()
+
     report.print_all_fig()
