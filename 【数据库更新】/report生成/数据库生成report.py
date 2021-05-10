@@ -299,34 +299,52 @@ class Report():
         # 近一年
         end=self.end.strftime("%Y%m%d")
         start=self.start.strftime("%Y%m%d")
-
         # 提取数据
         data = pd.read_sql("select * from fig_industrial_production  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
-        # 绘图
-        fig, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
         
+        # 绘图 _V2
+        ## TODO PTA产业负荷率/玻璃产能利用率/全国高炉开工率
+        fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
+        ## p1 PTA产业负荷率
+        data[['1']].dropna(axis = 0).plot(ax = ax[0,0])
+        ax[1,0].set_title('PTA产业负荷率')
+        ## p2 玻璃产能利用率
+        data[['1']].dropna(axis = 0).plot(ax = ax[0,1])
+        ax[1,0].set_title('玻璃产能利用率')
+        ## p3 全国高炉开工率
+        data[['高炉开工率(163家):全国']].dropna(axis = 0).plot(ax = ax[1,0])
+        ax[1,0].set_title('全国高炉开工率')
+        #ax[1,0].legend(loc = 'best')
+        ## 删除第四张
+        fig.delaxes(ax[1,1])
+
+        '''        
+        # 绘图 _V1
+        fig, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
         ## p1
         data[['日均产量：粗钢：国内']].dropna(axis = 0).plot(ax = ax[0])
         ax[0].legend(loc='upper left')
         ax_right = ax[0].twinx()
         data[['日均产量：焦炭：重点企业(旬)']].dropna(axis = 0).plot(ax = ax_right, color = 'red')
         ax[1].legend(loc='upper right')
-
         ## p2
         data[['高炉开工率(163家):全国']].dropna(axis = 0).plot(ax = ax[1])
         ax[1].legend(loc = 'best')
         ## p3
         data[['产能利用率:电炉:全国']].dropna(axis = 0).plot(ax = ax[2])
         ax[2].legend(loc = 'best')
-        # plt.suptitle("工业生产"+end)
-        self.pic_list.append(fig)
+        '''
 
+        plt.tight_layout()
+        plt.suptitle("工业生产"+end)
+        self.pic_list.append(fig)
         return data
 
     def fig_cpi_ppi_related(self):
         # * 物价（CPI/PPI相关）
+
         # 近一年
         end=self.end.strftime("%Y%m%d")
         start=self.start.strftime("%Y%m%d")
@@ -336,8 +354,32 @@ class Report():
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
 
-        # 画图 
-        ## P1 
+        # 画图 -v2
+        ## TODO 农产品批发价格指数/ /iCPI
+        fig, ax = plt.subplots(nrows=3,ncols=2,figsize = (12,12), dpi=100)
+        ## p1
+        data[['']].dropna(axis = 0).plot(ax = ax[0,0])
+        ax[0,0].set_title('农产品批发价格指数')
+        ## p2
+        data[['平均批发价:28种重点监测蔬菜']].dropna(axis=0).plot(ax=ax[0][1])
+        ax01_ = ax[0][1].twinx()
+        data[['平均批发价:7种重点监测水果']].dropna(axis=0).plot(ax=ax01_,color='red')
+        ax01_.legend(loc='upper right')
+        ax[0][1].set_title('重点监测蔬菜和水果平均批发价')
+        ## p3
+        data[['']].dropna(axis = 0).plot(ax = ax[1,0])
+        ax[1,0].set_title('iCPI')
+        ## p4
+        fig.delaxes(ax[1,1])
+        ## p5
+        data[['南华综合指数']].dropna(axis=0).plot(ax=ax[2,0])
+        ax[2,0].set_title('南华综合指数')
+        ## p6
+        data[['CRB现货指数:综合']].dropna(axis=0).plot(ax=ax[2,1])
+        ax[2,1].set_title('CRB现货指数')
+        """
+        # 画图 -v1
+        ## fig1 
         fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
         data[['食用农产品价格指数:蛋类:周环比','食用农产品价格指数:蔬菜类:周环比', 
         '食用农产品价格指数:禽类:周环比']].dropna(axis=0).plot(ax=ax[0][0])
@@ -350,6 +392,7 @@ class Report():
         ax01_ = ax[0][1].twinx()
         data[['平均批发价:7种重点监测水果']].dropna(axis=0).plot(ax=ax01_,color='red')
         ax01_.legend(loc='upper right')
+        ax[0][1].set_title('重点监测蔬菜和水果平均批发价')
 
         data[['平均价:猪肉:全国']].dropna(axis=0).plot(ax=ax[1][0])
 
@@ -357,16 +400,17 @@ class Report():
 
         plt.tight_layout()
         self.pic_list.append(fig1)
-
-
-        ## P2
+        ## fig2
         fig2, ax = plt.subplots(nrows=1,ncols=2,figsize = (12,4), dpi=100)
         data[['南华综合指数']].dropna(axis=0).plot(ax=ax[0])
+        ax[0].set_title('南华综合指数')
         data[['CRB现货指数:综合']].dropna(axis=0).plot(ax=ax[1])
- 
-        plt.tight_layout()
-        self.pic_list.append(fig2)
+        ax[1].set_title('CRB现货指数')
 
+        """
+        plt.tight_layout()
+        plt.suptitle('物价（CPI/PPI相关）')
+        self.pic_list.append(fig)
         return data
 
     def fig_upstream(self):
@@ -380,39 +424,48 @@ class Report():
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
 
-        # 画图
-        ## P1
-        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
-        data[['综合平均价格指数:环渤海动力煤']].dropna(axis=0).plot(ax=ax[0][0])
-        data[['炼焦煤库存:六港口合计']].dropna(axis=0).plot(ax=ax[0][1])
+        # 画图 -v2
+        fig, ax = plt.subplots(nrows=5,ncols=2,figsize = (12,20), dpi=100)
+        ## p1
+        ax[0,0].set_title('南华焦炭指数')
+        ## p2
+        data[['炼焦煤库存:六港口合计']].dropna(axis=0).plot(ax=ax[0,1])
+        ax[0,1].set_title('炼焦煤库存')
+        ## p3
+        data[['Mylpic矿价指数:综合']].dropna(axis=0).plot(ax=ax[1,0])   
+        ax[1,0].set_title('铁矿石价格')
+        ## p4
+        data[['国内铁矿石港口库存量']].dropna(axis=0).plot(ax=ax[1,1])
+        ax[1,1].set_title('铁矿石库存')
+        ## p5
         data[['现货价:原油:英国布伦特Dtd','现货价:原油:美国西德克萨斯中级轻质原油(WTI)']].\
-            dropna(axis=0).plot(ax=ax[1][0])
-        data[['Mylpic矿价指数:综合']].dropna(axis=0).plot(ax=ax[1][1])   
-        # plt.suptitle('')
+            dropna(axis=0).plot(ax=ax[2,0])
+        ax[2,0].set_title('石油价格')
+        ## p6
+        data[['伦敦现货白银:以美元计价']].dropna(axis=0).plot(ax=ax[2,1])
+        ax21_=ax[2,1].twinx()
+        data[['伦敦现货黄金:以美元计价']].dropna(axis=0).plot(ax=ax21_,color = 'red')
+        ax[2,1].set_title('黄金和白银现货价格')
+        ## p7
+        data[['期货收盘价(活跃合约):阴极铜']].dropna(axis=0).plot(ax=ax[3,0])
+        ax30_ = ax[3,0].twinx()
+        data[['期货收盘价(活跃合约):铝']].dropna(axis=0).plot(ax=ax30_,color='red')
+        ax30_.legend(loc = 'lower right')
+        ax[3,0].set_title('有色金属期货收盘价')
+        ## p8
+        data[['库存期货:阴极铜']].dropna(axis=0).plot(ax=ax[3,1])
+        ax31_ = ax[3,1].twinx()
+        data[['库存期货:铝']].dropna(axis=0).plot(ax=ax31_,color = 'red')
+        ax[3,1].set_title('铜与铝库存')
+        ## p9
+        data[['综合平均价格指数:环渤海动力煤']].dropna(axis=0).plot(ax=ax[4,0])
+        ax[4,0].set_title('铜保税区库存')
+        ## p10
+        fig.delaxes(ax[4,1])
+
         plt.tight_layout()
-        self.pic_list.append(fig1)
-
-
-        ## P2
-        fig2, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
-        data[['国内铁矿石港口库存量']].dropna(axis=0).plot(ax=ax[0][0])
-        
-        data[['伦敦现货白银:以美元计价']].dropna(axis=0).plot(ax=ax[0][1])
-        ax01_=ax[0][1].twinx()
-        data[['伦敦现货黄金:以美元计价']].dropna(axis=0).plot(ax=ax01_,color = 'red')
-        
-        data[['期货收盘价(活跃合约):阴极铜']].dropna(axis=0).plot(ax=ax[1][0])
-        ax10_ = ax[1][0].twinx()
-        data[['期货收盘价(活跃合约):铝']].dropna(axis=0).plot(ax=ax10_,color='red')
-        ax10_.legend(loc = 'lower right')
-
-        data[['库存期货:阴极铜']].dropna(axis=0).plot(ax=ax[1][1])
-        ax11_ = ax[1][1].twinx()
-        data[['库存期货:铝']].dropna(axis=0).plot(ax=ax11_,color = 'red')
-
-        plt.tight_layout()
-        self.pic_list.append(fig2)
-
+        plt.suptitle('上游')
+        self.pic_list.append(fig)
         return data
 
     def fig_midstream(self):
@@ -427,29 +480,35 @@ class Report():
         data.index = data.date
 
         # 画图
+        fig1, ax = plt.subplots(nrows=3,ncols=2,figsize = (12,12), dpi=100)
         ## P1
-        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
         data[['Mylpic综合钢价指数']].dropna(axis=0).plot(ax=ax[0][0])
+        ax[0,0].set_title('钢铁价格')
+        ## P2
         data[['库存:主要钢材品种:合计','库存:螺纹钢(含上海全部仓库)']].\
-            dropna(axis=0).plot(ax=ax[0][1])
-
+            dropna(axis=0).plot(ax=ax[0,1])
+        ax[0,1].set_title('钢铁库存')
+        ## P3
         data[['水泥价格指数:全国']].dropna(axis=0).plot(ax=ax[1][0])
         ax10_ = ax[1][0].twinx()
         data[['中国玻璃价格指数']].dropna(axis=0).plot(ax=ax10_,color='red')
         ax10_.legend(loc = 'lower right')
+        ax[1,0].set_title('水泥和玻璃价格指数')
+        ## P4
+        fig.delaxes(ax[1,1])
+        ## P5
+        data[['中国盛泽化纤价格指数']].dropna(axis=0).plot(ax=ax[2,0])
+        ax[2,0].set_title('化纤价格')
+        ## P6
+        # data[]
+        ax[2,1].set_title('农产品价格')
 
-        data[['中国盛泽化纤价格指数']].dropna(axis=0).plot(ax=ax[1][1])
+        # data[['期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶']].\
+        #     dropna(axis=0).plot(ax = ax)
 
         plt.tight_layout()
+        plt.suptitle('中游')
         self.pic_list.append(fig1)
-
-        ## P2
-        fig2, ax = plt.subplots(nrows=1,ncols=1,figsize = (6,4), dpi=100)
-        data[['期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶']].\
-            dropna(axis=0).plot(ax = ax)
-        ax.legend(loc = 'upper left')
-        self.pic_list.append(fig2)
-
         return data
 
     def fig_downstream(self):
@@ -464,40 +523,47 @@ class Report():
         data.index = data.date
 
         # 画图
+        fig, ax = plt.subplots(nrows=6,ncols=2,figsize = (12,24), dpi=100)
         ## P1
-        fig1, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
-        data[['30大中城市:商品房成交套数']].dropna(axis=0).plot(ax=ax[0][0])
-        ax00_ = ax[0][0].twinx()
-        data[['30大中城市:商品房成交面积']].dropna(axis=0).plot(ax=ax00_,color='red')
-
-        data[['100大中城市:成交土地溢价率:当周值']].dropna(axis=0).plot(ax=ax[0][1])
-        data[['当周日均销量:乘用车:厂家零售']].dropna(axis=0).plot(ax=ax[1][0])
-        data[['柯桥纺织:价格指数:总类']].dropna(axis=0).plot(ax=ax[1][1])
-
-        plt.tight_layout()
-        self.pic_list.append(fig1)
-
+        data[['30大中城市:商品房成交面积']].dropna(axis=0).plot(ax=ax[0][0])
+        ax[0,0].set_title('商品房成交面积')
         ## P2
-        fig2, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
-        data[['义乌中国小商品指数:总价格指数']].dropna(axis=0).plot(ax=ax[0][0])
-        data[['中关村电子价格产品指数']].dropna(axis=0).plot(ax=ax[0][1])
-        data[['中国公路物流运价指数']].dropna(axis=0).plot(ax=ax[1][0])
-        
-        data[['电影票房收入']].dropna(axis=0).plot(ax=ax[1][1])
-        ax11_ = ax[1][1].twinx()
-        data[['电影观影人次']].dropna(axis=0).plot(ax=ax11_,color='red')
-
-        plt.tight_layout()
-        self.pic_list.append(fig2)
-
+        data[['100大中城市:成交土地溢价率:当周值']].dropna(axis=0).plot(ax=ax[0][1])
+        ax[0,1].set_title('房地产成交土地溢价率')
         ## P3
-        fig3, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
-        data[['CCFI:综合指数']].dropna(axis=0).plot(ax=ax[0])
-        data[['CICFI:综合指数']].dropna(axis=0).plot(ax=ax[1])
-        data[['波罗的海干散货指数(BDI)']].dropna(axis=0).plot(ax=ax[2])
+        data[['当周日均销量:乘用车:厂家零售']].dropna(axis=0).plot(ax=ax[1][0])
+        ax[1,0].set_title('汽车销售')
+        ## P4
+        fig.delaxes(ax[1,1])
+        ## P5
+        data[['柯桥纺织:价格指数:总类']].dropna(axis=0).plot(ax=ax[2,0])
+        ax[2,0].set_title('纺织服装价格')
+        ## P6
+        data[['义乌中国小商品指数:总价格指数']].dropna(axis=0).plot(ax=ax[2,1])
+        ax[2,1].set_title('商贸批发零售')
+        ## P7
+        data[['电影票房收入']].dropna(axis=0).plot(ax=ax[3,0])
+        ax30_ = ax[3,0].twinx()
+        data[['电影观影人次']].dropna(axis=0).plot(ax=ax30_,color='red')
+        ax[3,0].set_title('电影票房收入和观影人次')
+        ## P8
+        fig.delaxes(ax[3,1])
+        ## P9
+        data[['中国公路物流运价指数']].dropna(axis=0).plot(ax=ax[4,0])
+        ax[4,0].set_title('中国公路物流运价指数')
+        ## P10
+        data[['波罗的海干散货指数(BDI)']].dropna(axis=0).plot(ax=ax[4,1])
+        ax[4,1].set_title('波罗的海干散货指数')
+        ## P10
+        data[['CCFI:综合指数']].dropna(axis=0).plot(ax=ax[5,0])
+        ax[5,0].set_title('中国出口集装箱运价指数')
+        ## P10
+        data[['CICFI:综合指数']].dropna(axis=0).plot(ax=ax[5,1])
+        ax[5,1].set_title('中国进口集装箱运价指数')
 
+        plt.suptitle('下游')
         plt.tight_layout()
-        self.pic_list.append(fig3)
+        self.pic_list.append(fig)
 
         return data
     
@@ -558,7 +624,6 @@ class Report():
         plt.tight_layout()
         self.pic_list.append(fig2)
         return 
-
 
     def fig_credit_premium_v2(self):
         # * 城投等
