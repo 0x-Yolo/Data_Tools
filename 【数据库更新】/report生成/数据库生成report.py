@@ -13,6 +13,8 @@ from sqlalchemy import exc
 import os
 import re
 
+import plotly.express as px
+import plotly.graph_objects as go
 
 
 #基础的图像设置：
@@ -172,15 +174,21 @@ class Report():
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         print('杠杆率的数据更新至' , df.iloc[-1,-1])
         df.index = df.date
-        
+        df = df.fillna(method = 'ffill')
         ## 制作图片 
-        df["杠杆率"]=winsorize_series(df["成交量:银行间质押式回购"]/(df["债券市场托管余额"]*100))
+        df["杠杆率"]=winsorize_series(df["成交量:银行间质押式回购"]/(df["债券市场托管余额"])*100)
         fig, ax = plt.subplots(nrows=2,ncols=1,figsize = (10,6), dpi=100)
+        # p1
         df["杠杆率"].rolling(30).mean().plot(ax=ax[0],title="债市整体杠杆率"+end)
+        ax[0].grid(ls='--', axis='y')
+        # plt.rc('axes', axisbelow=True)
         ax[0].set_xlabel("")
+        # P2
         std_series(df["杠杆率"].rolling(6).mean()).plot(ax=ax[1],ylim=(-3,3))
+        ax[1].axhline(y=0, c="r", ls="--", lw=1.5)
         ax[1].set_xlabel("")
         ax[1].set_ylabel("杠杆拥挤度因子")
+        plt.tight_layout()
         self.pic_list.append(fig)
         return df
     
@@ -308,11 +316,11 @@ class Report():
         ## TODO PTA产业负荷率/玻璃产能利用率/全国高炉开工率
         fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
         ## p1 PTA产业负荷率
-        data[['1']].dropna(axis = 0).plot(ax = ax[0,0])
-        ax[1,0].set_title('PTA产业负荷率')
+        data[['PTA产业链负荷率:PTA工厂']].dropna(axis = 0).plot(ax = ax[0,0])
+        ax[0,0].set_title('PTA产业负荷率')
         ## p2 玻璃产能利用率
-        data[['1']].dropna(axis = 0).plot(ax = ax[0,1])
-        ax[1,0].set_title('玻璃产能利用率')
+        data[['浮法玻璃:产能利用率']].dropna(axis = 0).plot(ax = ax[0,1])
+        ax[0,1].set_title('玻璃产能利用率')
         ## p3 全国高炉开工率
         data[['高炉开工率(163家):全国']].dropna(axis = 0).plot(ax = ax[1,0])
         ax[1,0].set_title('全国高炉开工率')
@@ -336,9 +344,11 @@ class Report():
         data[['产能利用率:电炉:全国']].dropna(axis = 0).plot(ax = ax[2])
         ax[2].legend(loc = 'best')
         '''
-
+        for i in range(ax.shape[0]):
+            for j in range(ax.shape[1]):
+                ax[i,j].set_xlabel('')
+        plt.suptitle("工业生产",fontsize=30)
         plt.tight_layout()
-        plt.suptitle("工业生产"+end)
         self.pic_list.append(fig)
         return data
 
@@ -355,11 +365,16 @@ class Report():
         data.index = data.date
 
         # 画图 -v2
-        ## TODO 农产品批发价格指数/ /iCPI
+        ##  农产品批发价格指数/ /iCPI
         fig, ax = plt.subplots(nrows=3,ncols=2,figsize = (12,12), dpi=100)
+
         ## p1
-        data[['']].dropna(axis = 0).plot(ax = ax[0,0])
+        ax[0,0].plot(data[["农产品批发价格200指数"]],color='C0')
+        # ax[0,0].set_xticklabels(labels=data.date,rotation=30)
+        data[["农产品批发价格200指数"]].dropna(axis = 0).plot(ax = ax[0,0],fontsize=10)
+        # ax[0,0].plot(data[['农产品批发价格200指数']].dropna(axis = 0))
         ax[0,0].set_title('农产品批发价格指数')
+        # ax[0,0].set_xticklabels(data.index,rotation=30)
         ## p2
         data[['平均批发价:28种重点监测蔬菜']].dropna(axis=0).plot(ax=ax[0][1])
         ax01_ = ax[0][1].twinx()
@@ -367,7 +382,7 @@ class Report():
         ax01_.legend(loc='upper right')
         ax[0][1].set_title('重点监测蔬菜和水果平均批发价')
         ## p3
-        data[['']].dropna(axis = 0).plot(ax = ax[1,0])
+        data[['iCPI:总指数:日环比']].dropna(axis = 0).plot(ax = ax[1,0])
         ax[1,0].set_title('iCPI')
         ## p4
         fig.delaxes(ax[1,1])
@@ -377,6 +392,12 @@ class Report():
         ## p6
         data[['CRB现货指数:综合']].dropna(axis=0).plot(ax=ax[2,1])
         ax[2,1].set_title('CRB现货指数')
+
+        for i in range(ax.shape[0]):
+            for j in range(ax.shape[1]):
+                ax[i,j].set_xlabel('')
+        plt.suptitle('物价（CPI/PPI相关）',fontsize=30)
+        plt.tight_layout()
         """
         # 画图 -v1
         ## fig1 
@@ -408,8 +429,7 @@ class Report():
         ax[1].set_title('CRB现货指数')
 
         """
-        plt.tight_layout()
-        plt.suptitle('物价（CPI/PPI相关）')
+        
         self.pic_list.append(fig)
         return data
 
@@ -427,6 +447,7 @@ class Report():
         # 画图 -v2
         fig, ax = plt.subplots(nrows=5,ncols=2,figsize = (12,20), dpi=100)
         ## p1
+        data[['南华焦炭指数']].dropna(axis=0).plot(ax=ax[0,0])
         ax[0,0].set_title('南华焦炭指数')
         ## p2
         data[['炼焦煤库存:六港口合计']].dropna(axis=0).plot(ax=ax[0,1])
@@ -453,18 +474,18 @@ class Report():
         ax30_.legend(loc = 'lower right')
         ax[3,0].set_title('有色金属期货收盘价')
         ## p8
-        data[['库存期货:阴极铜']].dropna(axis=0).plot(ax=ax[3,1])
-        ax31_ = ax[3,1].twinx()
-        data[['库存期货:铝']].dropna(axis=0).plot(ax=ax31_,color = 'red')
+        data[['库存期货:阴极铜','库存期货:铝']].dropna(axis=0).plot(ax=ax[3,1])
         ax[3,1].set_title('铜与铝库存')
         ## p9
         data[['综合平均价格指数:环渤海动力煤']].dropna(axis=0).plot(ax=ax[4,0])
         ax[4,0].set_title('铜保税区库存')
         ## p10
         fig.delaxes(ax[4,1])
-
+        for i in range(ax.shape[0]):
+            for j in range(ax.shape[1]):
+                ax[i,j].set_xlabel('')
+        plt.suptitle('上游',fontsize=30)
         plt.tight_layout()
-        plt.suptitle('上游')
         self.pic_list.append(fig)
         return data
 
@@ -480,7 +501,7 @@ class Report():
         data.index = data.date
 
         # 画图
-        fig1, ax = plt.subplots(nrows=3,ncols=2,figsize = (12,12), dpi=100)
+        fig, ax = plt.subplots(nrows=3,ncols=2,figsize = (12,12), dpi=100)
         ## P1
         data[['Mylpic综合钢价指数']].dropna(axis=0).plot(ax=ax[0][0])
         ax[0,0].set_title('钢铁价格')
@@ -500,15 +521,21 @@ class Report():
         data[['中国盛泽化纤价格指数']].dropna(axis=0).plot(ax=ax[2,0])
         ax[2,0].set_title('化纤价格')
         ## P6
-        # data[]
+        data[['期货收盘价(活跃合约):黄大豆1号']].dropna(axis = 0).plot(ax=ax[2,1])
+        ax21_ = ax[2,1].twinx()
+        data[['期货收盘价(活跃合约):黄玉米']].dropna(axis = 0).plot(ax=ax21_,color='red')
         ax[2,1].set_title('农产品价格')
+        ax[2,1].legend(loc = 'lower right')
 
         # data[['期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶']].\
         #     dropna(axis=0).plot(ax = ax)
 
+        for i in range(ax.shape[0]):
+            for j in range(ax.shape[1]):
+                ax[i,j].set_xlabel('')
+        plt.suptitle('中游',fontsize=30)
         plt.tight_layout()
-        plt.suptitle('中游')
-        self.pic_list.append(fig1)
+        self.pic_list.append(fig)
         return data
 
     def fig_downstream(self):
@@ -521,16 +548,20 @@ class Report():
         data = pd.read_sql("select * from fig_downstream  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
-
+        # data = data[data.columns[:2]]
+        # data.columns = ['30大中城市:商品房成交套数', '大中城市:商品房成交面积']
         # 画图
         fig, ax = plt.subplots(nrows=6,ncols=2,figsize = (12,24), dpi=100)
         ## P1
-        data[['30大中城市:商品房成交面积']].dropna(axis=0).plot(ax=ax[0][0])
+        # data[['30大中城市:商品房成交面积','date']].dropna(axis=0).plot(ax=ax[0][0])
+        ax[0,0].plot(data[['30大中城市:商品房成交面积']],color ='C0')
         ax[0,0].set_title('商品房成交面积')
-        ## P2
-        data[['100大中城市:成交土地溢价率:当周值']].dropna(axis=0).plot(ax=ax[0][1])
+        ## P2[['100大中城市:成交土地溢价率:当周值']]
+        # data[['30大中城市:商品房成交面积']].dropna(axis=0).plot(ax=ax[0][1])
+        ax[0,1].plot(data[['100大中城市:成交土地溢价率:当周值']].dropna(),color ='C0')
         ax[0,1].set_title('房地产成交土地溢价率')
         ## P3
+        #['当周日均销量:乘用车:厂家零售']]
         data[['当周日均销量:乘用车:厂家零售']].dropna(axis=0).plot(ax=ax[1][0])
         ax[1,0].set_title('汽车销售')
         ## P4
@@ -543,8 +574,9 @@ class Report():
         ax[2,1].set_title('商贸批发零售')
         ## P7
         data[['电影票房收入']].dropna(axis=0).plot(ax=ax[3,0])
-        ax30_ = ax[3,0].twinx()
-        data[['电影观影人次']].dropna(axis=0).plot(ax=ax30_,color='red')
+        # ax30_ = ax[3,0].twinx()
+        # data[['电影观影人次']].dropna(axis=0).plot(ax=ax30_,color='red')
+        # ax30_.set_yticks(range(0,14000,2000))
         ax[3,0].set_title('电影票房收入和观影人次')
         ## P8
         fig.delaxes(ax[3,1])
@@ -561,7 +593,10 @@ class Report():
         data[['CICFI:综合指数']].dropna(axis=0).plot(ax=ax[5,1])
         ax[5,1].set_title('中国进口集装箱运价指数')
 
-        plt.suptitle('下游')
+        for i in range(ax.shape[0]):
+            for j in range(ax.shape[1]):
+                ax[i,j].set_xlabel('')
+        plt.suptitle('下游',fontsize=30)
         plt.tight_layout()
         self.pic_list.append(fig)
 
@@ -582,7 +617,8 @@ class Report():
         dff["国债_10年-5年"]=df["10年国债"]-df["5年国债"]
         dff["国债_10年-1年"]=df["10年国债"]-df["1年国债"]
         dff["国债_10年-3年"]=df["10年国债"]-df["3年国债"]
-
+        # 去极值
+        # dff = dff.apply(winsorize_series)
         ## P1 1/3/5/10Y 国债到期收益率ZS
         fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (12,8), dpi=100)
         dff[['1年国债',"国债_10年-1年"]].apply(std_series).plot(ax=ax[0][0])
@@ -596,7 +632,7 @@ class Report():
     
         return dff
 
-    def fig_industies_indice(self):
+    def fig_industries_premium(self):
         # TODO 行业情绪指数
         # 地产钢铁煤炭有色汽车
         # 近十年
@@ -604,25 +640,23 @@ class Report():
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        # df = pd.read_sql("select * from fig_  \
-        # where date >= '{}' and date <= '{}';".format(start , end),conn)
-        # df.index = df.date
+        df = pd.read_sql("select * from fig_industries_premium  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df.index = df.date
 
         # 绘图 
-        fig1, ax = plt.subplots(nrows=1,ncols=2,figsize = (12,4), dpi=100)
+        fig, ax = plt.subplots(nrows=1,ncols=2,figsize = (12,4), dpi=100)
         ax[0].set_title('地产情绪指数')
         ax[1].set_title('钢铁情绪指数')
-        
-        plt.tight_layout()
-        self.pic_list.append(fig1)
 
-        fig2, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
+
+        fig, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
         ax[0].set_title('煤炭情绪指数')
         ax[1].set_title('有色情绪指数')
         ax[2].set_title('汽车情绪指数')
         
         plt.tight_layout()
-        self.pic_list.append(fig2)
+        self.pic_list.append(fig)
         return 
 
     def fig_credit_premium_v2(self):
@@ -632,7 +666,7 @@ class Report():
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        df = pd.read_sql("select * from fig_credit_premium_v2  \
+        df = pd.read_sql("select * from fig_credit_premium  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
         df_rate = pd.read_sql("select * from fig_rates  \
         where date >= '{}' and date <= '{}';".format(start , end),conn)
@@ -718,6 +752,109 @@ class Report():
 
         return df
         
+    def radar_chart(self,date):
+        # 制定日期的利差雷达图
+
+        # 城投等
+        df1 = pd.read_sql("select * from fig_credit_premium  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        # 行业
+        df2 = pd.read_sql("select * from fig_industries_premium  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df_rate = pd.read_sql("select * from fig_rates  \
+        where date >= '{}' and date <= '{}';".format(start , end),conn)
+
+        df1.index = df1.date; df_rate.index = df_rate.date
+        df2.index = df2.date
+
+        df11 = pd.merge(df1,df_rate,how='inner',left_index=True,right_index=True)
+        df22 = pd.merge(df2,df_rate,how='inner',left_index=True,right_index=True)
+
+        dff = pd.DataFrame(index = df_rate.index)
+        dff['二级资本债_AAA-_1Y利差'] = df11['中债商业银行二级资本债到期收益率(AAA-):1年']-df11['1年国开']
+        dff['二级资本债_AAA-_3Y利差'] = df11['中债商业银行二级资本债到期收益率(AAA-):3年']-df11['3年国开']
+        dff['二级资本债_AAA-_5Y利差'] = df11['中债商业银行二级资本债到期收益率(AAA-):5年']-df11['5年国开']
+        
+        dff['城投_AAA_1Y利差'] = df11['中债城投债到期收益率(AAA):1年']-df11['1年国开']
+        dff['城投_AAA_3Y利差'] = df11['中债城投债到期收益率(AAA):3年']-df11['3年国开']
+        dff['城投_AAA_5Y利差'] = df11['中债城投债到期收益率(AAA):5年']-df11['5年国开']
+        dff['城投_AA+_1Y利差'] = df11['中债城投债到期收益率(AA+):1年']-df11['1年国开']
+        dff['城投_AA+_3Y利差'] = df11['中债城投债到期收益率(AA+):3年']-df11['3年国开']
+        dff['城投_AA+_5Y利差'] = df11['中债城投债到期收益率(AA+):5年']-df11['5年国开']
+        dff['城投_AA_1Y利差'] = df11['中债城投债到期收益率(AA):1年']-df11['1年国开']
+        dff['城投_AA_3Y利差'] = df11['中债城投债到期收益率(AA):3年']-df11['3年国开']
+        dff['城投_AA_5Y利差'] = df11['中债城投债到期收益率(AA):5年']-df11['5年国开']
+
+        dff['钢铁利差'] = df22['信用利差_钢铁']
+        dff['煤炭利差'] = df22['信用利差_煤炭']        
+        dff['有色利差'] = df22['信用利差_有色']
+        dff['汽车利差'] = df22['信用利差_汽车']
+        dff['地产利差'] = df22['信用利差_地产']
+        
+        # 去极值以及计算当前标准差
+        dff_std = dff.apply(winsorize_series).apply(std_series)
+
+        # 画图
+        def Line(line_style, line_color, line_width):
+            """
+            This function generate a plotly line object
+            """
+            Line = go.scatterpolar.Line(dash=line_style, color=line_color, width=line_width)
+            return Line
+
+        def func_radar(df_std , date):
+            import plotly.graph_objects as go
+            categories = list(df_std.columns)
+            categories.append(df_std.columns[0])
+
+            arr = df_std.loc[date].values
+            arr = np.append(arr,arr[0])  
+
+            layout = go.Layout(
+                polar={
+                    "bgcolor": "rgba(0,0,0,0)",        # set background color
+                    "gridshape": "linear",             # set the grid style of the radar 
+                    "radialaxis": {
+                        "showticklabels": True, 
+                        "gridcolor": "black" ,#grid color
+                        "dtick": 1,
+                    }   
+                    ,
+                    "angularaxis": {
+                        "linecolor": "black",
+                        # "linewidth": 2,
+                        "gridcolor": "black",
+                    },
+                },
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            fig = go.Figure(layout=layout)
+
+            fig.add_trace(go.Scatterpolar(
+                r=arr,
+                line = Line('solid','orange',2),
+                theta=categories,
+                fill='toself',
+                name=date+'利差'
+            ))
+
+            fig.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                visible=True,
+                range=[-2, 2],
+                tickangle = 0,
+                tickfont_size = 12
+                )),
+            showlegend=True
+            )
+            fig.show()
+            return fig
+        fig = func_radar(dff_std , date)
+
+        self.pic_list.append(fig)
+        return dff
+
 def get_db_conn(io):
     with open(io, 'r') as f1:
         config = f1.readlines()
@@ -745,6 +882,7 @@ def get_db_conn(io):
 if __name__=='__main__':
 
     """
+    end = dt.datetime(2021,4,30)
     years = 10
     end = dt.datetime.today()
     start=dt.datetime.now() - dt.timedelta(days=years*365)
@@ -755,7 +893,9 @@ if __name__=='__main__':
     # 数据库私钥
     db_path = "/Users/wdt/Desktop/tpy/db.txt"
     conn , engine = get_db_conn(db_path)
-
+    
+    report = Report(years = 10)
+    report.radar_chart('2021-04-20')
     '''    
     report= Report()
     report.fig_liquidity_premium()
@@ -763,7 +903,13 @@ if __name__=='__main__':
     report.fig_bond_leverage()
     report.fig_rates()
     report.fig_credit_premium()
-    '''
+    
+    r = Report(years=10)
+    r.fig_credit_premium()
+    r.fig_rates()
+    r.end = dt.datetime(2021,4,30)
+    d = r.fig_bond_leverage()
+    
     
     # 宏观
     report = Report(years=1)
@@ -772,6 +918,9 @@ if __name__=='__main__':
     report.fig_upstream()
     report.fig_midstream()
     report.fig_downstream()
+
+    report.title = '经济数据周报高频跟踪'+report.end.strftime("%Y%m%d")
+    report.print_all_fig()
     
     report.start=dt.datetime.now()-dt.timedelta(days=10*365)
     report.fig_bond_premium()
@@ -780,3 +929,4 @@ if __name__=='__main__':
     report.fig_liquid_v2()
 
     report.print_all_fig()
+    '''

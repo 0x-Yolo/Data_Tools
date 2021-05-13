@@ -48,7 +48,7 @@ def upload_date_list():
             continue
         attach_time = re.match(".*\\d{8}\\.",dir).group()[-9:-1]
         attach_datetime = pd.to_datetime(attach_time)
-        if attach_datetime > end_data:
+        if attach_datetime > last_date:
             dir_date.append(attach_datetime.strftime("%Y%m%d"))
         else:
             pass
@@ -67,7 +67,7 @@ def daily_Net_buy_bond(date):#每天数据的转换
     df["date"]=date # 加盖时间戳
     df = organize(df)
     df.rename(columns={'Unnamed: 0':'机构名称'},inplace=True)
-    df.reset_index(drop=True) 
+    df = df.reset_index(drop=True) 
     df=df.replace("—",0)
 
     name = "Net_buy_bond"
@@ -192,12 +192,12 @@ def get_db_conn(io):
 
 def main():
 
-    # * 读取db.txt内的邮箱信息
+    # * 读取db.txt内的数据库信息
     db_path = "/Users/wdt/Desktop/tpy/db.txt"
     conn , engine = get_db_conn(db_path)
 
-    for date in upload_date_list():
-        # engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
+    dir_list = upload_date_list()
+    for date in dir_list:
         l = [daily_Net_buy_bond(date)]
         for a,b,c in l:
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)

@@ -5,28 +5,145 @@ import matplotlib.pyplot as plt
 import datetime as dt
 from matplotlib.backends.backend_pdf import PdfPages
 import pymysql
-from sqlalchemy.types import String, Float, Integer
+from sqlalchemy.types import String, Float, Integer,VARCHAR
 from sqlalchemy import DateTime
 from sqlalchemy import create_engine
 from sqlalchemy import exc
 import os
 import re
+from WindPy import w
+w.start()
 
-# 数据导入和合并
-data = pd.read_excel('test.xlsx' ,sheet_name='信用债成交',header=1)
-data['时间'] = dt.date(2021,4,30)
-# 合并
+def str2int(s):
+    if type(s)==int:
+        return s
+    return int(s[:4]+s[5:7]+s[8:10])
 
-# 提取原数据主键
-df = data[['代码', '价格', '时间']]
-df['估值时间'] = data['时间'] -1
+engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
+conn = pymysql.connect(	
+    host = '47.116.3.109',	
+    user = 'dngj',	
+    passwd = '603603',	
+    db = 'finance',	
+    port=3306,	
+    charset = 'utf8'	
+    )	
+# 导入数据，邮件/本地
+df = pd.read_sql('select * from finance.CreditBondTrading_v3',conn)
+# test
+data = pd.read_excel('./examples/21010426-0430.xlsm',sheet_name='数据')
+data.loc[(data['行权日'] == 0) & (data['价格']>20)]
+data.loc[(data['代码'] == '102100828.IB') ] # idx=70
 
-## * windapi的列
-# 名字、到期估值、行权估值、行权日、price、type、估值偏离、剩余期限、
-# rating、永续、城投、行业、发行人、企业性质、隐含评级
-df['名字']
 
-w.wsd("122660.SH,1080092.IB", "yield_cnbd", "2021-04-06", "2021-05-05", "credibility=1")
+
+# 添加windapi指标
+for idx in df.index:
+    print(idx)
+    code = df.loc[idx,'代码']
+    net_price = df.loc[idx,'价格']
+    net_date = df.loc[idx,'时间'].strftime("%Y%m%d")
+    last_date=df.loc[idx,'估值时间'].strftime("%Y%m%d")
+
+    # 修正非交易日
+    df.loc[idx ,'估值时间'] = w.wss("000001.SH", \
+    "lastradeday_s","tradeDate={}".format(last_date)).Data[0][0]
+    last_date = df.loc[idx,'估值时间'].strftime("%Y%m%d")
+    
+    # 基本信息
+    df.loc[idx,['名字','type','rating','债券期限','城投','发行人','发行方式']] = w.wsd(code,\
+        "sec_name,windl1type,latestissurercreditrating,\
+         term2,municipalbond,issuer,issue_issuemethod",usedf=True)[1].values[0]
+   
+    # 【到期估值】
+    df.loc[idx,'到期估值'] = w.wsd(code, "yield_cnbd", last_date, last_date,
+         "credibility=4;PriceAdj=YTM").Data[0][0]
+    if df.loc[idx,'到期估值'] == None:
+        df.loc[idx,'到期估值'] = w.wsd(code, "yield_cnbd", net_date, net_date,
+         "credibility=4;PriceAdj=YTM").Data[0][0]
+        print('遇到新股',code)
+    if df.loc[idx,'到期估值'] == None:
+        # 188035
+        print('新股且无法读取今日估值,跳过',code , net_date)
+        continue
+
+    # 【行权估值】
+    df.loc[idx,'行权估值'] = w.wsd(code, "yield_cnbd", last_date, last_date,
+         "credibility=3;PriceAdj=YTM").Data[0][0]
+    if df.loc[idx,'行权估值'] == None:
+        df.loc[idx,'行权估值'] = w.wsd(code, "yield_cnbd", net_date, net_date,
+         "credibility=3;PriceAdj=YTM").Data[0][0]
+        print('遇到新股',code)
+    if df.loc[idx,'到期估值'] == None:
+        print('无法读取到期估值,跳过',code , net_date)
+    
+    # 【部分债无行权日】
+    df.loc[idx,'行权日'] = w.wsd(code, "nxoptiondate",net_date,net_date, "type=All").Data[0][0]
+    if df.loc[idx,'行权日'] == None:
+        df.loc[idx,'行权日'] = 0
+    # 【】
+    df.loc[idx,'行业'] = w.wsd(code,"industry_csrc12_n",last_date,last_date,"industryType=3").Data[0][0]
+    df.loc[idx,'企业性质']=w.wsd(code, "nature1", last_date, last_date, "").Data[0][0]
+    df.loc[idx,'隐含评级'] = w.wsd(code, "rate_latestMIR_cnbd", net_date, net_date, "").Data[0][0]
+    # 【price】
+    if df.loc[idx,'价格']<20:
+        price = df.loc[idx,'价格']
+    else: 
+        x = w.wss(code, "calc_yield","","balanceDate={};bondPrice={};\
+            bondPriceType=1;maturityDate={}".\
+            format(int(net_date),net_price,\
+            str2int(df.loc[idx,'行权日'])) ).Data[0][0]
+
+        if not x:
+            print('price超过20的且无值：',idx) # 
+            continue
+
+        if x < 0.3:
+            price = w.wss(code, "calc_yield","","balanceDate={};bondPrice={};\
+                bondPriceType=1".\
+                format(int(net_date),net_price)).Data[0][0]
+            # test
+            print(code,net_date,'bc1小于0.3用了不含行权日的到期收益率')
+        else:
+            price = x
+    df.loc[idx,'price'] = price
+    # 【估值偏离】
+    ## 用当前成交价price和到期/行权估值的最小距离
+    if df.loc[idx, '到期估值']==0:
+        x =( w.wsd(code, "couponrate2").Data[0][0] - df.loc[1,'price'] )* 100
+    else:
+        if abs(df.loc[idx,'price']-df.loc[idx,'到期估值']) > abs(df.loc[idx,'price']-df.loc[idx,'行权估值']):
+            x = (df.loc[idx,'price']-df.loc[idx,'行权估值'])*100
+        else:
+            x = (df.loc[idx,'price']-df.loc[idx,'到期估值'])*100
+    df.loc[idx,'估值偏离'] = x
+    # 【剩余期限】
+    if abs(df.loc[idx,'price'] - df.loc[idx,'到期估值']) > abs(df.loc[idx,'price'] - df.loc[idx,'行权估值']):
+        x = w.wsd(code,"termifexercise", net_date, net_date, "").Data[0][0]
+    else:
+        x = w.wsd(code,"ptmyear", net_date, net_date, "").Data[0][0]
+    df.loc[idx,'剩余期限'] = x
+
+
+# 存入数据库
+for i in range(20):
+    print(df.columns[i],df.iloc[0,i])
+
+columns_type = [VARCHAR(30),VARCHAR(30),Float(),DateTime(),DateTime(),
+                  VARCHAR(30),Float(),Float(),DateTime(),
+                  Float(),VARCHAR(30),Float(),Float(),
+                  VARCHAR(30),VARCHAR(30),VARCHAR(30),
+                  VARCHAR(30),VARCHAR(40),VARCHAR(30),
+                  VARCHAR(30),VARCHAR(30)]
+dtypelist = dict(zip(df.columns,columns_type))
+
+for c in df.columns:
+    df[c] = df[c].replace('',np.nan,regex=True)
+df['行权日'] = df['行权日'].replace(0,np.nan,regex=True)
+l = [(df,'CreditBondTrading',dtypelist)]
+for a,b,c in l:
+    a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
+    
 
 ## * 自生成的列
 def anal_grouping(se):

@@ -53,8 +53,7 @@ def daily_fig_SRDI():
 def daily_fig_liquidity_premium():
     err,df=w.edb('M0017139,M0041653,M0220163,\
     M0017142,M0048486,M1010889,M1010892,M0329545,\
-    M1011048', 
-                        start,end,"Fill=Previous",usedf=True)
+    M1011048', start,end,"Fill=Previous",usedf=True)
     df.columns=["shibor_7d","质押回购利率_7天","存款类质押回购利率_7天",
                 "shibor_3m","IRS：FR007：1y","存单_AAA_3m","存单_AAA_1y","MLF：1年",
                 "国股银票转贴现收益率_3m"]
@@ -129,11 +128,13 @@ def daily_fig_credit_premium():
 
 def fig_industrial_production():
     # 工业生产
-    err,df = w.edb("S5704502,S5715680,S5708175,S5715660",
+    err,df = w.edb("S5704502,S5715680,S5708175,S5715660,S5417017,S5914175",
                     start, end,usedf = True)
+
     # ,"Fill=Previous"
     df.columns = ["日均产量：粗钢：国内", "日均产量：焦炭：重点企业(旬)",
-                  "高炉开工率(163家):全国", "产能利用率:电炉:全国"]
+                  "高炉开工率(163家):全国", "产能利用率:电炉:全国",
+                  "PTA产业链负荷率:PTA工厂","浮法玻璃:产能利用率"]
     #df = df.dropna(axis = 0)
     # df = df.fillna(0)
     df['date'] = df.index
@@ -142,7 +143,7 @@ def fig_industrial_production():
     columns_type = [Float(),
                   Float(),
                   Float(),
-                  Float(),
+                  Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 
@@ -151,19 +152,21 @@ def fig_industrial_production():
 def fig_cpi_ppi_related():
     # 物价（CPI、PPI相关）
     err,df = w.edb("S0000241,S0000242,S0000240,S0000236,    \
-           S5065111,S5065112,S0143884,S5042881,S0105896,S0031505",
+           S5065111,S5065112,S0143884,S5042881,S0105896,S0031505,\
+           S0248945,M6424471",
           start, end,usedf = True)
     df.columns = ["食用农产品价格指数:蛋类:周环比", "食用农产品价格指数:蔬菜类:周环比",
                   "食用农产品价格指数:禽类:周环比", "食用农产品价格指数",
                   '平均批发价:28种重点监测蔬菜', '平均批发价:7种重点监测水果','平均价:猪肉:全国',
-                  '中国大宗商品价格指数:总指数','南华综合指数','CRB现货指数:综合']
+                  '中国大宗商品价格指数:总指数','南华综合指数','CRB现货指数:综合',
+                  '农产品批发价格200指数','iCPI:总指数:日环比']
 
     df['date'] = df.index
 
     name = 'fig_cpi_ppi_related'
     columns_type = [Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
-                  Float(),Float(),
+                  Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 
@@ -173,18 +176,18 @@ def fig_upstream():
     # 上游
     err,df = w.edb("S5104570,S5125686,S5111905,S5111903,\
             S5705040,S5705131,S0031648,S0031645,\
-            M0066355,M0066356,S0049493,S0049494",
+            M0066355,M0066356,S0049493,S0049494,S0200868",
             start, end, usedf = True)
     df.columns = ['综合平均价格指数:环渤海动力煤','炼焦煤库存:六港口合计',
                   '现货价:原油:英国布伦特Dtd','现货价:原油:美国西德克萨斯中级轻质原油(WTI)',
                   'Mylpic矿价指数:综合','国内铁矿石港口库存量','伦敦现货白银:以美元计价',
                   '伦敦现货黄金:以美元计价','期货收盘价(活跃合约):阴极铜','期货收盘价(活跃合约):铝',
-                  '库存期货:阴极铜','库存期货:铝']
+                  '库存期货:阴极铜','库存期货:铝','南华焦炭指数']
     df['date'] = df.index
     name = 'fig_upstream'
     columns_type = [Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
-                  Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 
@@ -192,15 +195,17 @@ def fig_upstream():
 
 def fig_midstream():
     # 中游
-    err,df = w.edb("S5705039,S0247603,S0181750,S5914515,S5907373,S5416650,M0067419,M0066359", 
+    err,df = w.edb("S5705039,S0247603,S0181750,S5914515,S5907373,S5416650,M0067419,M0066359,\
+                M0066348,M0066350", \
                    start, end, usedf = True)
     df.columns = ['Mylpic综合钢价指数','库存:主要钢材品种:合计','库存:螺纹钢(含上海全部仓库)',
                   '水泥价格指数:全国','中国玻璃价格指数','中国盛泽化纤价格指数',
-                  '期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶']
+                  '期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶',
+                  '期货收盘价(活跃合约):黄大豆1号','期货收盘价(活跃合约):黄玉米']
     df['date'] = df.index
     name = 'fig_midstream'
     columns_type = [Float(),Float(),Float(),Float(),
-                  Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 
@@ -230,20 +235,21 @@ def rate_diff():
     # S0059744,S0059746,S0059747,S0059749
     return 
 
-def industrial_premium():
+def industries_premium():
     # 地产/钢铁/煤炭/有色/汽车
-    err,df = w.edb("M1012893,M1012983,M1013073", 
+    err,df = w.edb("M1008950,M1008953,M1008973,M1008971,M1008964", 
                    start, end, usedf = True) 
-    df.columns = []
+    df.columns = ["信用利差_地产","信用利差_钢铁","信用利差_煤炭",\
+                  "信用利差_有色","信用利差_汽车"]
     df['date'] = df.index
-    name = 'fig_industial_premium'
+    name = 'fig_industries_premium'
 
     columns_type = [Float(),Float(),Float(),Float(),
-                  Float(),Float(),Float(),Float(),
+                  Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 
-    return
+    return df,name,dtypelist
 
 # def 
 
@@ -291,7 +297,7 @@ def main():
     """
 
  
-    # l = [daily_fig_bond_leverage()]
+    l = [industries_premium()]
 
     for a,b,c in l:
         # for i in range(len(a)):

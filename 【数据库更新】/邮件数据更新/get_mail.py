@@ -98,7 +98,7 @@ def download_certain_mail(msg_list,download_io):
 
 def main():
     # 附件下载路径
-    download_io = "/Users/wdt/Desktop/tpy/邮件处理/附件下载/"
+    download_io = "/Users/wdt/Desktop/tpy/raw_data_pool/现券市场交易情况总结/日报"
     
     
     # @ 读取mail_config.txt内的邮箱信息
