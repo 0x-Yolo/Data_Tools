@@ -8,9 +8,8 @@ import re
 import pandas as pd
 import numpy as np
 import datetime as dt#准备工作，配置环境。
-
+import data_organize as do
 # 文件夹内现券交易数据完整
-input_path = '/Users/wdt/Desktop/tpy/raw_data_pool'
 
 def organize(df):
     ''' 整理数据 '''
@@ -40,15 +39,14 @@ def upload_date_list():
     最后依照此列表逐个上传
     '''
     dir_date=[]
-    df = pd.read_sql('select * from Net_buy_bond' , conn)
-    last_date = df.iloc[-1 , -1]
+    latest_date = do.get_latest_date('Net_buy_bond')
 
     for dir in os.listdir(input_path+"/现券市场交易情况总结/日报"):
         if '现券' not in dir:
             continue
         attach_time = re.match(".*\\d{8}\\.",dir).group()[-9:-1]
         attach_datetime = pd.to_datetime(attach_time)
-        if attach_datetime > last_date:
+        if attach_datetime > latest_date:
             dir_date.append(attach_datetime.strftime("%Y%m%d"))
         else:
             pass
@@ -166,36 +164,11 @@ def daily_Repo_amt_prc_for_collateral(date):
     dtypelist = dict(zip(df.columns,columns_type))#变成字典形式       
     return df,name,dtypelist
 
-def get_db_conn(io):
-    with open(io, 'r') as f1:
-        config = f1.readlines()
-    for i in range(0, len(config)):
-        config[i] = config[i].rstrip('\n')
-
-    host = config[0]  
-    username = config[1]  # 用户名 
-    password = config[2]  # 密码
-    schema = config[3]
-    port = int(config[4])
-    engine_txt = config[5]
-
-    conn = pymysql.connect(	
-        host = host,	
-        user = username,	
-        passwd = password,	
-        db = schema,	
-        port=port,	
-        charset = 'utf8'	
-    )	
-    engine = create_engine(engine_txt)
-    return conn, engine
-
 def main():
+    input_path = '/Users/wdt/Desktop/tpy/raw_data_pool'
 
     # * 读取db.txt内的数据库信息
-    db_path = "/Users/wdt/Desktop/tpy/db.txt"
-    conn , engine = get_db_conn(db_path)
-
+    conn,engine = do.get_db_conn()
     dir_list = upload_date_list()
     for date in dir_list:
         l = [daily_Net_buy_bond(date)]

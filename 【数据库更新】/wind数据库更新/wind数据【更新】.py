@@ -20,7 +20,7 @@ def upload_date(name):
     """
     
     dir_date = []
-    df = pd.read_sql('select * from {}'.format(name) , conn)
+    df = pd.read_sql('select max(date) from {}'.format(name) , conn)
     last_date = df.iloc[-1 , -1]
     
     # start_date = last_date + dt.timedelta(days = 1)

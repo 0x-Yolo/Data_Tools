@@ -1,4 +1,5 @@
 import imaplib
+import poplib
 import email
 from email.header import decode_header
 from email.parser import BytesParser
@@ -26,7 +27,7 @@ def get_mail_pool(host, username, password, n=5):
     
     #typ, data = conn.search(None, 'ALL')
 
-    typ, data = conn.search(None, '(FROM "xxxx@xxx.com")')
+    typ, data = conn.search(None, '(FROM "admin@tpyzq.com")')
     print("已经从 xxx 得到data")
 
     msg_list=[]
@@ -34,7 +35,6 @@ def get_mail_pool(host, username, password, n=5):
     for num in data[0].split()[::-1]:#邮件编码
         typ, data_content = conn.fetch(num, '(RFC822)')
         text = data_content[0][1]#邮件内容
-        break
         msg = email.message_from_string(text.decode())   # 转换为email.message对象
         msg_list.append(msg)
         count += 1
@@ -111,7 +111,7 @@ def main():
     username = config[1]  # 用户名 
     password = config[2]  # 密码
 
-    
+
     #获取邮件池子
     msg_list = get_mail_pool(host,username,password)
     #下载邮件
