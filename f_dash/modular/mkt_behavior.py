@@ -24,14 +24,8 @@ import datetime as dt
 
 # #图一： 设置多日期看债券市场转移：返回图像和数据
 # def daily_bond_transform(dates,duration,bond_type):
-#     conn = pymysql.connect(
-#         host = '47.116.3.109',	
-#         user = 'user1',	
-#         passwd = '123456',	
-#         db = 'finance',	
-#         port=3306,	
-#         charset = 'utf8'	
-#     )
+#        conn,engine = do.get_db_conn()
+
 #     df = pd.read_sql('select * from Net_buy_bond',conn)
 #     if type(dates)==tuple:
 #         df_cut_t = pd.DataFrame()
@@ -74,13 +68,7 @@ import datetime as dt
 
 #图二
 def Fig_Net_buy_bond(bond_buyer,bond_duration,bond_type):
-    conn = pymysql.connect(
-    host = '47.116.3.109',	
-    user = 'user1',	
-    passwd = '123456',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8')
+    conn,engine = do.get_db_conn()
 
     df = pd.read_sql('select * from Net_buy_bond',conn)
 
@@ -113,14 +101,8 @@ def Fig_Net_buy_bond(bond_buyer,bond_duration,bond_type):
 
 #图三
 def Fig_Repo_amt_prc_for_terms(repo_loaner,repo_terms,flow_or_abs_repo_amt):
-    conn = pymysql.connect(	
-    host = '47.116.3.109',	
-    user = 'user1',	
-    passwd = '123456',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8'	
-)	
+    conn,engine = do.get_db_conn()
+
     df = pd.read_sql('select * from Repo_amt_prc_for_terms',conn)
     df["回购余额"]=df["正回购余额(百万)"]-df["逆回购余额(百万)"]
     dff = df[df["期限品种"].isin(list(repo_terms))]#选中的期限
@@ -147,14 +129,8 @@ def Fig_Repo_amt_prc_for_terms(repo_loaner,repo_terms,flow_or_abs_repo_amt):
 
 def fig_margin_newfund_scale():
     fig=go.Figure()
-    conn = pymysql.connect(
-    host = '47.116.3.109',	
-    user = 'dngj',	
-    passwd = '603603',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8mb4'	
-)
+    conn,engine = do.get_db_conn()
+
     dff = pd.read_sql('select * from margin_newfund_scale',conn)
     df=dff.iloc[:,:-1]
     date=dff["date"] 
@@ -169,14 +145,8 @@ def fig_margin_newfund_scale():
 def fig_margin_newfund_amt():
     fig=go.Figure()
     data=[]
-    conn = pymysql.connect(
-        host = '47.116.3.109',	
-        user = 'user1',	
-        passwd = '123456',	
-        db = 'finance',	
-        port=3306,	
-        charset = 'utf8'	
-    )
+    conn,engine = do.get_db_conn()
+
     dff = pd.read_sql('select * from margin_newfund_amt',conn)
     df=dff.iloc[:,:-1]
     data=dff["date"] 
@@ -189,27 +159,15 @@ def fig_margin_newfund_amt():
 
 def fig_margin_newfund_amt_slider():
     
-    conn = pymysql.connect(
-        host = '47.116.3.109',	
-        user = 'user1',	
-        passwd = '123456',	
-        db = 'finance',	
-        port=3306,	
-        charset = 'utf8'	
-    )
+    conn,engine = do.get_db_conn()
+
     df = pd.read_sql('select * from net_assets_fund_type',conn).round(decimals=2)
     return df["date"]
 
 
 def fig_net_assets_fund_type(date_slider_fig_net_assets_fund_type):
-    conn = pymysql.connect(
-        host = '47.116.3.109',	
-        user = 'user1',	
-        passwd = '123456',	
-        db = 'finance',	
-        port=3306,	
-        charset = 'utf8'	
-    )
+    conn,engine = do.get_db_conn()
+
     df = pd.read_sql('select * from net_assets_fund_type',conn).round(decimals=2)
 
     dff=df[df["date"]==date_slider_fig_net_assets_fund_type].iloc[:,:-1]

@@ -12,6 +12,7 @@ from sqlalchemy import exc
 import os
 import re
 from WindPy import w
+import data_organize as do
 w.start()
 
 def str2int(s):
@@ -19,15 +20,7 @@ def str2int(s):
         return s
     return int(s[:4]+s[5:7]+s[8:10])
 
-engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
-conn = pymysql.connect(	
-    host = '47.116.3.109',	
-    user = 'dngj',	
-    passwd = '603603',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8'	
-    )	
+conn,engine = do.get_db_conn()
 # 导入数据，邮件/本地
 df = pd.read_sql('select * from finance.CreditBondTrading_v3',conn)
 # test

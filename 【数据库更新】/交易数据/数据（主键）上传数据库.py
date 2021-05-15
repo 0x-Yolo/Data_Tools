@@ -11,6 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import exc
 import os
 import re
+import data_organize as do
 
 data = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/examples/21010426-0430.xlsm',\
     sheet_name='数据')
@@ -29,7 +30,7 @@ for dir in os.listdir('./examples'):
         dirr['估值时间'] = dirr['时间'] - dt.timedelta(days=1)
         d = d.append(dirr[['方向','代码','价格','时间','估值时间']])
 
-engine = create_engine('mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8')
+conn,engine = do.get_db_conn()
 add_cols = ['名字','到期估值','行权估值','行权日','price','type','估值偏离',\
     '剩余期限','rating','债券期限','城投','行业','发行人','企业性质','隐含评级','发行方式']
 for c in add_cols:

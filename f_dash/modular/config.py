@@ -6,20 +6,13 @@ import datetime as dt
 import pandas as pd
 import  pymysql
 import json
-
+import data_organize as do
 
 # %%
 class Inter_Graph: 
     
     #定义基本属性 
-    conn = pymysql.connect(
-        host = '47.116.3.109',	
-        user = 'user1',	
-        passwd = '123456',	
-        db = 'finance',	
-        port=3306,	
-        charset = 'utf8'	
-    )
+    conn,engine = do.get_db_conn()
     df = pd.read_sql('select * from Net_buy_bond',conn)
     bond_type_OL = df.columns[3:-1].tolist()
     bond_duration_OL = df["期限"].unique().tolist()
@@ -50,14 +43,8 @@ def get_geo_data():
 
 # %%
 def get_ir_diff():
-    conn = pymysql.connect(
-        host = '47.116.3.109',	
-        user = 'dngj',	
-        passwd = '603603',	
-        db = 'finance',	
-        port=3306,	
-        charset = 'utf8mb4'	
-        )
+    conn,engine = do.get_db_conn()
+
     # 城投债数据
     data=pd.read_sql('select * from Credit_Premium',conn)
     # 基准利率数据

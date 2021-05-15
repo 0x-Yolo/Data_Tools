@@ -52,14 +52,7 @@ geo_data=pd.DataFrame({"id":geo_id,"区域":geo_name})
 Credit_Assistant_io=r"Credit_Assistant.xlsx"
 
 # -----------------------------------从数据库读取数据-----------------------------
-conn = pymysql.connect(
-    host = '47.116.3.109',	
-    user = 'dngj',	
-    passwd = '603603',	
-    db = 'finance',	
-    port=3306,	
-    charset = 'utf8mb4'	
-)
+conn ,engine = do.get_db_conn()
 # 城投债数据
 data=pd.read_sql('select * from Credit_Premium',conn)
 # 基准利率数据
