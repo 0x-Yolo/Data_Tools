@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>资源池：数据表 · GitBook</title>
+        <title>如何从数据库导出报告 · GitBook</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -57,6 +57,10 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="方法-从数据库导出数据.html" />
+    
+    
+    <link rel="prev" href="../" />
     
 
     </head>
@@ -105,7 +109,7 @@
         
         
     
-        <li class="chapter " data-level="2.1" data-path="方法-从数据库导出报告.html">
+        <li class="chapter active" data-level="2.1" data-path="方法-从数据库导出报告.html">
             
                 <a href="方法-从数据库导出报告.html">
             
@@ -203,7 +207,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="4.2" data-path="数据表信息.html">
+        <li class="chapter " data-level="4.2" data-path="数据表信息.html">
             
                 <a href="数据表信息.html">
             
@@ -246,7 +250,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >资源池：数据表</a>
+        <a href=".." >如何从数据库导出报告</a>
     </h1>
 </div>
 
@@ -261,108 +265,37 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="&#x6570;&#x636E;&#x8868;">&#x6570;&#x636E;&#x8868;</h1>
-<h2 id="&#x7ECF;&#x6D4E;&#x6570;&#x636E;&#xFF08;&#x5468;&#x5EA6;&#x9AD8;&#x9891;&#xFF09;">&#x7ECF;&#x6D4E;&#x6570;&#x636E;&#xFF08;&#x5468;&#x5EA6;&#x9AD8;&#x9891;&#xFF09;</h2>
-<table>
-<thead>
-<tr>
-<th>&#x8868;&#x540D;&#x79F0;</th>
-<th>&#x8BF4;&#x660E;</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="tables/industrial_production">fig_industrial_production</a></td>
-<td>&#x5DE5;&#x4E1A;&#x751F;&#x4EA7;&#x6570;&#x636E;</td>
-</tr>
-<tr>
-<td><a href="tables/cpi_ppi_related">fig_cpi_ppi_related</a></td>
-<td>&#x7269;&#x4EF7;&#xFF08;CPI/PPI&#x76F8;&#x5173;&#xFF09;</td>
-</tr>
-<tr>
-<td><a href="tables/upstream">fig_upstream</a></td>
-<td>&#x4E0A;&#x6E38;</td>
-</tr>
-<tr>
-<td><a href="tables/midstream">fig_midstream</a></td>
-<td>&#x4E2D;&#x6E38;</td>
-</tr>
-<tr>
-<td><a href="#&#x4E0B;&#x6E38;">fig_downstream</a></td>
-<td>&#x4E0B;&#x6E38;</td>
-</tr>
-</tbody>
-</table>
-<h3 id="&#x5DE5;&#x4E1A;&#x751F;&#x4EA7;&#x6570;&#x636E;">&#x5DE5;&#x4E1A;&#x751F;&#x4EA7;&#x6570;&#x636E;</h3>
-<h3 id="&#x4E0A;&#x6E38;">&#x4E0A;&#x6E38;</h3>
-<h3 id="&#x4E2D;&#x6E38;">&#x4E2D;&#x6E38;</h3>
-<h3 id="&#x4E0B;&#x6E38;">&#x4E0B;&#x6E38;</h3>
-<table>
-<thead>
-<tr>
-<th>&#x5217;&#x540D;</th>
-<th>&#x66F4;&#x65B0;&#x9891;&#x7387;</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>30&#x5927;&#x4E2D;&#x57CE;&#x5E02;:&#x5546;&#x54C1;&#x623F;&#x6210;&#x4EA4;&#x5957;&#x6570;</td>
-<td>&#x65E5;</td>
-</tr>
-<tr>
-<td>30&#x5927;&#x4E2D;&#x57CE;&#x5E02;:&#x5546;&#x54C1;&#x623F;&#x6210;&#x4EA4;&#x9762;&#x79EF;</td>
-<td>&#x65E5;</td>
-</tr>
-<tr>
-<td>100&#x5927;&#x4E2D;&#x57CE;&#x5E02;:&#x6210;&#x4EA4;&#x571F;&#x5730;&#x6EA2;&#x4EF7;&#x7387;:&#x5F53;&#x5468;&#x503C;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x5F53;&#x5468;&#x65E5;&#x5747;&#x9500;&#x91CF;:&#x4E58;&#x7528;&#x8F66;:&#x5382;&#x5BB6;&#x96F6;&#x552E;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x67EF;&#x6865;&#x7EBA;&#x7EC7;:&#x4EF7;&#x683C;&#x6307;&#x6570;:&#x603B;&#x7C7B;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x4E49;&#x4E4C;&#x4E2D;&#x56FD;&#x5C0F;&#x5546;&#x54C1;&#x6307;&#x6570;:&#x603B;&#x4EF7;&#x683C;&#x6307;&#x6570;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x4E2D;&#x5173;&#x6751;&#x7535;&#x5B50;&#x4EF7;&#x683C;&#x4EA7;&#x54C1;&#x6307;&#x6570;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x4E2D;&#x56FD;&#x516C;&#x8DEF;&#x7269;&#x6D41;&#x8FD0;&#x4EF7;&#x6307;&#x6570;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x7535;&#x5F71;&#x7968;&#x623F;&#x6536;&#x5165;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x7535;&#x5F71;&#x89C2;&#x5F71;&#x4EBA;&#x6B21;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>CCFI:&#x7EFC;&#x5408;&#x6307;&#x6570;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>CICFI:&#x7EFC;&#x5408;&#x6307;&#x6570;</td>
-<td>&#x5468;</td>
-</tr>
-<tr>
-<td>&#x6CE2;&#x7F57;&#x7684;&#x6D77;&#x5E72;&#x6563;&#x8D27;&#x6307;&#x6570;(BDI)</td>
-<td>&#x65E5;</td>
-</tr>
-<tr>
-<td>date</td>
-<td>&#x65E5;</td>
-</tr>
-</tbody>
-</table>
+                                <h1 id="&#x4F7F;&#x7528;python&#x5BFC;&#x51FA;&#x62A5;&#x544A;">&#x4F7F;&#x7528;Python&#x5BFC;&#x51FA;&#x62A5;&#x544A;</h1>
+<ol>
+<li><p>&#x5728;Python&#x7F16;&#x8F91;&#x5668;&#x4E2D;&#x5BFC;&#x5165;&#x9700;&#x8981;&#x7528;&#x5230;&#x7684;&#x5E93;</p>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> ReportGenerator <span class="hljs-keyword">as</span> rg
+</code></pre>
+</li>
+<li><p>&#x65B0;&#x5EFA;&#x4E00;&#x4E2A;my_report&#x5BF9;&#x8C61;</p>
+<pre><code class="lang-python"><span class="hljs-comment"># ReportGenerator&#x5E93;&#x91CC;&#x6709;&#x4E0D;&#x540C;&#x529F;&#x80FD;&#x7684;Report&#x7C7B;&#xFF0C;&#x9002;&#x7528;&#x4E8E;&#x4E0D;&#x540C;&#x9700;&#x6C42;</span>
+<span class="hljs-comment"># &#x8FD9;&#x91CC;&#x4EE5;&#x5B8F;&#x89C2;&#x62A5;&#x544A;&#x4E3A;&#x4F8B;&#xFF0C;&#x8BE5;&#x5BF9;&#x8C61;&#x5728;&#x5E93;&#x4E2D;&#x7684;&#x547D;&#x540D;&#x4E3A;MacroReport</span>
+my_report = rg.MacroReport()
+</code></pre>
+</li>
+<li><p>&#x8C03;&#x7528;my_report&#x7684;&#x753B;&#x56FE;&#x65B9;&#x6CD5;</p>
+<pre><code class="lang-python"><span class="hljs-comment"># &#x5DE5;&#x4E1A;&#x751F;&#x4EA7;</span>
+my_report.fig_industrial_production()
+<span class="hljs-comment"># &#x7269;&#x4EF7;</span>
+my_report.fig_cpi_ppi_related()
+<span class="hljs-comment"># &#x4E0A;&#x6E38;</span>
+my_report.fig_upstream()
+<span class="hljs-comment"># &#x4E2D;&#x6E38;</span>
+my_report.fig_midstream()
+<span class="hljs-comment"># &#x4E0B;&#x6E38;</span>
+my_report.fig_downstream()
+</code></pre>
+</li>
+<li><p>&#x6253;&#x5370;&#x4E3A;pdf&#x6587;&#x6863;&#xFF0C;&#x5B83;&#x5C06;&#x81EA;&#x52A8;&#x4FDD;&#x5B58;&#x5230;&#x4F60;&#x7684;Python&#x7A0B;&#x5E8F;&#x8FD0;&#x884C;&#x76EE;&#x5F55;&#x4E0B;</p>
+<pre><code class="lang-python">my_report.print_all_fig()
+</code></pre>
+</li>
+</ol>
+<p><code>&#x6210;&#x529F;&#x6253;&#x5370;5&#x5F20;&#x56FE;&#x7247;,&#x4FDD;&#x5B58;&#x4E3A; /Users/wdt/Desktop/tpy/Data_Tools/&#x3010;&#x6570;&#x636E;&#x5E93;&#x66F4;&#x65B0;&#x3011;/&#x62A5;&#x544A;/&#x751F;&#x6210;&#x7684;&#x62A5;&#x544A;/&#x7ECF;&#x6D4E;&#x6570;&#x636E;&#x9AD8;&#x9891;&#x8DDF;&#x8E2A;&#x5468;&#x62A5;2021-05-17.pdf</code></p>
 
                                 
                                 </section>
@@ -390,6 +323,14 @@
 
             
                 
+                <a href="../" class="navigation navigation-prev " aria-label="Previous page: Introduction">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="方法-从数据库导出数据.html" class="navigation navigation-next " aria-label="Next page: 如何从数据库导出数据">
+                    <i class="fa fa-angle-right"></i>
+                </a>
                 
             
         
@@ -398,7 +339,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"资源池：数据表","level":"4.2","depth":1,"previous":{"title":"资源池：函数池","level":"4.1","depth":1,"ref":"","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"docs/数据表信息.md","mtime":"2021-05-10T08:47:55.069Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-17T06:35:04.952Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"如何从数据库导出报告","level":"2.1","depth":1,"next":{"title":"如何从数据库导出数据","level":"2.2","depth":1,"path":"docs/方法-从数据库导出数据.md","ref":"docs/方法-从数据库导出数据.md","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"docs/方法-从数据库导出报告.md","mtime":"2021-05-17T06:34:15.258Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-17T06:35:04.952Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>
