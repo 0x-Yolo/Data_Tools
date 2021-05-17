@@ -13,7 +13,7 @@
 
 ## 资源汇总
 
-* [函数池](docs/)
+* 函数池
   * ReportGenerator库
   * data_organize
-* [数据表](docs/数据表信息.md)
+* 数据表
