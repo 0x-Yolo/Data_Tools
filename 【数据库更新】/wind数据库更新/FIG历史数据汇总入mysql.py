@@ -24,31 +24,7 @@ end=end.strftime("%Y-%m-%d")
 # err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
 #               '2021-04-20','2021-04-20',usedf=True) 
 
-def daily_fig_SRDI():
-    err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
-               start,end, "Fill=Previous",usedf=True) 
-    df.columns = ['加权利率:R001','成交量:R001','成交量:R007','成交量:R014',
-              '成交量:R021','成交量:R1M', '成交量:R2M','成交量:R3M', 
-              '成交量:R4M', '成交量:R6M', '成交量:R9M']
-    df['date'] = df.index
-    df = df.dropna(axis = 0)
 
-    name = 'fig_SRDI'
-    columns_type=[Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  Float(),
-                  DateTime()]
-    dtypelist = dict(zip(df.columns,columns_type))
-
-    return df, name , dtypelist
 
 def daily_fig_liquidity_premium():
     err,df=w.edb('M0017139,M0041653,M0220163,\

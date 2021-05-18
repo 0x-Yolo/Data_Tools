@@ -138,7 +138,7 @@ def fig_downstream():
     err,df=w.edb("S2707379,S2707380,S2726996,S6126413, \
                   S0049599,S0000293,S6500614,S6424740, \
                   S6604459,S6604460,S0000066,S0237842,S0031550",
-                start, end,usedf = True)
+                last_date, today_date,usedf = True)
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ['30大中城市:商品房成交套数','30大中城市:商品房成交面积','100大中城市:成交土地溢价率:当周值',
@@ -157,6 +157,7 @@ def fig_downstream():
 
 def main():
     conn,engine = do.get_db_conn() 
+    w.start()
     # 宏观周报数据
     l =    [
             fig_industrial_production(),

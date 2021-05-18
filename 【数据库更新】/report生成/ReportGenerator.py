@@ -27,7 +27,6 @@ set_style_A={'grid.linestyle': '--',
 plt.rcParams['font.family']=['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
-conn , engine = do.get_db_conn()
 
 # 时间设置
 #去极值
@@ -55,7 +54,15 @@ def w_transform_data(data,select="id"):
     return df
 def volatility_series(series,window=14):
     return series.rolling(window).std()
-    
+
+class weeklyReport():
+    def cash_cost():
+        df = do.get_data()
+    def policy_rate():
+        df = do.get_data('policy_rate')# TODO 数据库查询函数
+    def monetary_policy_tools():
+
+
 class MacroReport():
 
     def __init__(self, years = 1):
@@ -987,7 +994,7 @@ if __name__=='__main__':
     """
 
     # 数据库私钥
-    conn , engine = do.get_db_conn()
+    # conn , engine = do.get_db_conn()
 
     '''    
     report= Report(years=10)

@@ -7,8 +7,12 @@ import  pymysql
 from sqlalchemy import create_engine
 
 path = "/Users/wdt/Desktop/tpy/db.txt"
+# get_db_conn('/Users/wdt/Desktop/tpy/test01.txt')
 
-def get_db_conn():
+def get_db_conn(path = '/Users/wdt/Desktop/tpy/db.txt'):
+    '''
+    path:::存有数据库账号信息的txt
+    '''
     io = path
     with open(io, 'r') as f1:
         config = f1.readlines()
