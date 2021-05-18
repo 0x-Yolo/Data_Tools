@@ -15,5 +15,5 @@
 
 * 函数池
   * ReportGenerator库
-  * data_organize
+  * data_organize库
 * 数据表
