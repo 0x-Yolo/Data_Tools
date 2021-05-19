@@ -5,15 +5,15 @@ import pandas as pd
 import numpy as np
 import  pymysql
 from sqlalchemy import create_engine
-
-path = "/Users/wdt/Desktop/tpy/db.txt"
+path = input('输入存放数据库信息的地址')
+# path = "/Users/wdt/Desktop/tpy/db.txt"
 # get_db_conn('/Users/wdt/Desktop/tpy/test01.txt')
 
-def get_db_conn(path = '/Users/wdt/Desktop/tpy/db.txt'):
+def get_db_conn(io = path):
     '''
     path:::存有数据库账号信息的txt
     '''
-    io = path
+    
     with open(io, 'r') as f1:
         config = f1.readlines()
     for i in range(0, len(config)):
@@ -43,14 +43,14 @@ def upload_data(df,name,method="append"):
     name = name
     method = method
 
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
 
     df.to_sql(name=name,con = engine,schema='finance',if_exists = method ,index=False)
     return 
 
 # 设定需要上传的时间段
 def get_un_upload_timerange(table_name):
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
 
     excu="select * from "
     table_name=table_name
@@ -63,7 +63,7 @@ def get_un_upload_timerange(table_name):
 
 def get_data(table_name):
     """获取表名"""
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
     excu="select * from "
     table_name=table_name
     dff = pd.read_sql(excu+table_name,conn)
@@ -71,7 +71,7 @@ def get_data(table_name):
 
 def get_all_table_name():
     # 获取数据库所有表名
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
 
     cursor = conn.cursor()
     cursor.execute('select table_name from information_schema.tables where table_schema="finance" ')
@@ -94,7 +94,7 @@ def daily_uplpad_table_names():
     return daily_uplpad_table_names
 
 def get_latest_date(table_name):
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
     excu="select max(date) from "
     table_name=table_name
     return pd.read_sql(excu+table_name ,conn).iloc[-1,-1]

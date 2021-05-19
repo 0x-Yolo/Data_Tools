@@ -1,19 +1,55 @@
 # 使用Python导出数据库的数据
 
+## 方法一
 1. 在Python编辑器中导入需要用到的库
 
    ```python
    import data_organize as do
    ```
 
-2. 导出为excel文件
+2. 导出为Excel文件
 
    ```python
-   # 事先了解数据表的名称
+   # 输入数据表的名称
    table_name = 'Net_buy_bond'
    # 利用data_organize库内的函数从数据库获取表格
    mydata = do.get_data(table_name)
    # 导出为Excel
    mydata.to_excel('现券交易数据.xlsx',index = False)
    ```
+
+
+
+## 方法二
+
+1. 在Python编辑器中导入需要用到的库
+
+   ```pythonp y
+   import pymysql
+   from sqlalchemy import create_engine
+
+2. 连接数据库
+
+   ```python
+   conn = pymysql.connect(	
+           host = host,	
+           user = username,	
+           passwd = password,	
+           db = 'finance',	
+           port=port,	
+           charset = 'utf8'	
+       )	
+   engine = create_engine(mysql+pymysql://user:password@host:port/finance?charset=utf8)
+   ```
+
+3. 获取表格并导出
+
+   ```python
+   table_name = 'Net_buy_bond'
+   excu = 'select * from ' + table_name
+   mydata = pd.read_sql(excu, conn)
+   mydata.to_excel('现券交易数据.xlsx',index = False)
+   ```
+
+   
 

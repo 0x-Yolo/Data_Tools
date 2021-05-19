@@ -27,6 +27,13 @@ set_style_A={'grid.linestyle': '--',
 plt.rcParams['font.family']=['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
+# 存一个数据库信息的文本
+path = input('输入存放数据库信息的地址')
+
+conn , engine = do.get_db_conn(path)
+print('成功连接数据库finance')
+# conn , engine = do.get_db_conn('/Users/wdt/Desktop/tpy/db.txt')
+
 
 # 时间设置
 #去极值
@@ -55,15 +62,29 @@ def w_transform_data(data,select="id"):
 def volatility_series(series,window=14):
     return series.rolling(window).std()
 
-class weeklyReport():
+class weeklyReport:
     def cash_cost():
+        # 资金价格
         df = do.get_data()
+        return
     def policy_rate():
+        # 政策利率
         df = do.get_data('policy_rate')# TODO 数据库查询函数
+        return
     def monetary_policy_tools():
+        # 公开市场投放
+        return
+    def primary_market():
+        # 一级市场发行 
+        # df = do.get_data('primary_market')
+        data = pd.read_sql("select * from primary_market \
+            where 发行起始日 > '2019-01-01';",conn)
 
+        df = data.loc[(data['Wind债券类型(二级)'] == '国债')&(data['发行起始日']>='2021-05-10')]
+        df
+        return
 
-class MacroReport():
+class MacroReport:
 
     def __init__(self, years = 1):
         self.end = dt.datetime.today()
@@ -994,7 +1015,7 @@ if __name__=='__main__':
     """
 
     # 数据库私钥
-    # conn , engine = do.get_db_conn()
+    # conn , engine = do.get_db_conn('/Users/wdt/Desktop/tpy/db.txt')
 
     '''    
     report= Report(years=10)
