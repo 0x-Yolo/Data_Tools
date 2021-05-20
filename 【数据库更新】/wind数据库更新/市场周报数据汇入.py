@@ -66,7 +66,8 @@ def monetary_policy_tools():
         '逆回购_到期','国库现金：中标量','国库现金：到期量',\
         'SLO_投放','SLO_回笼']
     df['date'] = df.index
-    name = 'monetary_policy_tools'
+    df = df.loc[df.date <= dt.datetime.now().date()]
+    name = 'monetary_policy_tools_v2'
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -111,11 +112,11 @@ def interbank_deposit():
     return df, name , dtypelist
 
 ################
-def
+# def
 
 
 
 
-for a,b,c in [interbank_deposit()]:
+for a,b,c in [monetary_policy_tools()]:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')

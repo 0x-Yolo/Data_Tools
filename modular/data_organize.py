@@ -61,12 +61,16 @@ def get_un_upload_timerange(table_name):
     conn.close()
     return start_time,rpt_date
 
-def get_data(table_name):
+def get_data(table_name, start=0 ,end =0):
     """获取表名"""
     conn, engine = get_db_conn(path)
     excu="select * from "
     table_name=table_name
-    dff = pd.read_sql(excu+table_name,conn)
+
+    excu_date = " where date >= '{}' and date <= '{}';".format(start , end)
+    if start == 0:
+        excu_date = ''
+    dff = pd.read_sql(excu+table_name+excu_date,conn)
     return dff
 
 def get_all_table_name():

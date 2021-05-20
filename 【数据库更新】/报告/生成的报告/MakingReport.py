@@ -1,5 +1,18 @@
 import ReportGenerator as rg
 import data_organize as do
+
+# * 周报 
+weekreport = rg.weeklyReport()
+## 流动性
+weekreport.cash_cost()
+weekreport.monetary_policy_tools()
+weekreport.interbank_deposit()
+## 一级
+weekreport.prmy_mkt_weekly_issue('2021-05-10','2021-05-16')
+weekreport.prmy_mkt_sentiment()
+
+
+weekreport.print_all_fig()
 # * 1
 macro_report = rg.MacroReport()
 macro_report.fig_all()
@@ -22,3 +35,4 @@ report1.fig_industries_premium()
 report1.fig_credit_premium_v2()
 report1.fig_liquid_v2()
 report1.print_all_fig()
+
