@@ -27,7 +27,7 @@ plt.rcParams['axes.unicode_minus'] = False
 
 
 # * 一级综收
-df = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/wind专题数据/一级发行数据/利率债一级-0518.xlsx',sheet_name = '数据（导入）')
+df = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/wind专题数据/一级发行数据/利率债一级-0521.xlsx',sheet_name = '数据（导入）')
 # 这步是用来去除异常值的，之后有啥异常值还可以在这边改。
 df = df[df['综收较估值'] < 40]
 df = df.loc[df['发行起始日'] >= '2020-01-01']

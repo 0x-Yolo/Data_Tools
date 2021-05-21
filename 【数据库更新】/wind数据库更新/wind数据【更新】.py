@@ -71,7 +71,7 @@ def policy_rate():
     return df, name, dtypelist
 
 def monetary_policy_tools():
-    name = 'monetary_policy_tools_v2'
+    name = 'monetary_policy_tools'
     last_date = upload_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
@@ -89,7 +89,7 @@ def monetary_policy_tools():
         '逆回购_到期','国库现金：中标量','国库现金：到期量',\
         'SLO_投放','SLO_回笼']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date <= today_date)]
+    df = df.loc[(df.date > last_date) & (df.date <= dt.datetime.now().date())]
 
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -146,6 +146,7 @@ def interbank_deposit():
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name , dtypelist
 
+##############
 def daily_fig_liquidity_premium():
     name = 'fig_liquidity_premium'
     
@@ -281,32 +282,6 @@ def industial_premium():
 
     return df,name,dtypelist
 
-# 周报
-def cash_cost():
-    name = 'fig_industries_premium'
-    last_date = upload_date(name)
-    today_date = dt.datetime.now()
-    print('表{}的最近更新日期为{}'.format(name,last_date))
-
-    err, df=w.edb('M1006336,M1006337,M1004515,M0017142',
-               start,end, "Fill=Previous",usedf=True) 
-    df.columns = ['DR001','DR007','GC007','shibor_3m']
-    if df.shape[1] == 1:
-        return [],name,[]
-    df['date'] = df.index
-    df = df.dropna(axis = 0)
-
-    columns_type=[Float(2),Float(2),Float(2),Float(2),
-                  DateTime()]
-    dtypelist = dict(zip(df.columns,columns_type))
-    return df, name, dtypelist
-
-def policy_rate():
-    name = 'policy_rate'
-    last_date = upload_date(name)
-    today_date = dt.datetime.now()
-    print('表{}的最近更新日期为{}'.format(name,last_date))
-    
 
 
 def get_db_conn(io):

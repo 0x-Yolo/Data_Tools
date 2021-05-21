@@ -67,7 +67,7 @@ def monetary_policy_tools():
         'SLO_投放','SLO_回笼']
     df['date'] = df.index
     df = df.loc[df.date <= dt.datetime.now().date()]
-    name = 'monetary_policy_tools_v2'
+    name = 'monetary_policy_tools'
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -112,11 +112,49 @@ def interbank_deposit():
     return df, name , dtypelist
 
 ################
-# def
+def rates():
+    err,df = w.edb("S0059744,S0059746,S0059747,S0059748,S0059749,\
+            M1004298,M1004300,M1004302,M1004304,M1004306,\
+            M1004263,M1004265,M1004267,M1004269,M1004271,\
+            M0048432,M0048434,M0048435,M0048436,\
+            M0048422,M0048424,M0048425,M0048426,\
+            M0048412,M0048414,M0048415,M0048416,\
+            M1002654,M1002656,M1002658,\
+            M1003631,M1003633,M1003635,\
+            M1003639,M1003641,M1003643,\
+            M1003623,M1003625,M1003627",\
+         start,end,usedf = True)
+
+    df.columns=['国债1年','国债3年','国债5年','国债7年','国债10年',\
+        '地方1年','地方3年','地方5年','地方7年','地方10年',\
+        '国开1年','国开3年','国开5年','国开7年','国开10年',\
+        '城投_AAA_1y','城投_AAA_3y','城投_AAA_5y','城投_AAA_7y',\
+        '城投_AA+_1y','城投_AA+_3y','城投_AA+_5y','城投_AA+_7y',\
+        '城投_AA_1y','城投_AA_3y','城投_AA_5y','城投_AA_7y',\
+        '中票_AAA_1y','中票_AAA_3y','中票_AAA_5y',\
+        '中票_AA+_1y','中票_AA+_3y','中票_AA+_5y',\
+        '中票_AA_1y','中票_AA_3y','中票_AA_5y',\
+        '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y']
+
+    df['date'] = df.index
+
+    name = 'rates'
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+
+    return df, name , dtypelist
 
 
 
 
-for a,b,c in [monetary_policy_tools()]:
+for a,b,c in [rates()]:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')
