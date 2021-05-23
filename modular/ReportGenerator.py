@@ -133,8 +133,8 @@ class weeklyReport:
 
         #资金利率
         fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
-        plt.plot(cash_cost['DR001'],'#3778bf',label="DR001",alpha = 0.8)
-        plt.plot(cash_cost['DR007'],'#f0833a',label='DR007',alpha = 0.8)
+        plt.plot(cash_cost['DR001'],'#3778bf',label="DR001")
+        plt.plot(cash_cost['DR007'],'#f0833a',label='DR007')
         plt.plot(policy_rate['逆回购利率：7天'],'gray',label='逆回购利率：7天',ls = '--')
 
         plt.annotate('本周DR001' + spread(DR001_spread)+'\n'+'本周DR007' + spread(DR007_spread),xy=(endday,cash_cost['DR001'][-1]),xytext=(cash_cost['date'][-70],cash_cost['DR001'][-1]-0.9),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9,),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=4)
@@ -224,7 +224,7 @@ class weeklyReport:
         ax_=ax.twinx()
         ax_.grid(ls='--', axis='y')
         ax_.set_axisbelow(True)
-        ax_.plot(interbank_deposit[['存单_股份行_1y']],'#3778bf',label="1年股份行存单利率",alpha = 0.8)
+        ax_.plot(interbank_deposit[['存单_股份行_1y']],'#3778bf',label="1年股份行存单利率")
         ax_.scatter(interbank_deposit.index,interbank_deposit['MLF：1y'],\
             label='MLF利率：1年', marker='o',color = '#f0833a',s=10)
         plt.yticks([1.25,1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5,3.75],fontsize=10)
@@ -273,8 +273,8 @@ class weeklyReport:
             sheet_name='数据（导入）')
         primary_market.rename(columns={'发行起始日':'date'}, inplace = True)
         primary_market = primary_market.loc\
-            [(primary_market['date']>'2021-05-10')&\
-                (primary_market['date']<'2021-05-16')]
+            [(primary_market['date']>startday)&\
+                (primary_market['date']<endday)]
 
         primary_market.index = primary_market['date']
         primary_market = primary_market.dropna(axis=0, how='any', thresh=None, subset=['全场倍数'], inplace=False)
@@ -551,7 +551,7 @@ class MacroReport:
         n = len(self.pic_list)
         pdf = PdfPages(self.title+'.pdf')
         for pic in self.pic_list:
-            pdf.savefig(pic)
+            pdf.savefig(pic,bbox_inches='tight')
             plt.close
         pdf.close()
         print("成功打印"+str(n)+"张图片,保存为\n" , os.getcwd() +'/'+self.title + '.pdf')
@@ -878,7 +878,7 @@ class Report():
         n=len(self.pic_list)
         pdf=PdfPages(self.title+'.pdf') 
         for pic in self.pic_list:
-            pdf.savefig(pic)
+            pdf.savefig(pic,bbox_inches='tight')
             plt.close
         pdf.close()
         print("成功打印"+str(n)+"张图片,保存为\n" , os.getcwd() +'/'+self.title + '.pdf')
