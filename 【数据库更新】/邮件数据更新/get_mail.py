@@ -5,7 +5,7 @@ from email.header import decode_header
 from email.parser import BytesParser
 import os
 from io import StringIO, BytesIO
-# import do4myself.data_organize as do
+import data_organize as do
 import re
 import datetime as dt
 
@@ -27,8 +27,8 @@ def get_mail_pool(host, username, password, n=5):
     
     #typ, data = conn.search(None, 'ALL')
 
-    typ, data = conn.search(None, '(FROM "admin@tpyzq.com")')
-    print("已经从 xxx 得到data")
+    typ, data = conn.search(None, '(FROM "marketdata@chinamoney.com.cn")')
+    print("已经得到data")
 
     msg_list=[]
     count=0
@@ -47,7 +47,7 @@ def get_att(msg, download_io="/Users/wdt/Desktop/tpy/邮件处理/附件下载/"
     attachment_date=[]
     for part in msg.walk():
         file_name = part.get_filename()  # 获取附件名称类型
-        print(file_name)
+        # print(file_name)
         contType = part.get_content_type()
         
         if file_name:
@@ -58,7 +58,7 @@ def get_att(msg, download_io="/Users/wdt/Desktop/tpy/邮件处理/附件下载/"
                 filename = decode_str(str(filename, dh[0][1]))  # 将附件名称可读化
                 print("发现附件："+filename)
                 # filename = filename.encode("utf-8")
-            if  "质押式回购" or "现券市场"  in filename:
+            if  "现券市场"  in filename:
                 data = part.get_payload(decode=True)  # 下载附件
                 att_file = open(download_io + filename,"wb")
                 # 在指定目录下创建文件，注意二进制文件需要用wb模式打开
@@ -76,15 +76,15 @@ def download_certain_mail(msg_list,download_io):
         date_list=[]
         for msg in msg_list:
             subject=decode_str(msg.get("subject"))
-            print(subject)
+            print(subject)# 附件名
 
             # 查找邮件名中的八位数字
             date= re.search(r"\d{8}",subject)[0]
-            print(date)
+            print(date)# 日期
 
-            get_att(msg,download_io)
+            # get_att(msg,download_io)
                      
-            if ("现券" in subject) or ("质押" in subject):
+            if ("现券" in subject and date >= '20210520') :
                 subject_list.append(subject)
                 date_list.append(date)
                 get_att(msg,download_io)

@@ -38,7 +38,7 @@ def upload_date_list():
     输出一个待更新日期的列表
     最后依照此列表逐个上传
     '''
-    dir_date=[]
+    dir_names=[]
     latest_date = do.get_latest_date('Net_buy_bond')
 
     for dir in os.listdir(input_path+"/现券市场交易情况总结/日报"):
@@ -47,19 +47,20 @@ def upload_date_list():
         attach_time = re.match(".*\\d{8}\\.",dir).group()[-9:-1]
         attach_datetime = pd.to_datetime(attach_time)
         if attach_datetime > latest_date:
-            dir_date.append(attach_datetime.strftime("%Y%m%d"))
+            dir_names.append(dir)
         else:
             pass
 
-    return dir_date
+    return dir_names
 
-def daily_Net_buy_bond(date):#每天数据的转换
+def daily_Net_buy_bond(dir_name):#每天数据的转换
     """
     现券市场净买入数据
     文件是从邮件内自动下载好的
     需要匹配一个最新日期*
     """
-    excel_io= input_path+"/现券市场交易情况总结/日报/"+"现券市场交易情况总结日报_"+date+".xls"
+    date = re.match(".*\\d{8}\\.",dir_name).group()[-9:-1]
+    excel_io= input_path+"/现券市场交易情况总结/日报/" + dir_name
     sheet_name = "机构净买入债券成交金额统计表_" + date#读取sheet路径
     df = pd.read_excel(excel_io, header=4, sheet_name=sheet_name,nrows = 120)#
     df["date"]=date # 加盖时间戳
@@ -170,9 +171,10 @@ def main():
     # * 读取db.txt内的数据库信息
     conn,engine = do.get_db_conn()
     dir_list = upload_date_list()
-    for date in dir_list:
-        l = [daily_Net_buy_bond(date)]
+    dir_list.sort()
+    for dir in dir_list:
+        l = [daily_Net_buy_bond(dir)]
         for a,b,c in l:
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
-        print("成功上传"+date+"的本地数据")
+        print("成功上传"+dir+"的本地数据")
 #main()

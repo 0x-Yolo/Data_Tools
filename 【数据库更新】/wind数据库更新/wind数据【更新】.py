@@ -24,13 +24,13 @@ def upload_date(name):
     df = pd.read_sql('select max(date) from {}'.format(name) , conn)
     last_date = df.iloc[-1 , -1]
     
-    today_date = dt.datetime.now()
+    # today_date = dt.datetime.now()
     
     return last_date 
 
 def cash_cost():
     name = 'cash_cost'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -49,7 +49,7 @@ def cash_cost():
 
 def policy_rate():
     name = 'policy_rate'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -72,7 +72,7 @@ def policy_rate():
 
 def monetary_policy_tools():
     name = 'monetary_policy_tools'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -101,7 +101,7 @@ def monetary_policy_tools():
 
 def repo_volume():
     name = 'repo_volume'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now().date()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -131,7 +131,7 @@ def repo_volume():
 
 def interbank_deposit():
     name = 'interbank_deposit'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -146,11 +146,53 @@ def interbank_deposit():
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name , dtypelist
 
+def rates():
+    name = 'rates'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err,df = w.edb("S0059744,S0059746,S0059747,S0059748,S0059749,\
+            M1004298,M1004300,M1004302,M1004304,M1004306,\
+            M1004263,M1004265,M1004267,M1004269,M1004271,\
+            M0048432,M0048434,M0048435,M0048436,\
+            M0048422,M0048424,M0048425,M0048426,\
+            M0048412,M0048414,M0048415,M0048416,\
+            M1002654,M1002656,M1002658,\
+            M1003631,M1003633,M1003635,\
+            M1003639,M1003641,M1003643,\
+            M1003623,M1003625,M1003627",\
+         last_date,today_date,usedf = True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    df.columns=['国债1年','国债3年','国债5年','国债7年','国债10年',\
+        '地方1年','地方3年','地方5年','地方7年','地方10年',\
+        '国开1年','国开3年','国开5年','国开7年','国开10年',\
+        '城投_AAA_1y','城投_AAA_3y','城投_AAA_5y','城投_AAA_7y',\
+        '城投_AA+_1y','城投_AA+_3y','城投_AA+_5y','城投_AA+_7y',\
+        '城投_AA_1y','城投_AA_3y','城投_AA_5y','城投_AA_7y',\
+        '中票_AAA_1y','中票_AAA_3y','中票_AAA_5y',\
+        '中票_AA+_1y','中票_AA+_3y','中票_AA+_5y',\
+        '中票_AA_1y','中票_AA_3y','中票_AA_5y',\
+        '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y']
+    df['date'] = df.index
+    df = df.loc[df.date > last_date]
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name , dtypelist
 ##############
 def daily_fig_liquidity_premium():
     name = 'fig_liquidity_premium'
     
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -176,7 +218,7 @@ def daily_fig_liquidity_premium():
 
 def daily_fig_bond_leverage():
     name = 'fig_bond_leverage'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -199,7 +241,7 @@ def daily_fig_bond_leverage():
 
 def daily_fig_rates():
     name = 'fig_rates'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -228,7 +270,7 @@ def daily_fig_rates():
 
 def daily_fig_credit_premium():
     name = 'fig_credit_premium'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
     
@@ -262,12 +304,12 @@ def daily_fig_credit_premium():
 
 def industial_premium():
     name = 'fig_industries_premium'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
     err,df = w.edb("M1008950,M1008953,M1008973,M1008971,M1008964", 
-                   start, end, usedf = True) 
+                   last_date, today_date, usedf = True) 
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ["信用利差_地产","信用利差_钢铁","信用利差_煤炭",\
@@ -284,29 +326,6 @@ def industial_premium():
 
 
 
-def get_db_conn(io):
-    with open(io, 'r') as f1:
-        config = f1.readlines()
-    for i in range(0, len(config)):
-        config[i] = config[i].rstrip('\n')
-
-    host = config[0]  
-    username = config[1]  # 用户名 
-    password = config[2]  # 密码
-    schema = config[3]
-    port = int(config[4])
-    engine_txt = config[5]
-
-    conn = pymysql.connect(	
-        host = host,	
-        user = username,	
-        passwd = password,	
-        db = schema,	
-        port=port,	
-        charset = 'utf8'	
-    )	
-    engine = create_engine(engine_txt)
-    return conn, engine
 
 def main():
     w.start()
@@ -314,7 +333,7 @@ def main():
     # @ 读取db.txt内的邮箱信息
     conn , engine = do.get_db_conn()
     '''
-    l =    [daily_fig_SRDI(),
+    l =    [
             daily_fig_bond_leverage(),
             daily_fig_credit_premium(),
             daily_fig_liquidity_premium(),
@@ -329,7 +348,7 @@ def main():
     '''
     # 流动性
     l = [cash_cost(),policy_rate(),monetary_policy_tools(),\
-        repo_volume(),interbank_deposit()]
+        repo_volume(),interbank_deposit(),rates()]
 
     for a,b,c in l:
         if len(np.array(a)) == 0:

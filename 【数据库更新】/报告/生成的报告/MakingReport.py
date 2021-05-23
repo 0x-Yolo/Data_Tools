@@ -4,14 +4,18 @@ import data_organize as do
 # * 周报 
 weekreport = rg.weeklyReport()
 ## 流动性
-weekreport.cash_cost()
-weekreport.monetary_policy_tools()
-weekreport.interbank_deposit()
+weekreport.cash_cost('2020-01-01','2021-05-23')
+weekreport.monetary_policy_tools('2020-10-01','2021-05-23')
+weekreport.interbank_deposit('2020-01-01','2021-05-23')
 ## 一级
-weekreport.prmy_mkt_weekly_issue('2021-05-10','2021-05-16')
+weekreport.prmy_mkt_weekly_issue('2021-05-17','2021-05-23')
 weekreport.prmy_mkt_sentiment()
+weekreport.rates_change()
 
 
+weekreport = rg.weeklyReport()
+weekreport.net_buy_amt()
+weekreport.title = '机构在国债、政金债、地方政府债的净买入量'
 weekreport.print_all_fig()
 # * 1
 macro_report = rg.MacroReport()

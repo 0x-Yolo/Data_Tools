@@ -6,6 +6,8 @@ import numpy as np
 import  pymysql
 from sqlalchemy import create_engine
 path = input('输入存放数据库信息的地址')
+# path = '/Users/wdt/db.txt'
+
 # path = "/Users/wdt/Desktop/tpy/db.txt"
 # get_db_conn('/Users/wdt/Desktop/tpy/test01.txt')
 

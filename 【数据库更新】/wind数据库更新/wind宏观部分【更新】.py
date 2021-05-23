@@ -14,24 +14,10 @@ import data_organize as do
 
 from WindPy import w
 
-def upload_date(name):
-    """
-    输入表名
-    输出该表的最新日期
-    """
-    
-    dir_date = []
-    df = pd.read_sql('select max(date) from {}'.format(name) , conn)
-    last_date = df.iloc[-1 , -1]
-    
-    # start_date = last_date + dt.timedelta(days = 1)
-    # end_date = dt.datetime.now()
-    # return start_date , end_date
-    return last_date 
 
 def fig_industrial_production():
     name = 'fig_industrial_production'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -54,7 +40,7 @@ def fig_industrial_production():
 
 def fig_cpi_ppi_related():
     name = 'fig_cpi_ppi_related'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -81,7 +67,7 @@ def fig_cpi_ppi_related():
 
 def fig_upstream():
     name = 'fig_upstream'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -107,7 +93,7 @@ def fig_upstream():
 
 def fig_midstream():
     name = 'fig_midstream'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -131,7 +117,7 @@ def fig_midstream():
 
 def fig_downstream():
     name = 'fig_downstream'
-    last_date = upload_date(name)
+    last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
@@ -170,5 +156,5 @@ def main():
             print(b , '已是最新，无需更新')
             continue
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
-        print('成功更新表',b, '至',upload_date(b))
+        print('成功更新表',b, '至',do.get_latest_date(b))
 
