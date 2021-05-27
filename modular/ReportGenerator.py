@@ -15,7 +15,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 import data_organize as do
-from primary_market_plot import GK,GZ
+# from primary_market_plot import GK,GZ
 
 #基础的图像设置：
 plt.style.use({'figure.figsize':(6, 4)})
@@ -182,7 +182,7 @@ class weeklyReport:
         ax.axhline(y=0,ls='-',color='k',lw=1)
         ax.plot(df_weekly.index, df_weekly['MLF-逆回购-国库现金_净投放量'],\
         color="#f0833a",lw=0.6,marker = 'o',label='净投放',markersize=2)
-        plt.annotate('本周' + net_investment(df_weekly['MLF-逆回购-国库现金_净投放量'][-1]-df_weekly['MLF-逆回购-国库现金_净投放量'][-2]),\
+        plt.annotate('本周' + net_investment(df_weekly['MLF-逆回购-国库现金_净投放量'][-1]),\
             xy=(df_weekly.index[-1],df_weekly['MLF-逆回购-国库现金_净投放量'][-1]),\
             xytext=(df_weekly.index[-7],df_weekly['MLF-逆回购-国库现金_净投放量'][-1]-5000),\
             color="k",weight="bold",alpha=0.9,arrowprops=\
@@ -1147,22 +1147,40 @@ class Report():
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        df = pd.read_sql("select * from fig_industries_premium  \
-        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        df = do.get_data('fig_industries_premium')
         df.index = df.date
 
         # 绘图 
-        fig, ax = plt.subplots(nrows=1,ncols=2,figsize = (12,4), dpi=100)
-        ax[0].set_title('地产情绪指数')
-        ax[1].set_title('钢铁情绪指数')
+        fig, ax = plt.subplots(nrows=3,ncols=2,figsize = (20,9), dpi=100)
+        ## 地产
+        df[['信用利差_地产']].apply(winsorize_series).apply(std_series).plot(ax=ax[0,0])
+        ax[0,0].grid(ls='--', axis='y')
+        ax[0,0].set_axisbelow(True)
+        ax[0,0].set_title('地产情绪指数')
+        ## 钢铁
+        df[['信用利差_钢铁']].apply(winsorize_series).apply(std_series).plot(ax=ax[0,1])
+        ax[0,1].grid(ls='--', axis='y')
+        ax[0,1].set_axisbelow(True)
+        ax[0,1].set_title('钢铁情绪指数')        
+        ## 煤炭
+        df[['信用利差_煤炭']].apply(winsorize_series).apply(std_series).plot(ax=ax[1,0])
+        ax[1,0].grid(ls='--', axis='y')
+        ax[1,0].set_axisbelow(True)
+        ax[1,0].set_title('煤炭情绪指数')
+        ## 有色
+        df[['信用利差_有色']].apply(winsorize_series).apply(std_series).plot(ax=ax[1,1])
+        ax[1,1].grid(ls='--', axis='y')
+        ax[1,1].set_axisbelow(True)
+        ax[1,1].set_title('有色情绪指数')
+        ## 汽车
+        df[['信用利差_汽车']].apply(winsorize_series).apply(std_series).plot(ax=ax[2,0])
+        ax[2,0].grid(ls='--', axis='y')
+        ax[2,0].set_axisbelow(True)
+        ax[2,0].set_title('汽车情绪指数')
 
-
-        fig, ax = plt.subplots(nrows=1,ncols=3,figsize = (18,4), dpi=100)
-        ax[0].set_title('煤炭情绪指数')
-        ax[1].set_title('有色情绪指数')
-        ax[2].set_title('汽车情绪指数')
-        
-        plt.tight_layout()
+        fig.delaxes(ax[2,1])
+        fig.suptitle('行业利差')
+        fig.tight_layout()
         self.pic_list.append(fig)
         return 
 
@@ -1366,75 +1384,3 @@ class Report():
 
 
 
-def get_db_conn(io):
-    with open(io, 'r') as f1:
-        config = f1.readlines()
-    for i in range(0, len(config)):
-        config[i] = config[i].rstrip('\n')
-
-    host = config[0]  
-    username = config[1]  # 用户名 
-    password = config[2]  # 密码
-    schema = config[3]
-    port = int(config[4])
-    engine_txt = config[5]
-
-    conn = pymysql.connect(	
-        host = host,	
-        user = username,	
-        passwd = password,	
-        db = schema,	
-        port=port,	
-        charset = 'utf8'	
-    )	
-    engine = create_engine(engine_txt)
-    return conn, engine
-
-if __name__=='__main__':
-
-    """
-    end = dt.datetime(2021,4,30)
-    years = 10
-    end = dt.datetime.today()
-    start=dt.datetime.now() - dt.timedelta(days=years*365)
-    start=start.strftime("%Y-%m-%d")
-    end=end.strftime("%Y-%m-%d")
-    """
-
-    # 数据库私钥
-    # conn , engine = do.get_db_conn('/Users/wdt/Desktop/tpy/db.txt')
-
-    '''    
-    report= Report(years=10)
-    report.fig_liquidity_premium()
-    report.pic_SRDI()
-    report.fig_bond_leverage()
-    report.fig_rates()
-    report.fig_credit_premium()
-    
-    r = Report(years=10)
-    r.fig_credit_premium()
-    r.fig_rates()
-    r.end = dt.datetime(2021,4,30)
-    d = r.fig_bond_leverage()
-    
-    
-    # 宏观
-    report = Report(years=1)
-    report.fig_industrial_production()
-    report.fig_cpi_ppi_related()
-    report.fig_upstream()
-    report.fig_midstream()
-    report.fig_downstream()
-
-    report.title = '经济数据周报高频跟踪'+report.end.strftime("%Y%m%d")
-    report.print_all_fig()
-    
-    report.start=dt.datetime.now()-dt.timedelta(days=10*365)
-    report.fig_bond_premium()
-    report.fig_industies_indice()
-    report.fig_credit_premium_v2()
-    report.fig_liquid_v2()
-
-    report.print_all_fig()
-    '''
