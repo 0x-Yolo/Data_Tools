@@ -349,7 +349,7 @@ def main():
     # 流动性
     l = [cash_cost(),policy_rate(),monetary_policy_tools(),\
         repo_volume(),interbank_deposit(),rates()]
-
+    l = [monetary_policy_tools()]
     for a,b,c in l:
         if len(np.array(a)) == 0:
             print(b , '已是最新，无需更新')

@@ -15,6 +15,39 @@ from WindPy import w
 import data_organize as do
 w.start()
 
+plt.rcParams['font.family']=['STKaiti']
+plt.rcParams['axes.unicode_minus'] = False
+
+'''
+df = stat_table.loc[stat_table.index >= '2021-05-10']
+df = stat_table.copy()
+
+# P1
+fig1,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+l = df[['均价']].plot(ax=ax)
+r = df[['笔数']].plot(secondary_y=True,ax=ax)
+
+l.legend(loc=3,bbox_to_anchor=(0.2,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
+r.legend(loc=3,bbox_to_anchor=(0.6,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
+
+fig1.tight_layout()
+
+# P2
+fig2,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+l = df[['风险偏好指数']].plot(ax=ax)
+r = df[['情绪指数']].plot(secondary_y=True,ax=ax)
+l.legend(loc=3,bbox_to_anchor=(0.2,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
+r.legend(loc=3,bbox_to_anchor=(0.6,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
+
+# P3
+fig3,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+l = df[['平均期限']].plot(ax=ax)
+r = df[['信用扩张指数']].plot(secondary_y=True,ax=ax)
+
+l.legend(loc=3,bbox_to_anchor=(0.2,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
+r.legend(loc=3,bbox_to_anchor=(0.6,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
+'''
+
 def str2int(s):
     if type(s)==int:
         return s
@@ -102,10 +135,12 @@ def get_stat_table(df):
 
 
 # ## test ##
-# df = do.get_data('CreditBondTrading_final2')
-# stat = do.get_data('CreditBondTraing_stat')
+# df = do.get_data('CreditBondTrading')
+stat = do.get_data('CreditBondTrading_stat',\
+'2021-05-06','2021-05-07')
 # s = get_stat_table(df.loc[df['时间']>='2021-05-10'])
 # ##
+# 
 
 
 def upload1(df):
@@ -128,7 +163,7 @@ def upload1(df):
 
 def upload2(stat):
     stat['date'] = stat.index
-    name = 'CreditBondTraing_stat'
+    name = 'CreditBondTrading_stat1'
     columns_type = [Float(),Float(),Float(),Float(),\
         Float(),Float(),DateTime()]
     dtypelist = dict(zip(stat.columns,columns_type))
@@ -140,8 +175,11 @@ def main():
     # * Step1:获取数据
     d = pd.DataFrame([])
     for dir in os.listdir('./raw_data'):
-        if '~$' in dir:
+        if ('~$' in dir) | ('成交统计' not in dir):
             continue
+
+        print(dir)
+
         x= int(re.findall(r'\d+', dir)[0])
         y= int(re.findall(r'\d+', dir)[1])
         z= int(re.findall(r'\d+', dir)[2])
@@ -151,7 +189,7 @@ def main():
         dirr['时间'] = date
         dirr['估值时间'] = dirr['时间'] - dt.timedelta(days=1)
         d = d.append(dirr[['方向','代码','价格','时间','估值时间']])
-        print(dir)
+
     df = d.reset_index(drop = True)
 
     # * Step2:添加windapi指标
@@ -162,8 +200,7 @@ def main():
         code = df.loc[idx,'代码']
         net_price = df.loc[idx,'价格']
         net_date = df.loc[idx,'时间'].strftime("%Y%m%d")
-        # last_date=df.loc[idx,'估值时间'].strftime("%Y%m%d")
-        last_date = '20210425'
+        last_date=df.loc[idx,'估值时间'].strftime("%Y%m%d")
 
         # 修正非交易日
         # 方法：寻找一个银行间债券标的作为基准（xxxx国债），然后检查在当天的市场最近交易日是否与其相符
@@ -247,9 +284,9 @@ def main():
 
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
-    l = [upload1(df),upload2(stat)]
+    l = [upload2(s)]
     for a,b,c in l:
-        a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
+        a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
 
 
 

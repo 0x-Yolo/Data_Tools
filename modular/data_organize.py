@@ -39,15 +39,13 @@ def get_db_conn(io = path):
     engine = create_engine(engine_txt)
     return conn, engine
 
-def upload_data(df,name,method="append"):
+def upload_data(df,name,dtypelist,method="append"):
     """输入要上传的df/表名/方法"""
-    df= df
-    name = name
-    method = method
 
     conn, engine = get_db_conn(path)
 
-    df.to_sql(name=name,con = engine,schema='finance',if_exists = method ,index=False)
+    df.to_sql(name=name,con = engine,schema='finance',\
+        if_exists = method ,index=False,dtype = dtypelist)
     return 
 
 # 设定需要上传的时间段
@@ -105,3 +103,12 @@ def get_latest_date(table_name):
     table_name=table_name
     return pd.read_sql(excu+table_name ,conn).iloc[-1,-1]
 
+def get_date(dir):
+    """从文件名中提取日期"""
+    ### e.g.成交统计2021年5月21日.xlsx ###
+    x= int(re.findall(r'\d+', dir)[0])
+    y= int(re.findall(r'\d+', dir)[1])
+    z= int(re.findall(r'\d+', dir)[2])
+    date = dt.datetime(int(x),int(y),int(z))
+
+    return date

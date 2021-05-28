@@ -15,7 +15,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 import data_organize as do
-# from primary_market_plot import GK,GZ
+from primary_market_plot import GK,GZ
 
 #基础的图像设置：
 plt.style.use({'figure.figsize':(6, 4)})
@@ -103,8 +103,18 @@ class weeklyReport:
         self.end = dt.datetime.today()
         self.start=dt.datetime.now()-dt.timedelta(days=years*365)
         self.pic_list=[]
+        self.title_list=[]
         self.title="周报"+self.end.strftime("%Y-%m-%d")
 
+    def print_all_jpg(self):
+        n = len(self.pic_list)
+        for i in range(n):
+            self.pic_list[i].savefig('./test/{}.jpg'.\
+                format(self.title_list[i]),\
+                bbox_inches='tight',dpi=300)
+            print(self.title_list[i]+'.jpg'+'-打印成功')
+        print("成功打印"+str(n)+"张图片")
+        
     def print_all_fig(self):
         n = len(self.pic_list)
         pdf = PdfPages(self.title+'.pdf')
@@ -144,6 +154,8 @@ class weeklyReport:
         plt.yticks(fontsize=10,rotation=0)
 
         self.pic_list.append(fig)
+        self.title_list.append('资金利率')
+
         return
 
     def monetary_policy_tools(self,start,end ):
@@ -194,6 +206,8 @@ class weeklyReport:
         ax.set_title('公开市场操作',fontsize=12)
 
         self.pic_list.append(fig)
+        self.title_list.append('公开市场操作')
+
         return
 
     def interbank_deposit(self,startday , endday):
@@ -259,6 +273,8 @@ class weeklyReport:
         # plt.legend(ncol=1,loc=3, bbox_to_anchor=(0.7,-0.18),borderaxespad = 0.)
 
         self.pic_list.append(fig)
+        self.title_list.append('MLF与同业存单')
+
         return 
 
     def prmy_mkt_weekly_issue(self,startday,endday):
@@ -269,7 +285,7 @@ class weeklyReport:
         # primary_market = do.get_data('primary_market',\
         #     startday , endday)
 
-        primary_market = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/wind专题数据/一级发行数据/利率债一级_新.xlsx',\
+        primary_market = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/专题数据/一级发行数据/利率债一级_新.xlsx',\
             sheet_name='数据（导入）')
         primary_market.rename(columns={'发行起始日':'date'}, inplace = True)
         primary_market = primary_market.loc\
@@ -315,6 +331,8 @@ class weeklyReport:
         plt.show()
 
         self.pic_list.append(fig)
+        self.title_list.append('本周利率债招标倍数')
+
         return
 
     def prmy_mkt_sentiment(self):
@@ -324,15 +342,18 @@ class weeklyReport:
         fig2 = GZ()
 
         self.pic_list.append(fig1)
+        self.title_list.append('国开全场倍数与综收')
+
         self.pic_list.append(fig2)
+        self.title_list.append('国债全场倍数与综收')
         
         return 
 
-    def rates_change(self):
+    def rates_change(self,start,end):
         # 利率债城投债中票bp变动情况 
-        # 近一周
-        end = dt.datetime.today()
-        start=dt.datetime.now() - dt.timedelta(days=7)
+        
+        # end = dt.datetime.today()
+        # start=dt.datetime.now() - dt.timedelta(days=7)
         df = do.get_data('rates',start,end)
         
         #### P1    
@@ -356,6 +377,8 @@ class weeklyReport:
         plt.yticks(fontsize=10,rotation=0)
         plt.ylabel("(BP)",fontsize=10)
         self.pic_list.append(fig1)
+        self.title_list.append('利率债周度变动')
+        
         #### P2
         fig2,ax = plt.subplots(figsize=(4.15,1.42 ),dpi = 300)
         d = pd.DataFrame(index=['AAA','AA+','AA'],\
@@ -377,6 +400,7 @@ class weeklyReport:
         plt.yticks(fontsize=10,rotation=0)
         plt.ylabel("(BP)")
         self.pic_list.append(fig2)
+        self.title_list.append('城投债周度变动')
 
         #### P3
         d = pd.DataFrame(index=['AAA','AA+','AA','AA-'],\
@@ -400,6 +424,7 @@ class weeklyReport:
         plt.yticks(fontsize=10,rotation=0)
         plt.ylabel("(BP)")
         self.pic_list.append(fig3)
+        self.title_list.append('中票短融周度变动')
 
         return 
 
@@ -423,9 +448,9 @@ class weeklyReport:
             stat2.loc['7-10年政策性金融债-新债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()
 
         # 画图
-        plt.style.use({'font.size' : 12})     
-        fig, ax = plt.subplots(nrows=2,ncols=1,\
-        figsize=(4.15*2,1.42*2*2), dpi=300)
+        plt.style.use({'font.size' : 10})     
+        fig, ax = plt.subplots(nrows=1,ncols=1,\
+        figsize=(4.15,1.42), dpi=300)
 
         x = np.arange(4)
         y1 = stat.iloc[0,:]
@@ -434,42 +459,48 @@ class weeklyReport:
         bar_width = 0.25
         tick_label = ["农村金融机构","基金公司及产品","保险公司",'外资银行']
 
-        ax[0].grid(ls='--', axis='y')
-        ax[0].set_axisbelow(True)
-        ax[0].bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="短债")
-        ax[0].bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull yellow'], edgecolor='black', align="center", label="中债+中长债")
-        ax[0].bar(x+2*bar_width, y3, bar_width,color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="长债")
-        ax[0].set_ylabel("（亿元）",fontsize = 12)
-        ax[0].set_xticks(x+bar_width)
-        ax[0].set_xticklabels(tick_label)
+        ax.grid(ls='--', axis='y')
+        ax.set_axisbelow(True)
+        ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="短债")
+        ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull yellow'], edgecolor='black', align="center", label="中债+中长债")
+        ax.bar(x+2*bar_width, y3, bar_width,color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="长债")
+        ax.set_ylabel("（亿元）",fontsize = 10)
+        ax.set_xticks(x+bar_width)
+        ax.set_xticklabels(tick_label,fontsize=8)
         
-        ax[0].axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
-        # ax[0].legend(fontsize=15)
-        ax[0].legend(ncol=3,loc=3, bbox_to_anchor=(0.22,-0.32),borderaxespad = 0.,frameon=False)
-
-        ax[0].set_title('分机构久期分布',fontsize=15)
+        ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
+        # ax.legend(fontsize=15)
+        # ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.22,-0.32),borderaxespad = 0.,frameon=False)
+        ax.legend(ncol=3,loc=1, bbox_to_anchor=(1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
+        ax.set_title('分机构久期分布',fontsize=12)
+        self.pic_list.append(fig)
+        self.title_list.append('分机构久期分布')
 
         #P2
+        plt.style.use({'font.size' : 10})     
+        fig, ax = plt.subplots(nrows=1,ncols=1,\
+        figsize=(4.15,1.42), dpi=300)
         x = np.arange(4)
         y1 = stat2.iloc[0,:]
         y2 = stat2.iloc[1,:]
         bar_width = 0.25
         tick_label = ["农村金融机构","基金公司及产品","保险公司",'外资银行']
-        ax[1].grid(ls='--', axis='y')
-        ax[1].set_axisbelow(True)
-        ax[1].bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="7-10年国债-新债")
-        ax[1].bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="7-10年政策性金融债-新债")
-        ax[1].set_ylabel("（亿元）",fontsize=12)
-        ax[1].set_xticks(x+bar_width/2)
-        ax[1].set_xticklabels(tick_label)
-        ax[1].axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
-        # ax[1].legend(fontsize=15)
-        ax[1].legend(ncol=3,loc=3, bbox_to_anchor=(0.21,-0.32),borderaxespad = 0.,frameon=False)
+        ax.grid(ls='--', axis='y')
+        ax.set_axisbelow(True)
+        ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="7-10年国债-新债")
+        ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="7-10年政策性金融债-新债")
+        ax.set_ylabel("（亿元）",fontsize=10)
+        ax.set_xticks(x+bar_width/2)
+        ax.set_xticklabels(tick_label,fontsize=8)
+        ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
+        # ax.legend(fontsize=15)
+        ax.legend(ncol=5,loc=1, bbox_to_anchor=(1.1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
 
-        ax[1].set_title('分机构7-10年政金新债、国债新债周度净买入情况')
+        ax.set_title('分机构7-10年政金新债、国债新债周度净买入情况',fontsize=12)
 
-        fig.tight_layout()
         self.pic_list.append(fig)
+        self.title_list.append('分机构7-10年政金新债、国债新债周度净买入情况')
+
         return df_net_week
 
     def net_buy_amt(self):
@@ -537,7 +568,151 @@ class weeklyReport:
                 plt.tight_layout()  
 
                 self.pic_list.append(fig)
+                self.title_list.append('利率债净买入_{}_MA:{}'.format(co,windows))
         return 
+
+    def secondary_credit(self,days = 10):
+        CreditBondTrading_stat = do.get_data('secondary_credit_sec_stat')
+        #按时间排序，取最近的10天
+        CreditBondTrading_stat= CreditBondTrading_stat.sort_values(by='date')
+        CreditBondTrading_stat = CreditBondTrading_stat[-days:]
+        CreditBondTrading_stat.index = CreditBondTrading_stat['date']
+        date = CreditBondTrading_stat.index
+        date = date.strftime('%m-%d')
+
+        # P1
+        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+
+        plt.bar(date,CreditBondTrading_stat['笔数'], width=0.7, color='#f0833a',label="笔数")
+        for a,b in zip(date,CreditBondTrading_stat['笔数']):
+            plt.text(a,200, '%.f' % b, ha='center', va= 'top',fontsize=8)
+        plt.yticks([500,1000,1500])
+        plt.xticks(fontsize=10,rotation=45)
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.25,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        plt.twinx()
+        plt.plot(date,CreditBondTrading_stat['均价'],'#3778bf',label="均价")
+        for a,b in zip(date,CreditBondTrading_stat['均价']):
+            plt.text(a, b+0.001, '%.2f' % b, ha='center', va= 'center',fontsize=8)
+
+        plt.yticks([3.20,3.25,3.30,3.35,3.40,3.45,3.50])
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.6,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+        plt.title('信用债 均价&笔数',fontsize=12)
+        self.pic_list.append(fig)
+        self.title_list.append('信用债 均价&笔数')
+
+        # P2
+        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+
+        plt.bar(date,CreditBondTrading_stat['情绪指数'], width=0.7, color='#f0833a',label="情绪指数")
+        for a,b in zip(date,CreditBondTrading_stat['情绪指数']):
+            plt.text(a,0.5, '%.2f' % b, ha='center', va= 'top',fontsize=8)
+        plt.yticks([0,1,2,3,4])
+        plt.xticks(fontsize=10,rotation=45)
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.15,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        plt.twinx()
+        plt.plot(date,CreditBondTrading_stat['风险偏好指数'],'#3778bf',label="风险偏好指数")
+        for a,b in zip(date,CreditBondTrading_stat['风险偏好指数']):
+            plt.text(a, b+0.001, '%.2f' % b, ha='center', va= 'center',fontsize=8)
+
+        plt.yticks([2.65,2.85,3.05,3.25,3.45,3.65,3.85])
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.5,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+        plt.title('信用债 风险偏好&情绪指数',fontsize=12)
+        self.pic_list.append(fig)
+        self.title_list.append('信用债 风险偏好&情绪指数')
+
+        # P3
+        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+
+        plt.plot(date,CreditBondTrading_stat['信用扩张指数'],'#f0833a',label="信用分歧指数（左轴）")
+        for a,b in zip(date,CreditBondTrading_stat['信用扩张指数']):
+            plt.text(a,b+0.001, '%.2f' % b, ha='center', va= 'top',fontsize=8)
+        plt.yticks([1.2,1.3,1.4,1.5,1.6])
+        plt.xticks(fontsize=10,rotation=45)
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        plt.twinx()
+        plt.plot(date,CreditBondTrading_stat['平均期限'],'#3778bf',label="平均期限（右轴）")
+        for a,b in zip(date,CreditBondTrading_stat['平均期限']):
+            plt.text(a, b+0.001, '%.2f' % b, ha='center', va= 'center',fontsize=8)
+
+        plt.yticks([1.6,1.7,1.8,1.9,2.0])
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.6,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+        plt.title('信用债 平均期限&扩张指数',fontsize=12)
+        self.pic_list.append(fig)
+        self.title_list.append('信用债 平均期限&扩张指数')
+   
+    def secondary_rate(self,start,end):
+        # * 二级利率债，需要选定券种
+        # df_raw = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/利率债.xlsx')
+        df_raw = do.get_data('secondary_rate_sec',start,end)
+
+        #筛选200215
+        df_200215 = df.loc[df['代码'] == '200215.IB']
+        a = df_200215.groupby(['date'])['价格'].count()
+        b = df_200215.groupby(['date'])['价格'].agg([np.mean,np.max,np.min])
+        c = df_200215.groupby(['date'])['昨日平均'].mean()
+        d = df_200215.groupby(['date'])['债券余额(亿)'].mean()
+        df_200215 = pd.concat([a,b,c,d],axis=1)
+        #筛选210205
+        df_210205 = df.loc[df['代码'] == '210205.IB']
+        a = df_210205.groupby(['date'])['价格'].count()
+        b = df_210205.groupby(['date'])['价格'].agg([np.mean,np.max,np.min])
+        c = df_210205.groupby(['date'])['昨日平均'].mean()
+        d = df_210205.groupby(['date'])['债券余额(亿)'].mean()
+        df_210205 = pd.concat([a,b,c,d],axis=1)
+        # 合并
+        df_merge = pd.concat([df_200215['价格'],df_210205['价格']],axis=1)
+        df_merge.columns = ['200215','210205']
+        date = df_merge.index
+        date = date.strftime('%m-%d')
+        df_merge.index = date
+
+        # 200215&210205
+        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        df_merge.plot(kind = 'bar',color = ["#3778bf","#f0833a"],alpha = 0.3,ax=ax)
+        plt.xlabel('')
+        # plt.grid(ls='--', axis='y')
+        # plt.rc('axes', axisbelow=True) 
+
+        plt.xticks(fontsize=10,rotation=45)
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(-0.2,-0.7),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        plt.twinx()
+        plt.plot(date,df_200215['mean'],'#3778bf',label="200215均价")
+        plt.plot(date,df_210205['mean'],'#f0833a',label="210205均价")
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.5,-0.7),borderaxespad = 0.,fontsize=10,frameon=False)
+        plt.title('200215&210205',fontsize=12)
+        self.pic_list.append(fig)
+        self.title_list.append('200215&210205')
+
+        
+        #筛选200016
+        df_200016 = df.loc[df['代码'] == '200016.IB']
+        a = df_200016.groupby(['date'])['价格'].count()
+        b = df_200016.groupby(['date'])['价格'].agg([np.mean,np.max,np.min])
+        c = df_200016.groupby(['date'])['昨日平均'].mean()
+        d = df_200016.groupby(['date'])['债券余额(亿)'].mean()
+        df_200016 = pd.concat([a,b,c,d],axis=1)
+        #把日期转为str
+        date = df_200016.index
+        date = date.strftime('%m-%d')
+        #画图
+        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        plt.bar(date, df_200016['价格'], width=0.7, color='#f0833a',alpha = 0.2,label="交易笔数")
+        plt.xticks(fontsize=10,rotation=45)
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(-0.05,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        plt.twinx()
+        plt.plot(date,df_200016['mean'],'#3778bf',label="Mean")
+        plt.plot(date,df_200016['amax'],"lightsteelblue",label="Max",ls='--')
+        plt.plot(date,df_200016['amin'],"lightgray",label="Min",ls='--')
+        plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.3,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+        plt.title('200016',fontsize=12)
+        self.pic_list.append(fig)
+        self.title_list.append('200016')
+
 
 class MacroReport:
 

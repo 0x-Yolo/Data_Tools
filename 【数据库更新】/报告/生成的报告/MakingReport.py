@@ -10,13 +10,25 @@ weekreport.interbank_deposit('2020-01-01','2021-05-23')
 ## 一级
 weekreport.prmy_mkt_weekly_issue('2021-05-17','2021-05-23')
 weekreport.prmy_mkt_sentiment()
-weekreport.rates_change()
+## bp变动
+weekreport.rates_change('2021-05-17','2021-05-23')
+## 二级
+weekreport.secondary_credit(days = 10)
+weekreport.secondary_rate('2021-05-10', '2021-05-21')
+## 现券
+weekreport.fig_net_data('2021-05-17', '2021-05-23')
+
+weekreport.print_all_jpg()
 
 
-weekreport = rg.weeklyReport()
-weekreport.net_buy_amt()
-weekreport.title = '机构在国债、政金债、地方政府债的净买入量'
-weekreport.print_all_fig()
+
+# 不同机构不同均线现券净买入
+pdfreport = rg.weeklyReport()
+pdfreport.net_buy_amt()
+pdfreport.title = '机构在国债、政金债、地方政府债的净买入量'
+pdfreport.print_all_fig()
+
+
 # * 1
 macro_report = rg.MacroReport()
 macro_report.fig_all()
