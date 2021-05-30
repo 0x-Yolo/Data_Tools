@@ -20,11 +20,11 @@ start=dt.datetime.now() - dt.timedelta(days=years*365)
 start=start.strftime("%Y-%m-%d")
 end=end.strftime("%Y-%m-%d")
 
-################
+#### 流动性 ####
 def cash_cost():
 
     err, df=w.edb('M1006336,M1006337,M1004515,M0017142',
-               start,end, "Fill=Previous",usedf=True) 
+               start,end,usedf=True) 
     df.columns = ['DR001','DR007','GC007','shibor_3m']
     df['date'] = df.index
     df = df.dropna(axis = 0)
@@ -39,7 +39,7 @@ def policy_rate():
     # 政策利率
     err, df=w.edb('M0041371,M0041373,M0041377,M0329656,\
             M0329543,M0329544,M0329545',
-               start,end, "Fill=Previous",usedf=True)
+               start,end,usedf=True)
     df.columns = ['逆回购利率：7天', '逆回购利率：14天', '逆回购利率：28天',\
          '逆回购利率：63天', 'MLF：3m', 'MLF：6m',
          'MLF：1y']
@@ -98,6 +98,7 @@ def repo_volume():
     dtypelist = dict(zip(df.columns,columns_type))
 
     return df, name , dtypelist
+
 def interbank_deposit():
     # 同业存单价格与净融资量
     err,df = w.edb('M1006645,M0329545', start,end,usedf=True)
@@ -111,7 +112,7 @@ def interbank_deposit():
 
     return df, name , dtypelist
 
-################
+##############
 def rates():
     err,df = w.edb("S0059744,S0059746,S0059747,S0059748,S0059749,\
             M1004298,M1004300,M1004302,M1004304,M1004306,\
@@ -154,7 +155,7 @@ def rates():
 
 
 
-
-for a,b,c in [rates()]:
+conn,engine = do.get_db_conn()
+for a,b,c in [cash_cost()]:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')

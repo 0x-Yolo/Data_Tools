@@ -144,7 +144,7 @@ stat = do.get_data('CreditBondTrading_stat',\
 
 
 def upload1(df):
-    name = 'CreditBondTrading'
+    name = 'secondary_credit_sec'
     columns_type = [VARCHAR(30),VARCHAR(30),Float(),DateTime(),DateTime(),
                     VARCHAR(30),Float(),Float(),DateTime(),
                     Float(),VARCHAR(30),Float(),Float(),
@@ -163,7 +163,7 @@ def upload1(df):
 
 def upload2(stat):
     stat['date'] = stat.index
-    name = 'CreditBondTrading_stat1'
+    name = 'secondary_credit_sec_stat'
     columns_type = [Float(),Float(),Float(),Float(),\
         Float(),Float(),DateTime()]
     dtypelist = dict(zip(stat.columns,columns_type))
@@ -172,6 +172,7 @@ def upload2(stat):
 
 
 def main():
+    w.start()
     # * Step1:获取数据
     d = pd.DataFrame([])
     for dir in os.listdir('./raw_data'):
@@ -194,7 +195,8 @@ def main():
 
     # * Step2:添加windapi指标
     for idx in df.index:
-
+        if idx < 655 :
+            continue
         print(idx)
 
         code = df.loc[idx,'代码']
@@ -211,7 +213,8 @@ def main():
         # 基本信息
         df.loc[idx,['名字','type','rating','债券期限','城投','发行人','发行方式']] = w.wsd(code,\
             "sec_name,windl1type,latestissurercreditrating,\
-            term2,municipalbond,issuer,issue_issuemethod",usedf=True)[1].values[0]
+            term2,municipalbond,issuer,issue_issuemethod",\
+            last_date,last_date,usedf=True)[1].values[0]
     
         # 【到期估值】
         df.loc[idx,'到期估值'] = w.wsd(code, "yield_cnbd", last_date, last_date,
@@ -284,9 +287,9 @@ def main():
 
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
-    l = [upload2(s)]
+    l = [upload2(stat_table)]
     for a,b,c in l:
-        a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
+        a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
 
 
 

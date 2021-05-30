@@ -15,7 +15,7 @@ import data_organize as do
 
 # 汇入
 path = '/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/raw_data'
-
+path='/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/二级信用债/raw_data'
 d = pd.DataFrame([])
 for dir in os.listdir(path):
     if ('~' in dir) | ('xlsx' not in dir):
@@ -28,6 +28,10 @@ for dir in os.listdir(path):
     d = d.append(df)
 d = d.reset_index(drop=True)
 
+for idx in d.index:
+    if type(d.loc[idx,'价格']) == str:
+        # print(idx)
+        d.drop(idx,axis=0,inplace = True)
 
 name = 'secondary_rate_sec'
 columns_type = [VARCHAR(10),VARCHAR(10),VARCHAR(30),\
@@ -39,4 +43,4 @@ dtypelist = dict(zip(d.columns,columns_type))
 
 conn,engine = do.get_db_conn()
 for a,b,c in [(d,name,dtypelist)]:
-    a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
+    a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)

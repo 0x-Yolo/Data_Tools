@@ -14,20 +14,6 @@ import data_organize as do
 
 from WindPy import w
 
-def upload_date(name):
-    """
-    输入表名
-    输出该表的最新日期
-    """
-    
-    dir_date = []
-    df = pd.read_sql('select max(date) from {}'.format(name) , conn)
-    last_date = df.iloc[-1 , -1]
-    
-    # today_date = dt.datetime.now()
-    
-    return last_date 
-
 def cash_cost():
     name = 'cash_cost'
     last_date = do.get_latest_date(name)
@@ -35,7 +21,7 @@ def cash_cost():
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
     err, df=w.edb('M1006336,M1006337,M1004515,M0017142',
-               last_date,today_date, "Fill=Previous",usedf=True) 
+               last_date,today_date,usedf=True)
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ['DR001','DR007','GC007','shibor_3m']
@@ -55,7 +41,7 @@ def policy_rate():
 
     err, df=w.edb('M0041371,M0041373,M0041377,M0329656,\
             M0329543,M0329544,M0329545',
-               last_date,today_date, "Fill=Previous",usedf=True)
+               last_date,today_date,usedf=True)
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ['逆回购利率：7天', '逆回购利率：14天', '逆回购利率：28天',\
@@ -199,7 +185,7 @@ def daily_fig_liquidity_premium():
     err,df=w.edb('M0017139,M0041653,M0220163,\
     M0017142,M0048486,M1010889,M1010892,M0329545,\
     M1011048', \
-        last_date,today_date,"Fill=Previous",usedf=True)
+        last_date,today_date,usedf=True)
 
     if df.shape[1] == 1:
         return [],name,[]
@@ -246,7 +232,7 @@ def daily_fig_rates():
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
     err,df=w.edb('S0059744,S0059746,S0059747,S0059749,M1004263,M1004265,M1004267,M1004271',
-                 last_date,today_date,"Fill=Previous",usedf=True)
+                 last_date,today_date,usedf=True)
         
     if df.shape[1] == 1:
         return [],name,[]

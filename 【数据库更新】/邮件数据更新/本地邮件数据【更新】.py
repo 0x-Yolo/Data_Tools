@@ -68,6 +68,7 @@ def daily_Net_buy_bond(dir_name):#每天数据的转换
     df.rename(columns={'Unnamed: 0':'机构名称'},inplace=True)
     df = df.reset_index(drop=True) 
     df=df.replace("—",0)
+    df=df.replace('---',0)
 
     name = "Net_buy_bond"
     columns_type=[#图表的数据口径
@@ -172,7 +173,10 @@ def main():
     conn,engine = do.get_db_conn()
     dir_list = upload_date_list()
     dir_list.sort()
-    for dir in dir_list:
+    for dir in dir_list[2:]:
+        if 'xlsx' in dir :
+            print(dir)# 0522.xlsx
+            continue
         l = [daily_Net_buy_bond(dir)]
         for a,b,c in l:
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)

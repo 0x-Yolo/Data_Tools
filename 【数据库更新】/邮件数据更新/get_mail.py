@@ -8,6 +8,7 @@ from io import StringIO, BytesIO
 import data_organize as do
 import re
 import datetime as dt
+import data_organize as do
 
 def decode_str(s):#字符编码转换
     value, charset = decode_header(s)[0]
@@ -42,7 +43,7 @@ def get_mail_pool(host, username, password, n=5):
         #    break
     return msg_list
 
-def get_att(msg, download_io="/Users/wdt/Desktop/tpy/邮件处理/附件下载/"):
+def get_att(msg, download_io):
     attachment_files = []
     attachment_date=[]
     for part in msg.walk():
@@ -56,7 +57,7 @@ def get_att(msg, download_io="/Users/wdt/Desktop/tpy/邮件处理/附件下载/"
             filename = dh[0][0]
             if dh[0][1]:
                 filename = decode_str(str(filename, dh[0][1]))  # 将附件名称可读化
-                print("发现附件："+filename)
+                # print("发现附件："+filename)
                 # filename = filename.encode("utf-8")
             if  "现券市场"  in filename:
                 data = part.get_payload(decode=True)  # 下载附件
@@ -70,25 +71,23 @@ def get_att(msg, download_io="/Users/wdt/Desktop/tpy/邮件处理/附件下载/"
 
 
 
-def download_certain_mail(msg_list,download_io):
+def download_certain_mail(msg_list,download_io,lastday):
     try:
         subject_list=[]
         date_list=[]
         for msg in msg_list:
+            # 获取可读的附件名
             subject=decode_str(msg.get("subject"))
-            print(subject)# 附件名
+            # print(subject)# 附件名
 
             # 查找邮件名中的八位数字
             date= re.search(r"\d{8}",subject)[0]
-            print(date)# 日期
-
-            # get_att(msg,download_io)
                      
-            if ("现券" in subject and date >= '20210520') :
+            if "现券" in subject and date > lastday.strftime("%Y%m%d") :
                 subject_list.append(subject)
                 date_list.append(date)
                 get_att(msg,download_io)
-                print("已经下载附件："+download_io+subject)
+                print("已经下载附件："+subject)
             else:
                 pass
             
@@ -98,8 +97,7 @@ def download_certain_mail(msg_list,download_io):
 
 def main():
     # 附件下载路径
-    download_io = "/Users/wdt/Desktop/tpy/raw_data_pool/现券市场交易情况总结/日报"
-    
+    download_io = "/Users/wdt/Desktop/tpy/raw_data_pool/现券市场交易情况总结/日报/"
     
     # @ 读取mail_config.txt内的邮箱信息
     io=os.getcwd() + "/mail_config.txt"
@@ -111,11 +109,13 @@ def main():
     username = config[1]  # 用户名 
     password = config[2]  # 密码
 
+    # 获取数据库内最后更新时间
+    last_date = do.get_latest_date('Net_buy_bond')
 
     #获取邮件池子
     msg_list = get_mail_pool(host,username,password)
     #下载邮件
-    download_certain_mail(msg_list,download_io)
+    download_certain_mail(msg_list,download_io, last_date)
 
 if __name__ == "__main__":
     main()

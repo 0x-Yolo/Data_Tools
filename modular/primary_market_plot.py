@@ -33,6 +33,55 @@ df = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/专�
 df = df[df['综收较估值'] < 40]
 df = df.loc[df['发行起始日'] >= '2020-01-01']
 
+def prmy_mkt_weekly_issue(startday,endday):
+    primary_market = df.copy()
+    primary_market.rename(columns={'发行起始日':'date'}, inplace = True)
+    primary_market = primary_market.loc\
+        [(primary_market['date']>=startday)&\
+            (primary_market['date']<=endday)]
+
+    primary_market.index = primary_market['date']
+    primary_market = primary_market.dropna(axis=0, how='any', thresh=None, subset=['全场倍数'], inplace=False)
+    
+    # 类型备注
+    primary_market = primary_market[['债券简称', 'date', '发行期限(年)', '发行人全称','全场倍数']]
+    primary_market.loc[primary_market['发行人全称'] == '中华人民共和国财政部' , '类型'] = '国债'
+    primary_market.loc[(primary_market['发行人全称'] == '国家开发银行'), '类型'] = '国开债'
+    primary_market.loc[((primary_market['发行人全称'] == '中国进出口银行')|(primary_market['发行人全称'] == '中国农业发展银行')), '类型'] = '非国开债'
+    primary_market = primary_market.dropna(axis=0, how='any', thresh=None, subset=['类型'], inplace=False)
+    
+    # 类型备注
+    # primary_market = primary_market[['债券简称', 'date', '发行期限(年)', '发行人简称','全场倍数','Wind债券类型(二级)']]
+    # primary_market.loc[primary_market['Wind债券类型(二级)'] == '国债' , '类型'] = '国债'
+    # primary_market.loc[(primary_market['Wind债券类型(二级)'] == '政策银行债')&(primary_market['发行人简称'] == '国家开发银行'), '类型'] = '国开债'
+    # primary_market.loc[(primary_market['Wind债券类型(二级)'] == '政策银行债')&((primary_market['发行人简称'] == '进出口银行')|(primary_market['发行人简称'] == '农业发展银行')), '类型'] = '非国开债'
+    # primary_market = primary_market.dropna(axis=0, how='any', thresh=None, subset=['类型'], inplace=False)
+    
+    # 国债
+    primary_market_gz= primary_market[(primary_market['类型'] == '国债')]
+    # 国开债
+    primary_market_gkz= primary_market[(primary_market['类型'] == '国开债')]
+    # 非国开债
+    primary_market_fgkz= primary_market[(primary_market['类型'] == '非国开债')]
+
+    # 绘图-本周利率债发行招标倍数
+    fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+    plt.grid(ls='--')
+    plt.rc('axes', axisbelow=True)
+
+    plt.scatter(primary_market_gz['发行期限(年)'],primary_market_gz['全场倍数'],label='国债', marker='o',color = 'darkorange',s=20)
+    plt.scatter(primary_market_gkz['发行期限(年)'],primary_market_gkz['全场倍数'],label='国开债', marker='*',color = 'royalblue',s=20)
+    plt.scatter(primary_market_fgkz['发行期限(年)'],primary_market_fgkz['全场倍数'],label='非国开债', marker='^',color = 'navy',s=20)
+    plt.title('本周利率债招标倍数',fontsize=12)
+    plt.legend(ncol=3,loc=3, bbox_to_anchor=(0,-0.6),borderaxespad = 0.,fontsize=10,frameon=False)
+    plt.xticks(fontsize=10,rotation=0)
+    plt.yticks(fontsize=10,rotation=0)
+    plt.xlabel('期限'); plt.ylabel('倍数')
+    # self.pic_list.append(fig)
+    # self.title_list.append('本周利率债招标倍数')
+
+    return fig 
+
 def GK():
     df_gk = df[df['发行人全称']=='国家开发银行'][['发行起始日','发行期限(年)','发行人全称','全场倍数','综收较估值','综收较二级']]
     qcbs_quantile_gk = df_gk.groupby('发行期限(年)').apply(lambda df:np.nanquantile(df['全场倍数'],[0.25,0.5,0.75]))
