@@ -110,7 +110,7 @@ class weeklyReport:
     def print_all_jpg(self):
         if self.isMonth:
             download_path = './月报图片输出地址/'
-        if self.isMonth:
+        if not self.isMonth:
             download_path = './周报图片输出地址/'
 
         n = len(self.pic_list)
@@ -361,14 +361,14 @@ class weeklyReport:
         # 利率债城投债中票bp变动情况 
         # end = dt.datetime.today()
         # start=dt.datetime.now() - dt.timedelta(days=7)
-        df = do.get_data('rates',start,end)
+        df = do.get_data('rates1',start,end)
         
         #### P1    
         d = pd.DataFrame(index=['国债','国开债','地方债'],\
             columns=['1Y','3Y','5Y','7Y','10Y'])
         d.loc['国债'] = ((df.iloc[-1,:5] - df.iloc[0,:5])*100).tolist()
-        d.loc['国开债'] = ((df.iloc[-1,5:10] - df.iloc[0,5:10])*100).tolist()
-        d.loc['地方债'] = ((df.iloc[-1,10:15] - df.iloc[0,10:15])*100).tolist()
+        d.loc['国开债'] = ((df.iloc[-1,10:15] - df.iloc[0,10:15])*100).tolist()
+        d.loc['地方债'] = ((df.iloc[-1,5:10] - df.iloc[0,5:10])*100).tolist()
         # plt.style.use({'font.size' : 12}) 
         fig1,ax = plt.subplots(figsize=(4.15,1.42 ),dpi = 300)
 

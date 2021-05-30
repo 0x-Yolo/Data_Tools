@@ -30,7 +30,6 @@ month.monetary_policy_tools('2021-04-30','2021-05-28')
 month.interbank_deposit('2021-04-30','2021-05-28')
 month.rates_change('2021-04-30','2021-05-28')
 
-
 month.secondary_credit('2021-05-01', '2021-05-30')
 month.secondary_rate('2021-05-01', '2021-05-30')
 month.prmy_mkt_weekly_issue('2021-05-01','2021-05-28')

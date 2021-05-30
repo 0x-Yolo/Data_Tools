@@ -120,10 +120,14 @@ def rates():
             M0048432,M0048434,M0048435,M0048436,\
             M0048422,M0048424,M0048425,M0048426,\
             M0048412,M0048414,M0048415,M0048416,\
-            M1002654,M1002656,M1002658,\
-            M1003631,M1003633,M1003635,\
-            M1003639,M1003641,M1003643,\
-            M1003623,M1003625,M1003627",\
+            S0059736,S0059738,S0059739,\
+            S0059722,S0059724,S0059725,\
+            S0059715,S0059717,S0059718,\
+            S0059729,S0059731,S0059732",\
+            # M1002654,M1002656,M1002658,\
+            # M1003631,M1003633,M1003635,\
+            # M1003639,M1003641,M1003643,\
+            # M1003623,M1003625,M1003627,\
          start,end,usedf = True)
 
     df.columns=['国债1年','国债3年','国债5年','国债7年','国债10年',\
@@ -139,7 +143,7 @@ def rates():
 
     df['date'] = df.index
 
-    name = 'rates'
+    name = 'rates1'
     columns_type=[Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
@@ -156,6 +160,6 @@ def rates():
 
 
 conn,engine = do.get_db_conn()
-for a,b,c in [cash_cost()]:
+for a,b,c in [rates()]:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')

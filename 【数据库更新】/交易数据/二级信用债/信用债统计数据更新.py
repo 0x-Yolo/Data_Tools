@@ -18,35 +18,6 @@ w.start()
 plt.rcParams['font.family']=['STKaiti']
 plt.rcParams['axes.unicode_minus'] = False
 
-'''
-df = stat_table.loc[stat_table.index >= '2021-05-10']
-df = stat_table.copy()
-
-# P1
-fig1,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
-l = df[['均价']].plot(ax=ax)
-r = df[['笔数']].plot(secondary_y=True,ax=ax)
-
-l.legend(loc=3,bbox_to_anchor=(0.2,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
-r.legend(loc=3,bbox_to_anchor=(0.6,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
-
-fig1.tight_layout()
-
-# P2
-fig2,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
-l = df[['风险偏好指数']].plot(ax=ax)
-r = df[['情绪指数']].plot(secondary_y=True,ax=ax)
-l.legend(loc=3,bbox_to_anchor=(0.2,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
-r.legend(loc=3,bbox_to_anchor=(0.6,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
-
-# P3
-fig3,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
-l = df[['平均期限']].plot(ax=ax)
-r = df[['信用扩张指数']].plot(secondary_y=True,ax=ax)
-
-l.legend(loc=3,bbox_to_anchor=(0.2,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
-r.legend(loc=3,bbox_to_anchor=(0.6,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
-'''
 
 def str2int(s):
     if type(s)==int:
@@ -134,22 +105,13 @@ def get_stat_table(df):
 
 
 
-# ## test ##
-# df = do.get_data('CreditBondTrading')
-stat = do.get_data('CreditBondTrading_stat',\
-'2021-05-06','2021-05-07')
-# s = get_stat_table(df.loc[df['时间']>='2021-05-10'])
-# ##
-# 
-
-
 def upload1(df):
     name = 'secondary_credit_sec'
     columns_type = [VARCHAR(30),VARCHAR(30),Float(),DateTime(),DateTime(),
                     VARCHAR(30),Float(),Float(),DateTime(),
                     Float(),VARCHAR(30),Float(),Float(),
                     VARCHAR(30),VARCHAR(30),VARCHAR(30),
-                    VARCHAR(30),VARCHAR(40),VARCHAR(30),
+                    VARCHAR(30),VARCHAR(300),VARCHAR(30),
                     VARCHAR(30),VARCHAR(30),
                     VARCHAR(10),Float(),
                     Integer(),Integer(),Integer(),Integer(),Integer()]
@@ -195,8 +157,7 @@ def main():
 
     # * Step2:添加windapi指标
     for idx in df.index:
-        if idx < 655 :
-            continue
+
         print(idx)
 
         code = df.loc[idx,'代码']
@@ -288,6 +249,7 @@ def main():
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
     l = [upload2(stat_table)]
+    l = [upload1(df)]
     for a,b,c in l:
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
 
