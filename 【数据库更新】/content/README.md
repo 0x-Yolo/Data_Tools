@@ -15,7 +15,7 @@
 ## 资源汇总
 
 * 函数池
-  * [ReportGenerator库](docs/函数池/ReportGenerator)
+  * [ReportGenerator库](docs/函数池-ReportGenerator.md)
   * data_organize库
 * [数据表](docs/数据表信息.md)
   * [流动性](docs/数据表-流动性.md)
