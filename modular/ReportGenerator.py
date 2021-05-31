@@ -110,7 +110,7 @@ class weeklyReport:
     def print_all_jpg(self):
         if self.isMonth:
             download_path = './月报图片输出地址/'
-        if not self.isMonth:
+        if self.isMonth:
             download_path = './周报图片输出地址/'
 
         n = len(self.pic_list)
