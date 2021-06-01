@@ -11,6 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import exc
 import os
 import re
+import sys
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -31,8 +32,10 @@ plt.rcParams['font.family']=['STKaiti']
 plt.rcParams['axes.unicode_minus'] = False
 
 # 存一个数据库信息的文本
-path = input('输入存放数据库信息的地址')
-# path = '/Users/wdt/db.txt'
+# path = input('输入存放数据库信息的地址')
+for p in sys.path:
+    if 'modular' in p :
+        path = os.path.abspath(p +'/db.txt')
 conn , engine = do.get_db_conn(path)
 print('成功连接数据库finance')
 
@@ -99,18 +102,19 @@ def net_investment(net_investment):
         return a
 
 class weeklyReport:
-    def __init__(self, years = 1 , isMonth = False):
-        self.end = dt.datetime.today()
-        self.start=dt.datetime.now()-dt.timedelta(days=years*365)
+    def __init__(self, isMonth = False):
+
         self.pic_list=[]
         self.title_list=[]
-        self.title="周报"+self.end.strftime("%Y-%m-%d")
+
+        self.title="周报"
+
         self.isMonth = isMonth
 
     def print_all_jpg(self):
         if self.isMonth:
             download_path = './月报图片输出地址/'
-        if self.isMonth:
+        if not self.isMonth:
             download_path = './周报图片输出地址/'
 
         n = len(self.pic_list)
@@ -361,7 +365,7 @@ class weeklyReport:
         # 利率债城投债中票bp变动情况 
         # end = dt.datetime.today()
         # start=dt.datetime.now() - dt.timedelta(days=7)
-        df = do.get_data('rates1',start,end)
+        df = do.get_data('rates',start,end)
         
         #### P1    
         d = pd.DataFrame(index=['国债','国开债','地方债'],\
