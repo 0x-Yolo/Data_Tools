@@ -4,8 +4,9 @@
 
 ## 数据库的使用
 
-* [如何从数据库导出报告](docs/方法-从数据库导出报告.md)
-  * [周报](docs/方法-周报.md)
+* 如何从数据库导出报告
+  * [导出周报图片](docs/方法-周报.md)
+  * [导出宏观周报](docs/方法-宏观周报导出.md)
 * [如何从数据库导出数据](docs/方法-从数据库导出数据.md)
 
 ## 数据库的维护
@@ -15,7 +16,7 @@
 ## 资源汇总
 
 * 函数池
-  * [ReportGenerator库](docs/函数池-ReportGenerator.md)
+* [ReportGenerator库](docs/函数池-ReportGenerator.md)
   * data_organize库
 * [数据表](docs/数据表信息.md)
   * [流动性](docs/数据表-流动性.md)

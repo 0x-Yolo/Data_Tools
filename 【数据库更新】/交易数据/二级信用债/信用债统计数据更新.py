@@ -20,8 +20,8 @@ plt.rcParams['axes.unicode_minus'] = False
 
 
 def str2int(s):
-    if type(s)==int:
-        return s
+    if type(s)!=str:
+        return str(0)
     return int(s[:4]+s[5:7]+s[8:10])
 
 def organize(df):    
@@ -137,17 +137,16 @@ def main():
     w.start()
     # * Step1:获取数据
     d = pd.DataFrame([])
-    for dir in os.listdir('./raw_data'):
+    for dir in os.listdir('./tmp_data'):
         if ('~$' in dir) | ('成交统计' not in dir):
             continue
-
         print(dir)
 
         x= int(re.findall(r'\d+', dir)[0])
         y= int(re.findall(r'\d+', dir)[1])
         z= int(re.findall(r'\d+', dir)[2])
         date = dt.datetime(int(x),int(y),int(z))
-        dirr = pd.read_excel('./raw_data'+'/'+dir,\
+        dirr = pd.read_excel('./tmp_data'+'/'+dir,\
             sheet_name='信用债成交',header=1)
         dirr['时间'] = date
         dirr['估值时间'] = dirr['时间'] - dt.timedelta(days=1)
@@ -157,7 +156,6 @@ def main():
 
     # * Step2:添加windapi指标
     for idx in df.index:
-
         print(idx)
 
         code = df.loc[idx,'代码']
@@ -172,11 +170,13 @@ def main():
         last_date = df.loc[idx,'估值时间'].strftime("%Y%m%d")
         
         # 基本信息
+        
         df.loc[idx,['名字','type','rating','债券期限','城投','发行人','发行方式']] = w.wsd(code,\
             "sec_name,windl1type,latestissurercreditrating,\
             term2,municipalbond,issuer,issue_issuemethod",\
-            last_date,last_date,usedf=True)[1].values[0]
-    
+            last_date,last_date,'TradingCalendar=NIB',usedf=True)[1].values[0]
+
+
         # 【到期估值】
         df.loc[idx,'到期估值'] = w.wsd(code, "yield_cnbd", last_date, last_date,
             "credibility=4;PriceAdj=YTM;TradingCalendar=NIB").Data[0][0]
@@ -191,7 +191,7 @@ def main():
         
         # 【部分债无行权日】
         df.loc[idx,'行权日'] = w.wsd(code, "nxoptiondate",net_date,net_date, "type=All").Data[0][0]
-        if df.loc[idx,'行权日'] == None:
+        if df.loc[idx,'行权日'] == None :
             df.loc[idx,'行权日'] = 0
         # 【】
         df.loc[idx,'行业'] = w.wsd(code,"industry_csrc12_n",last_date,last_date,"industryType=3;TradingCalendar=NIB").Data[0][0]
