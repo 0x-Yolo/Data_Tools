@@ -3,18 +3,21 @@ import data_organize as do
 
 # * 周报 
 weekreport = rg.weeklyReport(isMonth = False)
+base = '2021-05-21'
+end = '2021-05-28'
+start = '2021-05-24'
 ## ! 含有base_day
-weekreport.cash_cost('2021-05-21','2021-05-28')
-weekreport.monetary_policy_tools('2021-05-21','2021-05-28')
-weekreport.interbank_deposit('2021-05-21','2021-05-28')
-weekreport.rates_change('2021-05-21','2021-05-28')#bp
+weekreport.cash_cost(base, end)
+weekreport.monetary_policy_tools(base, end)
+weekreport.interbank_deposit(base, end)
+weekreport.rates_change(base, end)#bp
 ## * 二级 :近两周 
-weekreport.secondary_credit('2021-05-17', '2021-05-30')
-weekreport.secondary_rate('2021-05-17', '2021-05-30')
+weekreport.secondary_credit('2021-05-17', end)
+weekreport.secondary_rate('2021-05-17', end)
 ## * 一级 :近两周 
-weekreport.prmy_mkt_weekly_issue('2021-05-24','2021-05-30')
+weekreport.prmy_mkt_weekly_issue(start, end)
 ## * 现券
-weekreport.fig_net_data('2021-05-24', '2021-05-30')
+weekreport.fig_net_data(start, end)
 ## * 综收 2020以来
 weekreport.prmy_mkt_sentiment()
 
@@ -24,24 +27,22 @@ weekreport.print_all_jpg()
 
 # * 月报
 month = rg.weeklyReport(isMonth = True)
+base = '2021-04-30'
+end = '2021-05-28'
+start='2021-05-01'
 ## ! 含有base_day
-month.cash_cost('2021-04-30','2021-05-28')
-month.monetary_policy_tools('2021-04-30','2021-05-28')
-month.interbank_deposit('2021-04-30','2021-05-28')
-month.rates_change('2021-04-30','2021-05-28')
+month.cash_cost(base, end)
+month.monetary_policy_tools(base, end)
+month.interbank_deposit(base, end)
+month.rates_change(base, end)
 
-month.secondary_credit('2021-05-01', '2021-05-30')
-month.secondary_rate('2021-05-01', '2021-05-30')
-month.prmy_mkt_weekly_issue('2021-05-01','2021-05-28')
+month.secondary_credit(start, end)
+month.secondary_rate(start, end)
+month.prmy_mkt_weekly_issue(start,end)
 
-month.fig_net_data('2021-05-01', '2021-05-28')
-
-
+month.fig_net_data(start, end)
 
 month.print_all_jpg()
-
-
-
 
 # 不同机构不同均线现券净买入
 pdfreport = rg.weeklyReport()

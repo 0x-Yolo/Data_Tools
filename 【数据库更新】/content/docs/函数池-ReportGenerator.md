@@ -2,7 +2,7 @@
 
 
 
-## class weeklyReport(isMonth = False)
+## Class weeklyReport(isMonth = False)
 
 ### Methods
 
@@ -11,7 +11,6 @@
   ###### 资金利率
 
   * ###### base: 基准日，如上周五或上月末最后一天
-
   * ###### end: 图像终止日，本周最后一个交易日
   * ###### *start: 图像起始日为2020-01-01
 

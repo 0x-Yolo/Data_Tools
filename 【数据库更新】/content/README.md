@@ -10,14 +10,13 @@
 * [如何从数据库导出数据](docs/方法-从数据库导出数据.md)
 
 ## 数据库的维护
-* 如何上传数据
-* 如何更新数据
+* [维护指南](docs/维护指南.md)
 
 ## 资源汇总
 
 * 函数池
-* [ReportGenerator库](docs/函数池-ReportGenerator.md)
-  * data_organize库
+  * [ReportGenerator库](docs/函数池-ReportGenerator.md)
+  * [data_organize库](docs/函数池-data_organize.md)
 * [数据表](docs/数据表信息.md)
   * [流动性](docs/数据表-流动性.md)
   * [一级发行](docs/数据表-一级市场.md)
