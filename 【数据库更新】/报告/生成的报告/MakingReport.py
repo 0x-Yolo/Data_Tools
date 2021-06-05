@@ -7,10 +7,10 @@ base = '2021-05-21'
 end = '2021-05-28'
 start = '2021-05-24'
 ## ! 含有base_day
-weekreport.cash_cost(base, end)
-weekreport.monetary_policy_tools(base, end)
-weekreport.interbank_deposit(base, end)
-weekreport.rates_change(base, end)#bp
+cash = weekreport.cash_cost(base, end)
+mone = weekreport.monetary_policy_tools(base, end)
+dps = weekreport.interbank_deposit(base, end)
+bp_change = weekreport.rates_change(base, end)#bp
 ## * 二级 :近两周 
 weekreport.secondary_credit('2021-05-17', end)
 weekreport.secondary_rate('2021-05-17', end)
@@ -20,6 +20,11 @@ weekreport.prmy_mkt_weekly_issue(start, end)
 weekreport.fig_net_data(start, end)
 ## * 综收 2020以来
 weekreport.prmy_mkt_sentiment()
+
+## * PDF
+weekreport.net_buy_amt()
+weekreport.title = '机构在国债、政金债、地方政府债的净买入量'
+weekreport.print_all_fig()
 
 weekreport.print_all_jpg()
 
@@ -55,6 +60,8 @@ pdfreport.print_all_fig()
 macro_report = rg.MacroReport()
 macro_report.fig_all()
 macro_report.print_all_fig()
+
+
 # * 2
 net_report = rg.Report()
 net_report.title = '5.10-5.14现券'

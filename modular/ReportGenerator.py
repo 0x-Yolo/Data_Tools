@@ -126,13 +126,18 @@ class weeklyReport:
         print("成功打印"+str(n)+"张图片")
         
     def print_all_fig(self):
+        if self.isMonth:
+            download_path = './月报图片输出地址/'
+        if not self.isMonth:
+            download_path = './周报图片输出地址/'
+
         n = len(self.pic_list)
-        pdf = PdfPages(self.title+'.pdf')
+        pdf = PdfPages(download_path+self.title+'.pdf')
         for pic in self.pic_list:
             pdf.savefig(pic,bbox_inches='tight')
             plt.close
         pdf.close()
-        print("成功打印"+str(n)+"张图片,保存为\n" , os.getcwd() +'/'+self.title + '.pdf')
+        print("成功打印"+str(n)+"张图片,保存至\n" , download_path)
 
     def cash_cost(self,base_day ,endday ):
         startday = '2020-01-01'
@@ -173,7 +178,7 @@ class weeklyReport:
         self.pic_list.append(fig)
         self.title_list.append('资金利率')
 
-        return
+        return fig
 
     def monetary_policy_tools(self,base_day,end ):
         # * 公开市场投放
@@ -226,7 +231,7 @@ class weeklyReport:
         self.pic_list.append(fig)
         self.title_list.append('公开市场操作')
 
-        return
+        return fig
 
     def interbank_deposit(self,base_day , endday):
         # * 存单价格与净融资量
@@ -281,22 +286,21 @@ class weeklyReport:
         self.pic_list.append(fig)
         self.title_list.append('MLF与同业存单')
 
-        return 
+        return fig
 
     def prmy_mkt_weekly_issue(self,startday,endday):
         # 一级市场发行 
         # 时间为近一周
         
 
-        # primary_market = do.get_data('primary_market',\
-        #     startday , endday)
+        primary_market = do.get_data('primary_rate_sec', startday, endday)
 
-        primary_market = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/专题数据/一级发行数据/利率债一级_新.xlsx',\
-            sheet_name='数据（导入）')
-        primary_market.rename(columns={'发行起始日':'date'}, inplace = True)
-        primary_market = primary_market.loc\
-            [(primary_market['date']>=startday)&\
-                (primary_market['date']<=endday)]
+        # primary_market = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/专题数据/一级发行数据/利率债一级_新.xlsx',\
+        #     sheet_name='数据（导入）')
+        # primary_market.rename(columns={'发行起始日':'date'}, inplace = True)
+        # primary_market = primary_market.loc\
+        #     [(primary_market['date']>=startday)&\
+        #         (primary_market['date']<=endday)]
 
         primary_market.index = primary_market['date']
         primary_market = primary_market.dropna(axis=0, how='any', thresh=None, subset=['全场倍数'], inplace=False)
@@ -345,7 +349,7 @@ class weeklyReport:
         self.pic_list.append(fig)
         self.title_list.append('利率债招标倍数')
 
-        return
+        return fig
 
     def prmy_mkt_sentiment(self):
         # 调包画图 
@@ -359,7 +363,7 @@ class weeklyReport:
         self.pic_list.append(fig2)
         self.title_list.append('国债全场倍数与综收')
         
-        return 
+        return [fig1, fig2]
 
     def rates_change(self,start,end):
         # 利率债城投债中票bp变动情况 
@@ -452,7 +456,7 @@ class weeklyReport:
         self.pic_list.append(fig3)
         self.title_list.append('中票短融bp变动')
 
-        return 
+        return [fig1,fig2,fig3]
 
     def fig_net_data(self,start,end):
         df_net_week = do.get_data('Net_buy_bond',start , end)
@@ -475,7 +479,7 @@ class weeklyReport:
 
         # 画图
         plt.style.use({'font.size' : 10})     
-        fig, ax = plt.subplots(nrows=1,ncols=1,\
+        fig1, ax = plt.subplots(nrows=1,ncols=1,\
         figsize=(4.15,1.42), dpi=300)
 
         x = np.arange(4)
@@ -499,12 +503,12 @@ class weeklyReport:
         # ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.22,-0.32),borderaxespad = 0.,frameon=False)
         ax.legend(ncol=3,loc=1, bbox_to_anchor=(1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
         ax.set_title('分机构久期分布',fontsize=12)
-        self.pic_list.append(fig)
+        self.pic_list.append(fig1)
         self.title_list.append('分机构久期分布')
 
         #P2
         plt.style.use({'font.size' : 10})     
-        fig, ax = plt.subplots(nrows=1,ncols=1,\
+        fig2, ax = plt.subplots(nrows=1,ncols=1,\
         figsize=(4.15,1.42), dpi=300)
         x = np.arange(4)
         y1 = stat2.iloc[0,:]
@@ -529,10 +533,10 @@ class weeklyReport:
 
         ax.set_title(title,fontsize=12)
 
-        self.pic_list.append(fig)
+        self.pic_list.append(fig2)
         self.title_list.append('分机构7-10年政金新债、国债新债净买入情况')
 
-        return df_net_week
+        return [fig1,fig2]
 
     def net_buy_amt(self):
         df_net = do.get_data('Net_buy_bond')
@@ -612,7 +616,7 @@ class weeklyReport:
         date = date.strftime('%m-%d')
 
         # P1
-        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        fig1,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
 
         plt.bar(date,CreditBondTrading_stat['笔数'], width=0.7, color='#f0833a',label="笔数")
         
@@ -634,11 +638,11 @@ class weeklyReport:
         plt.yticks([3.20,3.25,3.30,3.35,3.40,3.45,3.50])
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.6,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('信用债 均价&笔数',fontsize=12)
-        self.pic_list.append(fig)
+        self.pic_list.append(fig1)
         self.title_list.append('信用债 均价&笔数')
 
         # P2
-        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        fig2,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
 
         plt.bar(date,CreditBondTrading_stat['情绪指数'], width=0.7, color='#f0833a',label="情绪指数")
         if not self.isMonth:
@@ -657,11 +661,11 @@ class weeklyReport:
         plt.yticks([2.65,2.85,3.05,3.25,3.45,3.65,3.85])
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.5,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('信用债 风险偏好&情绪指数',fontsize=12)
-        self.pic_list.append(fig)
+        self.pic_list.append(fig2)
         self.title_list.append('信用债 风险偏好&情绪指数')
 
         # P3
-        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        fig3,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
 
         plt.plot(date,CreditBondTrading_stat['信用扩张指数'],'#f0833a',label="信用分歧指数（左轴）")
         if not self.isMonth:
@@ -680,9 +684,11 @@ class weeklyReport:
         plt.yticks([1.6,1.7,1.8,1.9,2.0])
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.6,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('信用债 平均期限&扩张指数',fontsize=12)
-        self.pic_list.append(fig)
+        self.pic_list.append(fig3)
         self.title_list.append('信用债 平均期限&扩张指数')
-   
+
+        return [fig1,fig2,fig3]
+
     def secondary_rate(self,start,end):
         # * 二级利率债，需要选定券种
         # df_raw = pd.read_excel('/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/利率债.xlsx')
@@ -710,7 +716,7 @@ class weeklyReport:
         df_merge.index = date
 
         # 200215&210205
-        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        fig1,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
         df_merge.plot(kind = 'bar',color = ["#3778bf","#f0833a"],alpha = 0.3,ax=ax)
         plt.xlabel('')
         # plt.grid(ls='--', axis='y')
@@ -724,7 +730,7 @@ class weeklyReport:
         plt.plot(date,df_210205['mean'],'#f0833a',label="210205均价")
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.5,-0.7),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('200215&210205',fontsize=12)
-        self.pic_list.append(fig)
+        self.pic_list.append(fig1)
         self.title_list.append('200215&210205')
 
         
@@ -739,7 +745,7 @@ class weeklyReport:
         date = df_200016.index
         date = date.strftime('%m-%d')
         #画图
-        fig,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
+        fig2,ax = plt.subplots(figsize=(4.15,1.42),dpi = 300)
         plt.bar(date, df_200016['价格'], width=0.7, color='#f0833a',alpha = 0.2,label="交易笔数")
         plt.xticks(fontsize=10,rotation=45)
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(-0.05,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
@@ -750,9 +756,52 @@ class weeklyReport:
         plt.plot(date,df_200016['amin'],"lightgray",label="Min",ls='--')
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.3,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('200016',fontsize=12)
-        self.pic_list.append(fig)
+        self.pic_list.append(fig2)
         self.title_list.append('200016')
 
+        return [fig1, fig2]
+
+    def r_dr(self,start = '2019-07-01'):
+        """
+        R007-DR007利差
+        超储率
+        """
+        df = do.get_data('cash_cost')
+        df.index = df.date
+
+        df = df.loc[df.date>start]
+        df['R007-DR007'] = df['R007']-df['DR007']
+        df = df.loc[df['R007-DR007']<=2] # 去除异常值
+
+        plt.style.use({'font.size' : 10})  
+        fig, ax = plt.subplots(figsize=(4.15,1.42), dpi=300)
+        # (df['R007']-df['DR007']).rolling(10).mean().plot(ax=ax)
+        ax.fill_between(df.date, 0, df['R007-DR007'].rolling(10).mean()*100, \
+             label = 'R007-DR007:MA10')
+        ax.set_title('R007-DR007:MA10',fontsize=12)
+        ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.25,-0.8),borderaxespad = 0.,frameon=False,fontsize=10)
+        
+        plt.xticks(rotation=45, fontsize = 10)
+
+        self.pic_list.append(fig); self.title_list.append('D-DR利差')
+        return fig 
+    def gk_gz(self,start='2015-01-01'):
+        # 
+        df = do.get_data('rates')
+        df.index = df.date
+        df = df.loc[df.date > start]
+
+        df['国开债-国债'] = df['国开10年']-df['国债10年']
+
+        fig, ax = plt.subplots(figsize=(4.15,1.42), dpi=300)
+        ax.fill_between(df.date, 0, df['国开债-国债'].rolling(1).mean()*100, \
+             label = '国开债-国债')
+        ax.set_title('国开债-国债',fontsize=12)
+        ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.3,-0.5),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        self.pic_list.append(fig); self.title_list.append('国开债-国债')
+        return fig
+    
 
 class MacroReport:
 
@@ -786,8 +835,9 @@ class MacroReport:
         end=self.end.strftime("%Y%m%d")
         start=self.start.strftime("%Y%m%d")
         # 提取数据
-        data = pd.read_sql("select * from fig_industrial_production  \
-        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data = do.get_data('fig_industrial_production',start , end)
+        # data = pd.read_sql("select * from fig_industrial_production  \
+        # where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
         
         # 绘图 _V2
@@ -838,8 +888,9 @@ class MacroReport:
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        data = pd.read_sql("select * from fig_cpi_ppi_related  \
-        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data = do.get_data('fig_cpi_ppi_related', start , end)
+        # data = pd.read_sql("select * from fig_cpi_ppi_related  \
+        # where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
 
         # 画图 -v2
@@ -918,8 +969,9 @@ class MacroReport:
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        data = pd.read_sql("select * from fig_upstream  \
-        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data = do.get_data('fig_upstream')
+        # data = pd.read_sql("select * from fig_upstream  \
+        # where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
 
         # 画图 -v2
@@ -974,8 +1026,9 @@ class MacroReport:
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        data = pd.read_sql("select * from fig_midstream  \
-        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data = do.get_data('fig_midstream')
+        # data = pd.read_sql("select * from fig_midstream  \
+        # where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
 
         # 画图
@@ -1023,8 +1076,9 @@ class MacroReport:
         start=self.start.strftime("%Y%m%d")
 
         # 提取数据
-        data = pd.read_sql("select * from fig_downstream  \
-        where date >= '{}' and date <= '{}';".format(start , end),conn)
+        data = do.get_data('fig_downstream', start , end )
+        # data = pd.read_sql("select * from fig_downstream  \
+        # where date >= '{}' and date <= '{}';".format(start , end),conn)
         data.index = data.date
         # data = data[data.columns[:2]]
         # data.columns = ['30大中城市:商品房成交套数', '大中城市:商品房成交面积']
@@ -1080,7 +1134,7 @@ class MacroReport:
 
         return data
 ## 报告框架    
-class Report():
+class Report:
     
     def __init__(self, years=10):
         self.end = dt.datetime.today()

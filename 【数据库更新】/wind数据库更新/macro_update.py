@@ -29,7 +29,7 @@ def fig_industrial_production():
                   "高炉开工率(163家):全国", "产能利用率:电炉:全国",
                   "PTA产业链负荷率:PTA工厂","浮法玻璃:产能利用率"]
     df['date'] = df.index
-    df = df.loc[df.date>last_date]
+    df = df.loc[(df.date > last_date) & (df.date < dt.datetime.now().date())]
     columns_type = [Float(),
                   Float(),
                   Float(),
@@ -56,7 +56,8 @@ def fig_cpi_ppi_related():
                   '中国大宗商品价格指数:总指数','南华综合指数','CRB现货指数:综合',
                   '农产品批发价格200指数','iCPI:总指数:日环比']
     df['date'] = df.index
-    df = df.loc[df.date>last_date]
+    df = df.loc[(df.date > last_date) & (df.date < dt.datetime.now().date())]
+
     columns_type = [Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -83,7 +84,8 @@ def fig_upstream():
                   '伦敦现货黄金:以美元计价','期货收盘价(活跃合约):阴极铜','期货收盘价(活跃合约):铝',
                   '库存期货:阴极铜','库存期货:铝','南华焦炭指数']
     df['date'] = df.index
-    df = df.loc[df.date>last_date]
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+
     columns_type = [Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),Float(),
@@ -107,7 +109,8 @@ def fig_midstream():
                   '期货收盘价(活跃合约):PVC','期货收盘价(活跃合约):天然橡胶',
                   '期货收盘价(活跃合约):黄大豆1号','期货收盘价(活跃合约):黄玉米']
     df['date'] = df.index
-    df = df.loc[df.date>last_date]
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    
     columns_type = [Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),Float(),Float(),
                   DateTime()]
@@ -132,7 +135,8 @@ def fig_downstream():
                   '中关村电子价格产品指数','中国公路物流运价指数','电影票房收入','电影观影人次',
                   'CCFI:综合指数','CICFI:综合指数','波罗的海干散货指数(BDI)']
     df['date'] = df.index
-    df=df.loc[df.date>last_date]
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+
     columns_type = [Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),Float(),
@@ -156,5 +160,7 @@ def main():
             print(b , '已是最新，无需更新')
             continue
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
-        print('成功更新表',b, '至',do.get_latest_date(b))
+        print('成功更新表',b, '至', do.get_latest_date(b))
 
+if __name__=='__main__':
+    main()

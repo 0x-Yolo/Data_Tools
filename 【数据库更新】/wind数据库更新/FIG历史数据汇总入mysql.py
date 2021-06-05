@@ -21,7 +21,7 @@ end = dt.datetime.today()
 start=dt.datetime.now() - dt.timedelta(days=years*365)
 start=start.strftime("%Y-%m-%d")
 end=end.strftime("%Y-%m-%d")
-
+end = '2021-06-04'
 # test
 # err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
 #               '2021-04-20','2021-04-20',usedf=True) 
@@ -258,7 +258,6 @@ def get_db_conn(io):
 def main():
     """
     db_path = "/Users/wdt/Desktop/tpy/db.txt"
-    conn , engine = get_db_conn(db_path)
     
     l = [daily_fig_SRDI(),
      daily_fig_liquidity_premium(),
@@ -275,7 +274,8 @@ def main():
     """
 
  
-    l = [industries_premium()]
+    l = [fig_cpi_ppi_related()]
+    conn , engine = do.get_db_conn()
 
     for a,b,c in l:
         # for i in range(len(a)):

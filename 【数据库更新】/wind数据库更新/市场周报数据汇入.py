@@ -14,23 +14,23 @@ import re
 import data_organize as do
 from WindPy import w
 w.start()
-years = 10
+years = 20
 end = dt.datetime.today()
 start=dt.datetime.now() - dt.timedelta(days=years*365)
-start=start.strftime("%Y-%m-%d")
-end=end.strftime("%Y-%m-%d")
+
 
 #### 流动性 ####
 def cash_cost():
 
-    err, df=w.edb('M1006336,M1006337,M1004515,M0017142',
+    err, df=w.edb('M1006336,M1006337,M1004515,M0017142,M1001795',
                start,end,usedf=True) 
-    df.columns = ['DR001','DR007','GC007','shibor_3m']
+    df.columns = ['DR001','DR007','GC007','shibor_3m','R007']
     df['date'] = df.index
-    df = df.dropna(axis = 0)
+
+    df = df.loc[df.date<end.date()]
 
     name = 'cash_cost'
-    columns_type=[Float(2),Float(2),Float(2),Float(2),
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
@@ -44,6 +44,8 @@ def policy_rate():
          '逆回购利率：63天', 'MLF：3m', 'MLF：6m',
          'MLF：1y']
     df['date'] = df.index
+
+    df = df.loc[df.date<end.date()]
 
     name = 'policy_rate'
     # do.upload_data(df,name,'replace')
@@ -66,7 +68,7 @@ def monetary_policy_tools():
         '逆回购_到期','国库现金：中标量','国库现金：到期量',\
         'SLO_投放','SLO_回笼']
     df['date'] = df.index
-    df = df.loc[df.date <= dt.datetime.now().date()]
+    df = df.loc[df.date < dt.datetime.now().date()]
     name = 'monetary_policy_tools'
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -88,7 +90,7 @@ def repo_volume():
               '成交量:R4M', '成交量:R6M', '成交量:R9M','成交量:R1Y',
               '成交量:银行间质押式回购']
     df['date'] = df.index
-
+    df = df.loc[df.date < end.date()]
     name = 'repo_volume'
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -104,6 +106,7 @@ def interbank_deposit():
     err,df = w.edb('M1006645,M0329545', start,end,usedf=True)
     df.columns = ['存单_股份行_1y', 'MLF：1y']
     df['date'] = df.index
+    df = df.loc[df.date < end.date()]
 
     name = 'interbank_deposit'
     columns_type=[Float(),Float(),
@@ -142,8 +145,9 @@ def rates():
         '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y']
 
     df['date'] = df.index
+    df = df.loc[df.date < end.date()]
 
-    name = 'rates1'
+    name = 'rates'
     columns_type=[Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
@@ -160,6 +164,8 @@ def rates():
 
 
 conn,engine = do.get_db_conn()
-for a,b,c in [rates()]:
+l = [policy_rate(), monetary_policy_tools(), repo_volume(),\
+    interbank_deposit(), rates()]
+for a,b,c in l:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')
