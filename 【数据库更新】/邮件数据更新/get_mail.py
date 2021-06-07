@@ -79,11 +79,14 @@ def download_certain_mail(msg_list,download_io,lastday):
             # 获取可读的附件名
             subject=decode_str(msg.get("subject"))
             # print(subject)# 附件名
+            
+            if '现券市场交易情况总结日报' not in subject:
+                continue
 
             # 查找邮件名中的八位数字
             date= re.search(r"\d{8}",subject)[0]
-                     
-            if "现券" in subject and date > lastday.strftime("%Y%m%d") :
+             
+            if date > lastday.strftime("%Y%m%d") :
                 subject_list.append(subject)
                 date_list.append(date)
                 get_att(msg,download_io)
@@ -115,7 +118,7 @@ def main():
     #获取邮件池子
     msg_list = get_mail_pool(host,username,password)
     #下载邮件
-    download_certain_mail(msg_list,download_io, last_date)
+    download_certain_mail(msg_list, download_io, last_date)
 
 if __name__ == "__main__":
     main()

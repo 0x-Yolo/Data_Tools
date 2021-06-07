@@ -327,11 +327,9 @@ def main():
             daily_fig_bond_leverage(),
             daily_fig_credit_premium(),
             daily_fig_liquidity_premium(),
-            daily_fig_rates(),industial_premium()
-            ]
-    # 流动性
-    l = [cash_cost(),policy_rate(),monetary_policy_tools(),\
-        repo_volume(),interbank_deposit(),rates()]
+            daily_fig_rates(),industial_premium(),
+            cash_cost(),policy_rate(),monetary_policy_tools(),\
+            repo_volume(),interbank_deposit(),rates()]
 
     for a,b,c in l:
         if len(np.array(a)) == 0:

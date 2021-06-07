@@ -3,30 +3,33 @@ import data_organize as do
 
 # * 周报 
 weekreport = rg.weeklyReport(isMonth = False)
-base = '2021-05-21'
-end = '2021-05-28'
-start = '2021-05-24'
+base = '2021-05-28'
+end = '2021-06-04'
+start = '2021-05-31'
 ## ! 含有base_day
 cash = weekreport.cash_cost(base, end)
 mone = weekreport.monetary_policy_tools(base, end)
 dps = weekreport.interbank_deposit(base, end)
 bp_change = weekreport.rates_change(base, end)#bp
 ## * 二级 :近两周 
-weekreport.secondary_credit('2021-05-17', end)
-weekreport.secondary_rate('2021-05-17', end)
+weekreport.secondary_credit('2021-05-24', end)
+weekreport.secondary_rate('2021-05-24', end)
 ## * 一级 :近两周 
 weekreport.prmy_mkt_weekly_issue(start, end)
 ## * 现券
 weekreport.fig_net_data(start, end)
 ## * 综收 2020以来
 weekreport.prmy_mkt_sentiment()
+# 打印
+weekreport.print_all_jpg()
 
 ## * PDF
+weekreport.pic_list=[]
 weekreport.net_buy_amt()
 weekreport.title = '机构在国债、政金债、地方政府债的净买入量'
 weekreport.print_all_fig()
 
-weekreport.print_all_jpg()
+
 
 
 

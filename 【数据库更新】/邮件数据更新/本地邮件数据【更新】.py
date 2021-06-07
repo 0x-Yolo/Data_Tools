@@ -173,7 +173,7 @@ def main():
     conn,engine = do.get_db_conn()
     dir_list = upload_date_list()
     dir_list.sort()
-    for dir in dir_list[2:]:
+    for dir in dir_list:
         if 'xlsx' in dir :
             print(dir)# 0522.xlsx
             continue

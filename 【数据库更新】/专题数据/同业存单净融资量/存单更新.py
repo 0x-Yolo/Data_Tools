@@ -11,8 +11,8 @@ dff = df[['截止日期','总发行量(亿元)', '总偿还量(亿元)', '净融
 dff.columns = data.columns
 dff
 
-d = dff.iloc[:-2,:].append(\
-    data.iloc[3:,:]\
+d = dff.iloc[:3,:].append(\
+    data.iloc[2:,:]\
         )
 
 columns_type=[DateTime(),Float(),Float(),Float()]

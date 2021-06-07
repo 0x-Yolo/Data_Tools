@@ -35,11 +35,11 @@ df = do.get_data('primary_rate_sec')
 df = df[df['综收较估值'] < 40]
 df = df.loc[df['发行起始日'] >= '2020-01-01']
 
-def GK():
+def GK(maturity=[1,3,5,7,10,20]):
     df_gk = df[df['发行人全称']=='国家开发银行'][['发行起始日','发行期限(年)','发行人全称','全场倍数','综收较估值','综收较二级']]
     qcbs_quantile_gk = df_gk.groupby('发行期限(年)').apply(lambda df:np.nanquantile(df['全场倍数'],[0.25,0.5,0.75]))
     
-    maturity = [1,3,5,7,10,20]
+    # maturity = [1,3,5,7,10,20]
     n = len(maturity)
     
     plt.style.use({'font.size' : 12})     
