@@ -160,7 +160,7 @@ def main():
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        if idx < 2563:
+        if idx != 1861:
             continue
         print(idx)
 
