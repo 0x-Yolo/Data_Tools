@@ -13,7 +13,6 @@ import os
 import re
 from WindPy import w
 import data_organize as do
-w.start()
 
 plt.rcParams['font.family']=['STKaiti']
 plt.rcParams['axes.unicode_minus'] = False
@@ -134,7 +133,6 @@ def upload2(stat):
 
 
 def main():
-    w.start()
     # * Step1:获取数据
     d = pd.DataFrame([])
     for dir in os.listdir('./tmp_data'):
@@ -153,9 +151,17 @@ def main():
         d = d.append(dirr[['方向','代码','价格','时间','估值时间']])
 
     df = d.reset_index(drop = True)
+    for idx in df.index:
+        # q
+        if type(df.loc[idx,'价格']) == str:
+            print(idx)
+            df.drop(idx,axis=0,inplace = True)
 
     # * Step2:添加windapi指标
+    w.start()
     for idx in df.index:
+        if idx < 2563:
+            continue
         print(idx)
 
         code = df.loc[idx,'代码']
@@ -248,8 +254,8 @@ def main():
 
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
-    l = [upload2(stat_table)]
-    l = [upload1(df)]
+    l = [upload2(stat_table),upload1(df)]
+    # l = [upload1(df)]
     for a,b,c in l:
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
 
