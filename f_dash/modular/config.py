@@ -7,7 +7,7 @@ import pandas as pd
 import  pymysql
 import json
 import data_organize as do
-
+import os
 # %%
 class Inter_Graph: 
     
@@ -25,7 +25,7 @@ class Inter_Graph:
 
 # %%
 def get_geo_data():
-    json_io=r"modular\geojson-map-china\china.json"
+    json_io=os.path.abspath("modular/geojson-map-china/china.json")
     gs_data = open(json_io, encoding='utf8').read()
     gs_data = json.loads(gs_data)
     # 整理plotly需要的格式：
@@ -79,7 +79,7 @@ def get_ir_diff():
 # %%
 def get_xyct():  
     geo_data = get_geo_data()[0]
-    xyct = pd.read_excel('modular/信用利差(中位数)城投债不同省份.xls',index_col = 'date',encoding = 'gbk')
+    xyct = pd.read_excel(os.path.abspath('信用利差(中位数)城投债不同省份.xls'),index_col = 'date')
     xyct.columns = [i[2] for i in xyct.columns.str.split(":")]
     # 将省份名称和地图数据对应
     province = []

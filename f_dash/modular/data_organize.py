@@ -5,15 +5,17 @@ import pandas as pd
 import numpy as np
 import  pymysql
 from sqlalchemy import create_engine
+import os
+# path = input('输入存放数据库信息的地址')
+for p in sys.path:
+    if 'modular' in p :
+        path = os.path.abspath(p +'/db.txt')
 
-path = "/Users/wdt/Desktop/tpy/db.txt"
-# get_db_conn('/Users/wdt/Desktop/tpy/test01.txt')
-
-def get_db_conn(path = '/Users/wdt/Desktop/tpy/db.txt'):
+def get_db_conn(io = path):
     '''
     path:::存有数据库账号信息的txt
     '''
-    io = path
+    
     with open(io, 'r') as f1:
         config = f1.readlines()
     for i in range(0, len(config)):
@@ -37,20 +39,18 @@ def get_db_conn(path = '/Users/wdt/Desktop/tpy/db.txt'):
     engine = create_engine(engine_txt)
     return conn, engine
 
-def upload_data(df,name,method="append"):
+def upload_data(df,name,dtypelist,method="append"):
     """输入要上传的df/表名/方法"""
-    df= df
-    name = name
-    method = method
 
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
 
-    df.to_sql(name=name,con = engine,schema='finance',if_exists = method ,index=False)
+    df.to_sql(name=name,con = engine,schema='finance',\
+        if_exists = method ,index=False,dtype = dtypelist)
     return 
 
 # 设定需要上传的时间段
 def get_un_upload_timerange(table_name):
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
 
     excu="select * from "
     table_name=table_name
@@ -61,17 +61,21 @@ def get_un_upload_timerange(table_name):
     conn.close()
     return start_time,rpt_date
 
-def get_data(table_name):
+def get_data(table_name, start=0 ,end =0):
     """获取表名"""
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
     excu="select * from "
     table_name=table_name
-    dff = pd.read_sql(excu+table_name,conn)
+
+    excu_date = " where date >= '{}' and date <= '{}';".format(start , end)
+    if start == 0:
+        excu_date = ''
+    dff = pd.read_sql(excu+table_name+excu_date,conn)
     return dff
 
 def get_all_table_name():
     # 获取数据库所有表名
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
 
     cursor = conn.cursor()
     cursor.execute('select table_name from information_schema.tables where table_schema="finance" ')
@@ -94,8 +98,17 @@ def daily_uplpad_table_names():
     return daily_uplpad_table_names
 
 def get_latest_date(table_name):
-    conn, engine = get_db_conn()
+    conn, engine = get_db_conn(path)
     excu="select max(date) from "
     table_name=table_name
     return pd.read_sql(excu+table_name ,conn).iloc[-1,-1]
 
+def get_date(dir):
+    """从文件名中提取日期"""
+    ### e.g.成交统计2021年5月21日.xlsx ###
+    x= int(re.findall(r'\d+', dir)[0])
+    y= int(re.findall(r'\d+', dir)[1])
+    z= int(re.findall(r'\d+', dir)[2])
+    date = dt.datetime(int(x),int(y),int(z))
+
+    return date
