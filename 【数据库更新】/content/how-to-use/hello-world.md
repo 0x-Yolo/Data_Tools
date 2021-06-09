@@ -13,19 +13,19 @@ mydata = do.get_data('secondary_rate_sec')
 # 查看数据的前五行
 mydata.head()
 ```
-![image-20210609093043149](/Users/wdt/Library/Application Support/typora-user-images/image-20210609093043149.png)
+![image-20210609093043149](1.png)
 
 
 ```python
 # 构建索引语句对mydata进行筛选，输出以观察数据样本
 mydata.loc[(mydata['date']=='2021-06-01') & (mydata['类型']=='国开')]
 ```
-![image-20210609093441441](/Users/wdt/Library/Application Support/typora-user-images/image-20210609093441441.png)
+![image-20210609093441441](2.png)
 
 ```python
 # 为筛选后的子表赋值，并统计代码列的值和对应频数（取前五）
 data_gk_0601 = mydata.loc[(mydata['date']=='2021-06-01') & (mydata['类型']=='国开')]
 data_gk_0601['代码'].value_counts().head()
 ```
-![image-20210609093855018](/Users/wdt/Library/Application Support/typora-user-images/image-20210609093855018.png)
+![image-20210609093855018](3.png)
 
