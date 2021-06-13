@@ -1,12 +1,10 @@
-
-
 import os
 import re
 import sys
 import dash
 from datetime import datetime as dt
 import pandas as pd
-import  pymysql
+import pymysql
 
 import flask
 #导入plotly库

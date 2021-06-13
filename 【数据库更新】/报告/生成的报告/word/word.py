@@ -4,18 +4,22 @@ from fig_organize import merge
 from docx.oxml.ns import qn
 from primary_market_plot import GK
 import ReportGenerator as rg
+
 report = rg.weeklyReport()
+base = '2021-06-04'
+end = '2021-06-11'
+start = '2021-06-07'
 # * 流动性
 r_dr = report.r_dr('2019-07-01')
-mone = report.monetary_policy_tools('2021-05-28', '2021-06-04')
+mone = report.monetary_policy_tools(base, end)
 # * 利率债
 gk_gz = report.gk_gz('2015-01-01')
-issue = report.prmy_mkt_weekly_issue('2021-05-31', '2021-06-04')
+issue = report.prmy_mkt_weekly_issue(start, end)
 gk = GK([5,10])
-net_rate, net_credit = report.most_net_buy_amt('2021-05-31', '2021-06-04')
+net_rate, net_credit = report.most_net_buy_amt(start, end)
 term = report.term_spread()
 # * 信用债
-credit_figs = report.secondary_credit('2021-05-24', '2021-06-04')
+credit_figs = report.secondary_credit('2021-05-31', end)
 
 
 

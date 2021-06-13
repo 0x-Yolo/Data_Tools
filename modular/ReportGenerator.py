@@ -236,8 +236,8 @@ class weeklyReport:
         # * 存单价格与净融资量
         startday = '2020-01-01'
 
-        interbank_dps_vol = do.get_data('interbank_dps_vol',startday,endday)
-        interbank_dps_vol = do.get_data('interbank_dps_vol_weekly',startday,endday)
+        # interbank_dps_vol = do.get_data('interbank_dps_vol',startday,endday)
+        interbank_dps_vol = do.get_data('interbank_dps_vol_weekly')
         
         interbank_deposit = do.get_data('interbank_deposit',startday,endday)
         
@@ -608,7 +608,7 @@ class weeklyReport:
             for a,b in zip(date,CreditBondTrading_stat['笔数']):
                 plt.text(a,200, '%.f' % b, ha='center', va= 'top',fontsize=8)
         
-        plt.yticks([500,1000,1500])
+        # plt.yticks([500,1000,1500])
         plt.xticks(fontsize=10,rotation=45)
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.25,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
 
@@ -619,7 +619,7 @@ class weeklyReport:
             for a,b in zip(date,CreditBondTrading_stat['均价']):
                 plt.text(a, b+0.001, '%.2f' % b, ha='center', va= 'center',fontsize=8)
 
-        plt.yticks([3.20,3.25,3.30,3.35,3.40,3.45,3.50])
+        # plt.yticks([3.20,3.25,3.30,3.35,3.40,3.45,3.50])
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.6,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('信用债 均价&笔数',fontsize=12)
         self.pic_list.append(fig1)
@@ -632,7 +632,7 @@ class weeklyReport:
         if not self.isMonth:
             for a,b in zip(date,CreditBondTrading_stat['情绪指数']):
                 plt.text(a,0.5, '%.2f' % b, ha='center', va= 'top',fontsize=8)
-        plt.yticks([0,1,2,3,4])
+        # plt.yticks([0,1,2,3,4])
         plt.xticks(fontsize=10,rotation=45)
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.15,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
 
@@ -642,7 +642,7 @@ class weeklyReport:
             for a,b in zip(date,CreditBondTrading_stat['风险偏好指数']):
                 plt.text(a, b+0.001, '%.2f' % b, ha='center', va= 'center',fontsize=8)
 
-        plt.yticks([2.65,2.85,3.05,3.25,3.45,3.65,3.85])
+        # plt.yticks([2.65,2.85,3.05,3.25,3.45,3.65,3.85])
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.5,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('信用债 风险偏好&情绪指数',fontsize=12)
         self.pic_list.append(fig2)
@@ -655,7 +655,7 @@ class weeklyReport:
         if not self.isMonth:
             for a,b in zip(date,CreditBondTrading_stat['信用扩张指数']):
                 plt.text(a,b+0.001, '%.2f' % b, ha='center', va= 'top',fontsize=8)
-        plt.yticks([1.2,1.3,1.4,1.5,1.6])
+        # plt.yticks([1.2,1.3,1.4,1.5,1.6])
         plt.xticks(fontsize=10,rotation=45)
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
 
@@ -665,7 +665,7 @@ class weeklyReport:
             for a,b in zip(date,CreditBondTrading_stat['平均期限']):
                 plt.text(a, b+0.001, '%.2f' % b, ha='center', va= 'center',fontsize=8)
 
-        plt.yticks([1.6,1.7,1.8,1.9,2.0])
+        # plt.yticks([1.6,1.7,1.8,1.9,2.0])
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(0.6,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.title('信用债 平均期限&扩张指数',fontsize=12)
         self.pic_list.append(fig3)

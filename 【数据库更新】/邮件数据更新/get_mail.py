@@ -18,12 +18,13 @@ def decode_str(s):#字符编码转换
 
 
 def get_mail_pool(host, username, password, n=5):
+    '''获取所有收件箱内邮件'''
     conn = imaplib.IMAP4_SSL(host = host)
     print('已连接服务器')
     conn.login(username, password)
     print('已登陆')
     # 上传客户端身份信息
-    status, msgs = conn.select()
+    status, msgs = conn.select("INBOX")
     resp, mails = conn.list()
     
     #typ, data = conn.search(None, 'ALL')
@@ -57,9 +58,10 @@ def get_att(msg, download_io):
             filename = dh[0][0]
             if dh[0][1]:
                 filename = decode_str(str(filename, dh[0][1]))  # 将附件名称可读化
-                # print("发现附件："+filename)
+                print("发现附件："+filename)
                 # filename = filename.encode("utf-8")
-            if  "现券市场"  in filename:
+            
+            # if  "现券市场"  in filename:
                 data = part.get_payload(decode=True)  # 下载附件
                 att_file = open(download_io + filename,"wb")
                 # 在指定目录下创建文件，注意二进制文件需要用wb模式打开
@@ -71,7 +73,7 @@ def get_att(msg, download_io):
 
 
 
-def download_certain_mail(msg_list,download_io,lastday):
+def download_certain_mail(msg_list,download_io=' ',lastday=' '):
     try:
         subject_list=[]
         date_list=[]
@@ -80,27 +82,39 @@ def download_certain_mail(msg_list,download_io,lastday):
             subject=decode_str(msg.get("subject"))
             # print(subject)# 附件名
             
-            if '现券市场交易情况总结日报' not in subject:
-                continue
-
-            # 查找邮件名中的八位数字
-            date= re.search(r"\d{8}",subject)[0]
-             
-            if date > lastday.strftime("%Y%m%d") :
-                subject_list.append(subject)
-                date_list.append(date)
-                get_att(msg,download_io)
-                print("已经下载附件："+subject)
-            else:
-                pass
+            if '现券市场交易情况总结日报'  in subject:
+                lastday = do.get_latest_date('Net_buy_bond')
+                download_io="/Users/wdt/Desktop/tpy/raw_data_pool/现券市场交易情况总结/日报/"
+                # 查找邮件名中的八位数字
+                date= re.search(r"\d{8}",subject)[0]
+                
+                if date > lastday.strftime("%Y%m%d") :
+                    subject_list.append(subject)
+                    date_list.append(date)
+                    get_att(msg,download_io)
+                    print("已经下载附件："+subject)
+                else:
+                    pass
             
+            elif '质押式回购市场交易情况总结日报' in subject:
+                lastday=do.get_latest_date('Repo_amt_prc_for_collateral')
+                download_io = '/Users/wdt/Desktop/tpy/raw_data_pool/质押式回购市场交易情况总结/'
+                date= re.search(r"\d{8}",subject)[0]
+                if date > lastday.strftime("%Y%m%d") :
+                    subject_list.append(subject)
+                    date_list.append(date)
+                    get_att(msg,download_io)
+                    print("已经下载附件："+subject)
+                else:
+                    pass
+            print("##########")
     except BaseException as e:
         print('fail error:',e)
 
 
 def main():
     # 附件下载路径
-    download_io = "/Users/wdt/Desktop/tpy/raw_data_pool/现券市场交易情况总结/日报/"
+    # download_io = "/Users/wdt/Desktop/tpy/raw_data_pool/现券市场交易情况总结/日报/"
     
     # @ 读取mail_config.txt内的邮箱信息
     io=os.getcwd() + "/mail_config.txt"
@@ -113,12 +127,12 @@ def main():
     password = config[2]  # 密码
 
     # 获取数据库内最后更新时间
-    last_date = do.get_latest_date('Net_buy_bond')
+    # last_date = do.get_latest_date('Net_buy_bond')
 
     #获取邮件池子
     msg_list = get_mail_pool(host,username,password)
     #下载邮件
-    download_certain_mail(msg_list, download_io, last_date)
+    download_certain_mail(msg_list)
 
 if __name__ == "__main__":
     main()

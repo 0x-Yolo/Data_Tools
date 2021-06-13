@@ -3,17 +3,17 @@ import data_organize as do
 
 # * 周报 
 weekreport = rg.weeklyReport(isMonth = False)
-base = '2021-05-28'
-end = '2021-06-04'
-start = '2021-05-31'
+base = '2021-06-04'
+end = '2021-06-11'
+start = '2021-06-07'
 ## ! 含有base_day
 cash = weekreport.cash_cost(base, end)
 mone = weekreport.monetary_policy_tools(base, end)
 dps = weekreport.interbank_deposit(base, end)
 bp_change = weekreport.rates_change(base, end)#bp
 ## * 二级 :近两周 
-weekreport.secondary_credit('2021-05-24', end)
-weekreport.secondary_rate('2021-05-24', end)
+weekreport.secondary_credit('2021-05-31', end)
+weekreport.secondary_rate('2021-05-31', end)
 ## * 一级 :近两周 
 weekreport.prmy_mkt_weekly_issue(start, end)
 ## * 现券

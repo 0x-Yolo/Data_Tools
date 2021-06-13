@@ -14,7 +14,7 @@ import re
 import data_organize as do
 
 # 汇入
-path = '/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/raw_data'
+# path = '/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/raw_data'
 path='/Users/wdt/Desktop/tpy/Data_Tools/【数据库更新】/交易数据/二级信用债/tmp_data'
 d = pd.DataFrame([])
 for dir in os.listdir(path):
@@ -30,7 +30,7 @@ d = d.reset_index(drop=True)
 
 for idx in d.index:
     if type(d.loc[idx,'价格']) == str:
-        # print(idx)
+        print(idx)
         d.drop(idx,axis=0,inplace = True)
 
 name = 'secondary_rate_sec'

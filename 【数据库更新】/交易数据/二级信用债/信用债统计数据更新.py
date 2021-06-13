@@ -160,7 +160,7 @@ def main():
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        if idx != 1861:
+        if idx != 787:
             continue
         print(idx)
 
@@ -188,13 +188,23 @@ def main():
             "credibility=4;PriceAdj=YTM;TradingCalendar=NIB").Data[0][0]
         if df.loc[idx,'到期估值'] == None:
             df.loc[idx,'到期估值'] = 0
+        try:
+            if np.isnan(df.loc[idx,'到期估值']):
+                df.loc[idx,'到期估值'] = 0
+        except:
+            pass
 
         # 【行权估值】
         df.loc[idx,'行权估值'] = w.wsd(code, "yield_cnbd", last_date, last_date,
             "credibility=3;PriceAdj=YTM;TradingCalendar=NIB").Data[0][0]
         if df.loc[idx,'行权估值'] == None:
             df.loc[idx,'行权估值'] = 0
-        
+        try:
+            if np.isnan(df.loc[idx,'行权估值']):
+                df.loc[idx,'行权估值'] = 0
+        except:
+            pass
+
         # 【部分债无行权日】
         df.loc[idx,'行权日'] = w.wsd(code, "nxoptiondate",net_date,net_date, "type=All").Data[0][0]
         if df.loc[idx,'行权日'] == None :
@@ -229,7 +239,7 @@ def main():
         # 【估值偏离】
         ## 用当前成交价price和到期/行权估值的最小距离
         if df.loc[idx, '到期估值']==0:
-            x =( w.wsd(code, "couponrate2").Data[0][0] - df.loc[idx,'price'] )* 100
+            x =( w.wsd(code, "couponrate2",last_date).Data[0][0] - df.loc[idx,'price'] )* 100
         else:
             if abs(df.loc[idx,'price']-df.loc[idx,'到期估值']) > abs(df.loc[idx,'price']-df.loc[idx,'行权估值']):
                 x = (df.loc[idx,'price']-df.loc[idx,'行权估值'])*100
