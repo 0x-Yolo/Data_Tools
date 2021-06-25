@@ -16,12 +16,12 @@ import data_organize as do
 
 from WindPy import w
 w.start()
-years = 10
+years = 20
 end = dt.datetime.today()
 start=dt.datetime.now() - dt.timedelta(days=years*365)
 start=start.strftime("%Y-%m-%d")
 end=end.strftime("%Y-%m-%d")
-end = '2021-06-04'
+end = '2021-06-22'
 # test
 # err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
 #               '2021-04-20','2021-04-20',usedf=True) 
@@ -229,7 +229,82 @@ def industries_premium():
 
     return df,name,dtypelist
 
-# def 
+def ccl():
+    # 超储率
+    ## 2015年前无政府存款记录
+    err,df = w.edb("M0001528,M0062047,M0251905,M0043821,M0061518,M0043823,M0010096,\
+          M0001690,M0001380",\
+         "2010-01-01", "2021-06-16", usedf=True)
+    df.columns=['住户存款','非金融企业存款','政府存款',\
+        '中小型准备金率','大型准备金率','超额准备金率','超储率_季度',\
+            '基础货币','M0']
+    df['date'] = df.index
+
+    name = 'ccl_related'
+    columns_type = [Float(),Float(),Float(),Float(),
+                    Float(),Float(),Float(),Float(),
+                    Float(),DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+
+    return df,name,dtypelist
+
+def leverage_rate():
+    # TODO
+    err,df = w.edb("M0341983,M0041754,M0341128,M0340862,M0340881,\
+        M0341107,M0340845,M0340864", \
+        "2010-06-16", "2021-06-16",usedf=True)
+    df.columns=['托管量','待购回',
+    '托管量_证券','待购回_证券','待返售_证券',
+    '托管量_保险','待购回_保险','待返售_保险']
+
+    dff = pd.DataFrame([])
+    dff['总资产']= df['托管量_保险']+df['待返售_保险']
+    dff['净资产']=dff['总资产']-df['待购回_保险']
+    (dff['总资产']/dff['净资产']).plot()
+
+    dff = df[['托管余额','回购成交量']].fillna(method='ffill').dropna()
+    dff['净资产'] = dff['托管余额']-dff['回购成交量']
+    (dff['托管余额']/dff['净资产'])[-500:].plot()
+
+def broad_liquid():
+    # TODO 广义流动性
+    err,df = w.edb("M0011456,M5525763,M0001385,M0061578,M1002334,\
+            M0001227,M0001383,M0010075",\
+         "2000-06-17", "2021-06-17",usedf=True)
+    df.columns=['贷款需求指数','社融_tb','M2_tb',
+                '票据直贴利率_6m_长三角','票据_AA+_3y',
+                'ppi_tb','M1_tb','DR007_monthly']    
+    df['date']=df.index
+    name = 'broad_liquid'
+    columns_type = [Float(),Float(),Float(),Float(),
+                    Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+
+    return df,name,dtypelist
+
+def mkt_rates():
+    # TODO 货币市场利率
+    err,df=w.edb("M1006336,M1006337,M0017142,M1006645",\
+         "2000-06-17", "2021-06-16",usedf=True)
+    df.columns=['DR001','DR007','shibor_3m','存单_1y']
+    df['date'] = df.index
+    name = 'mkt_rates'
+    columns_type=[Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+def rates_us():
+    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-06-18",usedf=True)
+    df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
+    df['date'] = df.index
+    name = 'rates_us'
+    columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
 
 def get_db_conn(io):
     with open(io, 'r') as f1:
@@ -274,7 +349,7 @@ def main():
     """
 
  
-    l = [fig_cpi_ppi_related()]
+    l = [ccl()]
     conn , engine = do.get_db_conn()
 
     for a,b,c in l:

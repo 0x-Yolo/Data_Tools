@@ -38,7 +38,7 @@ def pmy_rate_sec():
 
 l = [pmy_rate_sec()]
 for a,b,c in l:
-    do.upload_data(a,b,c, method='replace')
+    do.upload_data(a,b,c, method='append')
 
 
 

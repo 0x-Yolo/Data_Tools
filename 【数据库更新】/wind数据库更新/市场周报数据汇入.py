@@ -15,9 +15,41 @@ import data_organize as do
 from WindPy import w
 w.start()
 years = 20
-end = dt.datetime.today()
+end = dt.datetime.today() - dt.timedelta(days=1)
 start=dt.datetime.now() - dt.timedelta(days=years*365)
 
+
+def cash_amt_prc():
+    # 资金现券与成交量
+    err,df = w.edb("M0041652,M0041653,M0041655,M1004511,M1004515,M0220162,M0220163,M0330244,M0041739,M0041740",
+        "2000-06-24", "2021-06-23",usedf=True)
+    df.columns = ['R001','R007','R021','GC001','GC007','DR001','DR007',\
+        '成交量:R001','成交量:银行间质押式回购','成交量:银行间债券现券']
+    df['date'] = df.index
+    
+    name = 'cash_amt_prc'
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
+def spreads():
+    # 息差与杠杆
+    err,df = w.edb("M0220162,M0220163,M1004515,M0048486,M0048490,M1004007,M1004900,S0059722,S0059724,S0059725,M1004271,M1004300", \
+        "2000-06-24", "2021-06-24",usedf=True)
+    df.columns = ['DR001','DR007','GC007','IRS_1y_FR007','IRS_5y_FR007',\
+        'IRS_5y_shibor3m','cd_AAA_6m',\
+        '中短票_AA+_1y','中短票_AA+_3y','中短票_AA+_5y',\
+        '国开10年','地方债_AAA_3y']
+
+    df['date'] = df.index
+    name = 'spreads'
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),
+                  Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
 
 #### 流动性 ####
 def cash_cost():
@@ -126,11 +158,8 @@ def rates():
             S0059736,S0059738,S0059739,\
             S0059722,S0059724,S0059725,\
             S0059715,S0059717,S0059718,\
-            S0059729,S0059731,S0059732",\
-            # M1002654,M1002656,M1002658,\
-            # M1003631,M1003633,M1003635,\
-            # M1003639,M1003641,M1003643,\
-            # M1003623,M1003625,M1003627,\
+            S0059729,S0059731,S0059732,\
+            M1007675,S0059838,S0059752",\
          start,end,usedf = True)
 
     df.columns=['国债1年','国债3年','国债5年','国债7年','国债10年',\
@@ -142,7 +171,8 @@ def rates():
         '中票_AAA_1y','中票_AAA_3y','中票_AAA_5y',\
         '中票_AA+_1y','中票_AA+_3y','中票_AA+_5y',\
         '中票_AA_1y','中票_AA_3y','中票_AA_5y',\
-        '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y']
+        '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y',
+        '农发10年','口行10年','国债30年']
 
     df['date'] = df.index
     df = df.loc[df.date < end.date()]
@@ -156,6 +186,7 @@ def rates():
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 
@@ -166,6 +197,8 @@ def rates():
 conn,engine = do.get_db_conn()
 l = [policy_rate(), monetary_policy_tools(), repo_volume(),\
     interbank_deposit(), rates()]
+l=[rates()]
+l=[cash_amt_prc(),spreads()]
 for a,b,c in l:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')

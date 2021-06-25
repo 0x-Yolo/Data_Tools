@@ -536,9 +536,9 @@ class weeklyReport:
                 df_co = df_net.loc[(df_net['机构名称'] == co) ]
 
                 # 一个属于机构co的dataframe ;暂时先用含双休日的日期索引
-                stat_table = pd.DataFrame(index = df_net.date.unique())
-                stat_table1 = pd.DataFrame(index = df_net.date.unique())
-                stat_table2 = pd.DataFrame(index = df_net.date.unique())
+                stat_table = pd.DataFrame(index = df_co.date.unique())
+                stat_table1 = pd.DataFrame(index = df_co.date.unique())
+                stat_table2 = pd.DataFrame(index = df_co.date.unique())
 
                 for name , grp in df_co.groupby(['期限']):
                     # name分期限

@@ -14,22 +14,70 @@ import data_organize as do
 
 from WindPy import w
 
+
+def cash_amt_prc():
+    # 资金现券与成交量
+    name = 'cash_amt_prc'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err,df = w.edb("M0041652,M0041653,M0041655,M1004511,M1004515,M0220162,M0220163,M0330244,M0041739,M0041740",
+        "2000-06-24", "2021-06-23",usedf=True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    df.columns = ['R001','R007','R021','GC001','GC007','DR001','DR007',\
+        '成交量:R001','成交量:银行间质押式回购','成交量:银行间债券现券']
+    df['date'] = df.index
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
+
+def spreads():
+    # 息差与杠杆
+    name = 'spreads'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err,df = w.edb("M0220162,M0220163,M1004515,M0048486,M0048490,M1004007,M1004900,S0059722,S0059724,S0059725,M1004271,M1004300", \
+        "2000-06-24", "2021-06-24",usedf=True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    df.columns = ['DR001','DR007','GC007','IRS_1y_FR007','IRS_5y_FR007',\
+        'IRS_5y_shibor3m','cd_AAA_6m',\
+        '中短票_AA+_1y','中短票_AA+_3y','中短票_AA+_5y',\
+        '国开10年','地方债_AAA_3y']
+    df['date'] = df.index
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+                  Float(),Float(),Float(),Float(),Float(),
+                  Float(),Float(),
+                  DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
+
 def cash_cost():
     name = 'cash_cost'
     last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
-    err, df=w.edb('M1006336,M1006337,M1004515,M0017142',
+    err, df=w.edb('M1006336,M1006337,M1004515,M0017142,M1001795',
                last_date,today_date,usedf=True)
     if df.shape[1] == 1:
         return [],name,[]
-    df.columns = ['DR001','DR007','GC007','shibor_3m']
+    df.columns = ['DR001','DR007','GC007','shibor_3m','R007']
     df['date'] = df.index
     df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
 
 
-    columns_type=[Float(2),Float(2),Float(2),Float(2),
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
@@ -149,7 +197,8 @@ def rates():
             S0059736,S0059738,S0059739,\
             S0059722,S0059724,S0059725,\
             S0059715,S0059717,S0059718,\
-            S0059729,S0059731,S0059732",\
+            S0059729,S0059731,S0059732,\
+            M1007675,S0059838,S0059752",\
          last_date,today_date,usedf = True)
     if df.shape[1] == 1:
         return [],name,[]
@@ -162,7 +211,8 @@ def rates():
         '中票_AAA_1y','中票_AAA_3y','中票_AAA_5y',\
         '中票_AA+_1y','中票_AA+_3y','中票_AA+_5y',\
         '中票_AA_1y','中票_AA_3y','中票_AA_5y',\
-        '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y']
+        '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y',
+        '农发10年','口行10年','国债30年']
     df['date'] = df.index
     df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
 
@@ -174,6 +224,7 @@ def rates():
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),
+    Float(),Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name , dtypelist
@@ -314,6 +365,27 @@ def industial_premium():
 
     return df,name,dtypelist
 
+def rates_us():
+    name = 'rates_us'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-06-18",usedf=True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
+    df['date'] = df.index
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+
+    columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+
+
+
 
 
 
@@ -329,7 +401,8 @@ def main():
             daily_fig_liquidity_premium(),
             daily_fig_rates(),industial_premium(),
             cash_cost(),policy_rate(),monetary_policy_tools(),\
-            repo_volume(),interbank_deposit(),rates()]
+            repo_volume(),interbank_deposit(),rates(),
+            cash_amt_prc(),spreads()]
 
     for a,b,c in l:
         if len(np.array(a)) == 0:

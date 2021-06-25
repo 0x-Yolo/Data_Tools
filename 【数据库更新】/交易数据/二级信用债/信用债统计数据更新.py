@@ -52,7 +52,7 @@ def organize(df):
         'AA(2)' : 6,'AA-' : 7,'A+' : 8,'A' : 9,'A-' : 10} 
         l = se.tolist()
         for i in range(len(l)):
-            if not l[i]:
+            if (not l[i]) or (type(l[i]) == float):
                 # 跳过无隐含评级的行
                 continue
             l[i] = dict_[l[i]]
@@ -160,7 +160,7 @@ def main():
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        if idx != 787:
+        if idx < 2327:
             continue
         print(idx)
 

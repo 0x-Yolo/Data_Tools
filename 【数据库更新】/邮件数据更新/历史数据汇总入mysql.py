@@ -11,7 +11,7 @@ import datetime as dt#准备工作，配置环境。
 # from do4myself import data_organize as do
 
 input_path = '/Users/wdt/Desktop/tpy/raw_data_pool'
-test_path = '/Users/wdt/Desktop/tpy/raw_data_pool/download data'
+# test_path = '/Users/wdt/Desktop/tpy/raw_data_pool/download data'
 
 
 def organize(df):
@@ -74,11 +74,12 @@ def get_Repo_price_for_investors(input_path):#每天数据的
     From质押式回购市场交易情况总结日报
     正/逆回购方-利率
     """ 
+    path = input_path + '/质押式回购市场交易情况总结/日报'
     global Repo_price_for_investors
-    for dir in os.listdir(input_path):
+    for dir in os.listdir(path):
         if '质押式' not in dir:
             continue
-        excel_io = input_path + '/' + dir
+        excel_io = path + '/' + dir
         date = re.match(".*\d{8}\.",dir).group()[-9:-1]
         df=pd.read_excel(excel_io,header=1,nrows = 5).iloc[:,1:7]
         df.columns.name="正回购方"
@@ -88,7 +89,7 @@ def get_Repo_price_for_investors(input_path):#每天数据的
     Repo_price_for_investors.reset_index(drop=True) 
     Repo_price_for_investors.rename(columns={'Unnamed: 1':'机构名称'},inplace=True)
     return Repo_price_for_investors
-Repo_price_for_investors = get_Repo_price_for_investors(test_path)
+# Repo_price_for_investors = get_Repo_price_for_investors(test_path)
 
 
 Repo_amt_prc_for_terms = pd.DataFrame()
@@ -96,13 +97,22 @@ def get_Repo_amt_prc_for_terms(input_path):
     """
     机构类型-期限品种 —— 正逆回购利率/金额？
     """
+    path = input_path + '/质押式回购市场交易情况总结/日报'
     global Repo_amt_prc_for_terms
-    for dir in os.listdir(input_path):
+    for dir in os.listdir(path):
         if '质押式' not in dir:
             continue
-        excel_io = input_path + '/' + dir
+        excel_io = path + '/' + dir
         date = re.match(".*\d{8}\.",dir).group()[-9:-1]
-        df = pd.read_excel(excel_io,header=8,nrows = 99)
+
+        tmp = pd.read_excel(excel_io)
+        # print(tmp.shape,date)
+        if tmp.shape[0] == 206:
+            h =8; nr = 121
+        elif tmp.shape[0] == 178:
+            h = 8; nr = 99
+
+        df = pd.read_excel(excel_io,header=h,nrows = 121)
         df["date"]=date
         df["机构类型"].fillna(method="ffill",inplace=True)
         df=df.replace("-",0)
@@ -118,13 +128,22 @@ def get_Repo_amt_prc_for_collateral(input_path):
     """
     机构类型-债券类型 —— 
     """
+    path = input_path + '/质押式回购市场交易情况总结/日报'
     global Repo_amt_prc_for_collateral
-    for dir in os.listdir(input_path):
+    for dir in os.listdir(path):
         if '质押式' not in dir:
             continue
-        excel_io = input_path + '/' + dir
+        excel_io = path + '/' + dir
         date = re.match(".*\d{8}\.",dir).group()[-9:-1]
-        df=pd.read_excel(excel_io,header=110,nrows =27).iloc[:,:6]
+
+        tmp = pd.read_excel(excel_io)
+        # print(tmp.shape,date)
+        if tmp.shape[0] == 206:
+            h = 132; nr = 33
+        elif tmp.shape[0] == 178:
+            h = 110; nr = 27
+
+        df=pd.read_excel(excel_io,header=h,nrows =nr).iloc[:,:6]
         df["date"]=date
         df["机构类型"].fillna(method="ffill",inplace=True)
         df.rename(columns={'债券类型':'抵押品类型'},inplace=True) 
