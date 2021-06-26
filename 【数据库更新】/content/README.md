@@ -2,6 +2,27 @@
 
 固收数据库的使用和维护指南
 
+## Python入门
+
+* 重点名词
+  * 集成开发环境IDE（类似Office的Word）
+  * 库、包、lib、package（丰富的第三方库是Python最强大的地方，里面包含了函数和类）
+  * 环境变量（一般会在安装时自动配置）
+* 基本语法、库、函数与循环
+* [各种数据类型介绍（列表、集合、数据框）](how-to-use/py-types.md)
+* [演示](test.html)
+  * [用Python连接Excel](how-to-use/py-excel.md)
+  * [用Python连接数据库](how-to-use/py-sql.md)
+  * [例子](how-to-use/examples.md)
+* 作图/爬虫/文本处理
+* 常用包
+* 学习资源
+  * 书：简明python教程
+  * 官方文档 pandas、numpy
+* 案例
+  * 利率债成交数据-活跃券
+  * 
+
 ## 数据库的使用
 
 * 如何从数据库导出报告
