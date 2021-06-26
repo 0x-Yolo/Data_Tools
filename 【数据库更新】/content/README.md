@@ -10,18 +10,11 @@
   * 环境变量（一般会在安装时自动配置）
 * 基本语法、库、函数与循环
 * [各种数据类型介绍（列表、集合、数据框）](how-to-use/py-types.md)
-* [演示](t.pdf)
+* [演示](how-to-use/notebook.pdf)
   * [用Python连接Excel](how-to-use/py-excel.md)
   * [用Python连接数据库](how-to-use/py-sql.md)
   * [例子](how-to-use/examples.md)
-* 作图/爬虫/文本处理
-* 常用包
-* 学习资源
-  * 书：简明python教程
-  * 官方文档 pandas、numpy
-* 案例
-  * 利率债成交数据-活跃券
-  * 
+* [常用包](how-to-use/py-libs.md)
 
 ## 数据库的使用
 
@@ -29,7 +22,6 @@
   * [导出周报图片](docs/方法-周报.md)
   * [导出宏观周报](docs/方法-宏观周报导出.md)
 * [如何从数据库导出数据](docs/方法-从数据库导出数据.md)
-* [利用Python做简单的统计分析](how-to-use/hello-world.md)
 
 ## 数据库的维护
 * [维护指南](docs/维护指南.md)
