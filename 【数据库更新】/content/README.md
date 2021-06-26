@@ -10,7 +10,7 @@
   * 环境变量（一般会在安装时自动配置）
 * 基本语法、库、函数与循环
 * [各种数据类型介绍（列表、集合、数据框）](how-to-use/py-types.md)
-* [演示](test.html)
+* [演示](t.pdf)
   * [用Python连接Excel](how-to-use/py-excel.md)
   * [用Python连接数据库](how-to-use/py-sql.md)
   * [例子](how-to-use/examples.md)
