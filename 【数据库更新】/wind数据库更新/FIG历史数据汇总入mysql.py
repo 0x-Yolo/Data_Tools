@@ -1,3 +1,4 @@
+from numpy.lib import financial
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -21,7 +22,7 @@ end = dt.datetime.today()
 start=dt.datetime.now() - dt.timedelta(days=years*365)
 start=start.strftime("%Y-%m-%d")
 end=end.strftime("%Y-%m-%d")
-end = '2021-06-22'
+end = '2021-06-25'
 # test
 # err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
 #               '2021-04-20','2021-04-20',usedf=True) 
@@ -305,6 +306,49 @@ def rates_us():
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
 
+def local():
+    name = 'localbond_issue'
+    err,df = w.edb("M5658453,M6191591", "2003-12-01", "2021-06-30",usedf=True)
+    df.columns = ['地方专项债限额','地方专项债累计发行额']
+    df['date'] = df.index
+
+    columns_type=[Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+
+def indices():
+    err,df = w.edb("M0051553,M0340363,M0340367,M0265754,M0051568,M0051567,M0265766,M0265767,M0265768,M0265769",\
+         "2003-12-01", "2022-06-30",usedf=True)
+    df.columns=['中债总指数','1-5年政金债指数','7-10年政金债指数',\
+        '中债信用总指数','中债短融总指数','中债中票总指数','中债企业债AAA指数',\
+        '中债企业债AA+指数','中债企业债AA指数','中债企业债AA-指数']
+    name = 'bond_indices'
+    df['date'] = df.index
+    
+    columns_type=[Float(),Float(),Float(),Float(),Float(),
+                    Float(),Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+def hs300():
+    err,df1 = w.wsd("000300.SH", "dividendyield2", \
+        "2002-01-01", "2021-06-30", usedf=True)
+    df1.columns = ['股息率']
+    err,df2 = w.edb("M0058003", "2010-01-01", "2021-06-30",usedf=True)
+    df2.columns = ['一般贷款']
+    df1['一般贷款'] = df2['一般贷款']
+    df1['date'] = df1.index
+    name = 'hs300Div'
+    df=df1
+    columns_type=[Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name , dtypelist
+
+
 
 def get_db_conn(io):
     with open(io, 'r') as f1:
@@ -349,9 +393,10 @@ def main():
     """
 
  
-    l = [ccl()]
+    l = [fig_downstream()]
     conn , engine = do.get_db_conn()
 
+    l=[hs300()]
     for a,b,c in l:
         # for i in range(len(a)):
             # try:

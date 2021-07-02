@@ -105,14 +105,9 @@ def get_Repo_amt_prc_for_terms(input_path):
         excel_io = path + '/' + dir
         date = re.match(".*\d{8}\.",dir).group()[-9:-1]
 
-        tmp = pd.read_excel(excel_io)
-        # print(tmp.shape,date)
-        if tmp.shape[0] == 206:
-            h =8; nr = 121
-        elif tmp.shape[0] == 178:
-            h = 8; nr = 99
 
-        df = pd.read_excel(excel_io,header=h,nrows = 121)
+
+        df = pd.read_excel(excel_io,header=h,nrows = nr)
         df["date"]=date
         df["机构类型"].fillna(method="ffill",inplace=True)
         df=df.replace("-",0)

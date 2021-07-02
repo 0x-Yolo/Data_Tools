@@ -22,7 +22,7 @@ start=dt.datetime.now() - dt.timedelta(days=years*365)
 def cash_amt_prc():
     # 资金现券与成交量
     err,df = w.edb("M0041652,M0041653,M0041655,M1004511,M1004515,M0220162,M0220163,M0330244,M0041739,M0041740",
-        "2000-06-24", "2021-06-23",usedf=True)
+        "2000-06-24", end,usedf=True)
     df.columns = ['R001','R007','R021','GC001','GC007','DR001','DR007',\
         '成交量:R001','成交量:银行间质押式回购','成交量:银行间债券现券']
     df['date'] = df.index
@@ -36,7 +36,7 @@ def cash_amt_prc():
 def spreads():
     # 息差与杠杆
     err,df = w.edb("M0220162,M0220163,M1004515,M0048486,M0048490,M1004007,M1004900,S0059722,S0059724,S0059725,M1004271,M1004300", \
-        "2000-06-24", "2021-06-24",usedf=True)
+        "2000-06-24", end,usedf=True)
     df.columns = ['DR001','DR007','GC007','IRS_1y_FR007','IRS_5y_FR007',\
         'IRS_5y_shibor3m','cd_AAA_6m',\
         '中短票_AA+_1y','中短票_AA+_3y','中短票_AA+_5y',\
@@ -159,7 +159,10 @@ def rates():
             S0059722,S0059724,S0059725,\
             S0059715,S0059717,S0059718,\
             S0059729,S0059731,S0059732,\
-            M1007675,S0059838,S0059752",\
+            M1007675,S0059838,S0059752,\
+            S0059741,S0059742,S0059751,\
+            M1004260,M1004261,M1004273,M1004274,\
+            M1006615,S0059745",\
          start,end,usedf = True)
 
     df.columns=['国债1年','国债3年','国债5年','国债7年','国债10年',\
@@ -172,12 +175,15 @@ def rates():
         '中票_AA+_1y','中票_AA+_3y','中票_AA+_5y',\
         '中票_AA_1y','中票_AA_3y','中票_AA_5y',\
         '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y',
-        '农发10年','口行10年','国债30年']
+        '农发10年','口行10年','国债30年',
+        '国债3月','国债6月','国债20年',\
+        '国开3月','国开6月','国开20年','国开30年',
+        'cd_3m_aaa+','国债2年']
 
     df['date'] = df.index
     df = df.loc[df.date < end.date()]
 
-    name = 'rates'
+    name = 'rates1'
     columns_type=[Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
@@ -187,6 +193,9 @@ def rates():
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),
+    Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),
+    Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
 

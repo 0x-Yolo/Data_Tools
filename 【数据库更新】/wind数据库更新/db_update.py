@@ -23,7 +23,7 @@ def cash_amt_prc():
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
     err,df = w.edb("M0041652,M0041653,M0041655,M1004511,M1004515,M0220162,M0220163,M0330244,M0041739,M0041740",
-        "2000-06-24", "2021-06-23",usedf=True)
+        last_date,today_date,usedf=True)
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ['R001','R007','R021','GC001','GC007','DR001','DR007',\
@@ -45,7 +45,7 @@ def spreads():
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
     err,df = w.edb("M0220162,M0220163,M1004515,M0048486,M0048490,M1004007,M1004900,S0059722,S0059724,S0059725,M1004271,M1004300", \
-        "2000-06-24", "2021-06-24",usedf=True)
+        last_date, today_date, usedf=True)
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ['DR001','DR007','GC007','IRS_1y_FR007','IRS_5y_FR007',\

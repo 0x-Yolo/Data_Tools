@@ -88,7 +88,7 @@ def get_stat_table(df):
     for date in trade_dt_list:
         df_date = df.loc[df['时间']==date]
 
-        stat_table.loc[date, '均价'] = df_date.loc[(df_date['风险偏好']>0), 'price'].mean()
+        stat_table.loc[date, '均价'] = df_date.loc[(df_date['风险偏好']>0)&(df_date.price<50), 'price'].mean()
         stat_table.loc[date, '笔数'] = df_date.loc[(df_date['风险偏好']>0)].shape[0]
         stat_table.loc[date, '风险偏好指数'] = df_date.loc[(df_date['风险偏好']>0), '风险偏好'].mean()
         
@@ -160,8 +160,8 @@ def main():
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        if idx < 2327:
-            continue
+        # if idx < 2327:
+        #     continue
         print(idx)
 
         code = df.loc[idx,'代码']
@@ -265,6 +265,7 @@ def main():
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
     l = [upload2(stat_table),upload1(df)]
+    l = [upload2(stat_table)]
     # l = [upload1(df)]
     for a,b,c in l:
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)

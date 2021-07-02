@@ -442,50 +442,63 @@ class weeklyReport:
 
         return [fig1,fig2,fig3]
 
-    def fig_net_data(self,start,end):
+    def fig_net_data(self,start,end, heat=False):
         df_net_week = do.get_data('Net_buy_bond',start , end)
 
         df_net_week.loc[df_net_week['期限'] == '1年及1年以下' , '期限备注'] = '短债'
-        df_net_week.loc[(df_net_week['期限'] == '1-3年')|(df_net_week['期限'] == '3-5年') , '期限备注'] = '中债+中长债'
+        df_net_week.loc[(df_net_week['期限'] == '1-3年') , '期限备注'] = '中债'
         df_net_week.loc[(df_net_week['期限'] == '5-7年')|(df_net_week['期限'] == '7-10年')|(df_net_week['期限'] == '10-15年')|(df_net_week['期限'] == '15-20年')
            |(df_net_week['期限'] == '20-30年')|(df_net_week['期限'] == '30年以上') , '期限备注'] = '长债'
+        df_net_week.loc[(df_net_week['期限'] == '3-5年') , '期限备注'] = '中长债'
+        
+        co_list = df_net_week['机构名称'].unique()
 
-        co_list = ['农村金融机构','基金公司及产品','保险公司','外资银行']
-        stat = pd.DataFrame([],columns = co_list,index = ['短债', '中债+中长债','长债'])
+        stat = pd.DataFrame([],columns = co_list,index = ['短债', '中债','中长债','长债'])
         for co in co_list:
             df_co = df_net_week[df_net_week['机构名称'] == co]
             stat[co] = df_co.groupby(['期限备注'])['合计'].sum()
-        stat2 = pd.DataFrame([],columns = co_list,index = ['7-10年国债-新债', '7-10年政策性金融债-新债'])
+        stat2 = pd.DataFrame([],columns = co_list,index = ['7-10年\n国债新债', '7-10年\n政金债新债'])
         for co in co_list:
             df_co = df_net_week[(df_net_week['机构名称'] == co)&(df_net_week['期限'] == '7-10年')]
-            stat2.loc['7-10年国债-新债',co] = df_co.groupby('date')['国债-新债'].sum().sum()
-            stat2.loc['7-10年政策性金融债-新债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()
+            stat2.loc['7-10年\n国债新债',co] = df_co.groupby('date')['国债-新债'].sum().sum()
+            stat2.loc['7-10年\n政金债新债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()
 
         # 画图
         plt.style.use({'font.size' : 10})     
         fig1, ax = plt.subplots(nrows=1,ncols=1,\
         figsize=(4.15,1.42), dpi=300)
 
-        x = np.arange(4)
-        y1 = stat.iloc[0,:]
-        y2 = stat.iloc[1,:]
-        y3 = stat.iloc[2,:]
-        bar_width = 0.25
-        tick_label = ["农村金融机构","基金公司及产品","保险公司",'外资银行']
+        if heat:
+            stat = np.sign(stat)
+            sns.heatmap(stat,cmap="OrRd",linewidths=1,ax=ax,\
+                cbar=False, )
 
-        ax.grid(ls='--', axis='y')
-        ax.set_axisbelow(True)
-        ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="短债")
-        ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull yellow'], edgecolor='black', align="center", label="中债+中长债")
-        ax.bar(x+2*bar_width, y3, bar_width,color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="长债")
-        ax.set_ylabel("（亿元）",fontsize = 10)
-        ax.set_xticks(x+bar_width)
-        ax.set_xticklabels(tick_label,fontsize=8)
-        
-        ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
-        # ax.legend(fontsize=15)
-        # ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.22,-0.32),borderaxespad = 0.,frameon=False)
-        ax.legend(ncol=3,loc=1, bbox_to_anchor=(1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
+        else:
+            tick_label = ["农村金融机构","基金公司及产品","保险公司",'外资银行']
+            stat = stat[tick_label]
+            x = np.arange(4)
+            y1 = stat.iloc[0,:]
+            y2 = stat.iloc[1,:]
+            y3 = stat.iloc[2,:]
+            y4 = stat.iloc[3,:]
+            bar_width = 0.2
+
+            ax.grid(ls='--', axis='y')
+            ax.set_axisbelow(True)
+
+            ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="短债")
+            ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull yellow'], edgecolor='black', align="center", label="中债")
+            ax.bar(x+2*bar_width, y3, bar_width,color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="中长债")
+            ax.bar(x+3*bar_width, y4, bar_width,color=sns.xkcd_rgb['grey'], edgecolor='black', align="center", label="长债")
+            ax.set_ylabel("（亿元）",fontsize = 10)
+            ax.set_xticks(x+bar_width)
+            ax.set_xticklabels(tick_label,fontsize=8)
+            
+            ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
+            # ax.legend(fontsize=15)
+            # ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.22,-0.32),borderaxespad = 0.,frameon=False)
+            ax.legend(ncol=4,loc=1, bbox_to_anchor=(1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
+            
         ax.set_title('分机构久期分布',fontsize=12)
         self.pic_list.append(fig1)
         self.title_list.append('分机构久期分布')
@@ -494,27 +507,33 @@ class weeklyReport:
         plt.style.use({'font.size' : 10})     
         fig2, ax = plt.subplots(nrows=1,ncols=1,\
         figsize=(4.15,1.42), dpi=300)
-        x = np.arange(4)
-        y1 = stat2.iloc[0,:]
-        y2 = stat2.iloc[1,:]
-        bar_width = 0.25
-        tick_label = ["农村金融机构","基金公司及产品","保险公司",'外资银行']
-        ax.grid(ls='--', axis='y')
-        ax.set_axisbelow(True)
-        ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="7-10年国债-新债")
-        ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="7-10年政策性金融债-新债")
-        ax.set_ylabel("（亿元）",fontsize=10)
-        ax.set_xticks(x+bar_width/2)
-        ax.set_xticklabels(tick_label,fontsize=8)
-        ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
-        # ax.legend(fontsize=15)
-        ax.legend(ncol=5,loc=1, bbox_to_anchor=(1.1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
+
+        if heat:
+            stat2 = np.sign(stat2)
+            sns.heatmap(stat2.astype(int),cmap="OrRd",linewidths=1,ax=ax,\
+                cbar=False,square=False)
+        else:
+            tick_label = ["农村金融机构","基金公司及产品","保险公司",'外资银行']
+            stat2 = stat2[tick_label]
+            x = np.arange(4)
+            y1 = stat2.iloc[0,:]
+            y2 = stat2.iloc[1,:]
+            bar_width = 0.25
+            ax.grid(ls='--', axis='y')
+            ax.set_axisbelow(True)
+            ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="7-10年国债-新债")
+            ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="7-10年政策性金融债-新债")
+            ax.set_ylabel("（亿元）",fontsize=10)
+            ax.set_xticks(x+bar_width/2)
+            ax.set_xticklabels(tick_label,fontsize=8)
+            ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
+            # ax.legend(fontsize=15)
+            ax.legend(ncol=5,loc=1, bbox_to_anchor=(1.1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
 
         if self.isMonth:
             title = '分机构7-10年政金新债、国债新债月度净买入情况'
         else:
             title = '分机构7-10年政金新债、国债新债周度净买入情况'
-
         ax.set_title(title,fontsize=12)
 
         self.pic_list.append(fig2)
@@ -523,6 +542,7 @@ class weeklyReport:
         return [fig1,fig2]
 
     def net_buy_amt(self):
+        # pdf
         df_net = do.get_data('Net_buy_bond')
         gz10y = do.get_data('rates')[['国债10年','date']]
         gz10y.rename(columns={'国债10年':'十年期国债收益率'}, inplace = True)
@@ -865,6 +885,33 @@ class weeklyReport:
         ax[1].set_title('信用债(1年及以下)净买入', fontsize=12)
         credit.tight_layout()
         return rate, credit
+    def fig_net_heat():
+        df_net_week = do.get_data('Net_buy_bond',start , end)
+
+        df_net_week.loc[df_net_week['期限'] == '1年及1年以下' , '期限备注'] = '短债'
+        df_net_week.loc[(df_net_week['期限'] == '1-3年') , '期限备注'] = '中债'
+        df_net_week.loc[(df_net_week['期限'] == '5-7年')|(df_net_week['期限'] == '7-10年')|(df_net_week['期限'] == '10-15年')|(df_net_week['期限'] == '15-20年')
+           |(df_net_week['期限'] == '20-30年')|(df_net_week['期限'] == '30年以上') , '期限备注'] = '长债'
+        df_net_week.loc[(df_net_week['期限'] == '3-5年') , '期限备注'] = '中长债'
+        
+        co_list = df_net_week['机构名称'].unique()
+
+        stat = pd.DataFrame([],columns = co_list,index = ['短债', '中债','中长债','长债','7-10年\n国债新债', '7-10年\n政金债新债'])
+        for co in co_list:
+            df_co = df_net_week[df_net_week['机构名称'] == co]
+            stat[co] = df_co.groupby(['期限备注'])['合计'].sum()
+
+            df_co = df_net_week[(df_net_week['机构名称'] == co)&(df_net_week['期限'] == '7-10年')]
+            stat.loc['7-10年\n国债新债',co] = df_co.groupby('date')['国债-新债'].sum().sum()
+            stat.loc['7-10年\n政金债新债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()
+        
+        plt.style.use({'font.size' : 10})     
+        fig, ax = plt.subplots(nrows=1,ncols=1,\
+        figsize=(4.15,4.15), dpi=300)
+
+        sns.heatmap(np.sign(stat.astype(int)).T,cmap="OrRd",linewidths=1,ax=ax,\
+            cbar=False,square=False)
+        plt.xticks(rotation = 0)
     # def 
     
 
