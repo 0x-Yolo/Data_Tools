@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import datetime as dt
 from matplotlib.backends.backend_pdf import PdfPages
 import pymysql
-from sqlalchemy.types import String, Float, Integer
+from sqlalchemy.types import String, Float, Integer,DECIMAL,VARCHAR
 from sqlalchemy import DateTime
 from sqlalchemy import create_engine
 from sqlalchemy import exc
@@ -22,7 +22,7 @@ end = dt.datetime.today()
 start=dt.datetime.now() - dt.timedelta(days=years*365)
 start=start.strftime("%Y-%m-%d")
 end=end.strftime("%Y-%m-%d")
-end = '2021-06-25'
+end = '2021-07-07'
 # test
 # err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
 #               '2021-04-20','2021-04-20',usedf=True) 
@@ -31,8 +31,8 @@ end = '2021-06-25'
 
 def daily_fig_liquidity_premium():
     err,df=w.edb('M0017139,M0041653,M0220163,\
-    M0017142,M0048486,M1010889,M1010892,M0329545,\
-    M1011048', start,end,"Fill=Previous",usedf=True)
+    M0017142,M0048486,M1006642,M1006645,M0329545,\
+    M1011048', start,end ,usedf=True)
     df.columns=["shibor_7d","质押回购利率_7天","存款类质押回购利率_7天",
                 "shibor_3m","IRS：FR007：1y","存单_AAA_3m","存单_AAA_1y","MLF：1年",
                 "国股银票转贴现收益率_3m"]
@@ -209,10 +209,6 @@ def fig_downstream():
 
     return df , name , dtypelist
 
-def rate_diff():
-    #沿用fig_rate
-    # S0059744,S0059746,S0059747,S0059749
-    return 
 
 def industries_premium():
     # 地产/钢铁/煤炭/有色/汽车
@@ -284,18 +280,6 @@ def broad_liquid():
 
     return df,name,dtypelist
 
-def mkt_rates():
-    # TODO 货币市场利率
-    err,df=w.edb("M1006336,M1006337,M0017142,M1006645",\
-         "2000-06-17", "2021-06-16",usedf=True)
-    df.columns=['DR001','DR007','shibor_3m','存单_1y']
-    df['date'] = df.index
-    name = 'mkt_rates'
-    columns_type=[Float(),Float(),Float(),Float(),
-                    DateTime()]
-    dtypelist = dict(zip(df.columns,columns_type))
-    return df , name , dtypelist
-
 def rates_us():
     err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-06-18",usedf=True)
     df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
@@ -316,7 +300,6 @@ def local():
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
-
 
 def indices():
     err,df = w.edb("M0051553,M0340363,M0340367,M0265754,M0051568,M0051567,M0265766,M0265767,M0265768,M0265769",\
@@ -348,33 +331,121 @@ def hs300():
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name , dtypelist
 
+def rate_syn():
+    # 利率同步指标
+    err,df = w.edb("S6002167,S5914515,S5700047,S5103920,S5705131,S6604459,M0017126,M0001714,M0001689,M0000271,S0180904,S0180903",\
+         "2000-07-02", "2021-06-30",usedf=True)
+    df.columns = ['挖掘机销量同比','水泥价格指数','重点企业粗钢产量','重点电厂煤耗总量',\
+        '国内铁矿石港口库存量','电影票房收入','PMI','其他存款性公司:总资产',\
+        '货币当局:总资产','美元指数','铜价','金价']
+    name = 'rate_syn'
+    df['date'] = df.index
+    columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),
+        Float(),Float(),Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
 
+def quanti():
+    # err,df = w.edb("M0290392,M0327992,M0265778,\
+    #     M0265865,M0265846,M0265884",\
+    #      "2000-01-01", "2021-07-01",usedf=True)
+    err,df = w.wsd("CBA00623.CS,CBA00653.CS,\
+        CBA00621.CS, CBA00651.CS,\
+        CBA02411.CS,\
+        CBA02523.CS,CBA02553.CS,CBA02521.CS,CBA02551.CS,CBA02552.CS", \
+    "close", "2010-01-01", "2021-07-20", "",usedf=True)
+    df.columns = ['国债全价1-3y','国债全价7-10y',
+            '国债总财富1-3y','国债总财富7-10y',
+            'cd_1y',
+            '国开债全价1-3y','国开债全价7-10y',
+            '国开债总财富1-3y','国开债总财富7-10y','国开债净价7-10y']
+    df['date'] = df.index
+    name = 'quanti2'
+    columns_type=[DECIMAL(10,4),DECIMAL(10,4),DECIMAL(10,4),
+                  DECIMAL(10,4),DECIMAL(10,4),
+                  DECIMAL(10,4),DECIMAL(10,4),
+                  DECIMAL(10,4),DECIMAL(10,4),DECIMAL(10,4),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
 
-def get_db_conn(io):
-    with open(io, 'r') as f1:
-        config = f1.readlines()
-    for i in range(0, len(config)):
-        config[i] = config[i].rstrip('\n')
+def bond_future():
+    # err,df = w.wsd("T2109.CFE,T2106.CFE,T2103.CFE,T2012.CFE,T2009.CFE,\
+    #     T2006.CFE,T2003.CFE,T1912.CFE,T1909.CFE,T1906.CFE,\
+    #     T1903.CFE,T1812.CFE,T1809.CFE,T1806.CFE,T1803.CFE,\
+    #     T1712.CFE,T1709.CFE,T1706.CFE,T1703.CFE,T1612.CFE,\
+    #     T1609.CFE,T1606.CFE,T1603.CFE,T1512.CFE,T1509.CFE", \
+    #     "close", "2010-07-08", "2021-07-08", "",usedf=True)
+    err,df=w.wsd("T2109.CFE,T2106.CFE,T2103.CFE,T2012.CFE,T2009.CFE,T2006.CFE,T2003.CFE,T1912.CFE,T1909.CFE,T1906.CFE,T1903.CFE,T1812.CFE,T1809.CFE,T1806.CFE,T1803.CFE,T1712.CFE,T1709.CFE,T1706.CFE,T1703.CFE,T1612.CFE,T1609.CFE,T1606.CFE,T1603.CFE,T1512.CFE,T1509.CFE",\
+         "volume", "2015-03-20", "2021-07-08", "",usedf=True)
+    err,df=w.wsd("T2109.CFE,T2106.CFE,T2103.CFE,T2012.CFE,T2009.CFE,T2006.CFE,T2003.CFE,T1912.CFE,T1909.CFE,T1906.CFE,T1903.CFE,T1812.CFE,T1809.CFE,T1806.CFE,T1803.CFE,T1712.CFE,T1709.CFE,T1706.CFE,T1703.CFE,T1612.CFE,T1609.CFE,T1606.CFE,T1603.CFE,T1512.CFE,T1509.CFE",\
+         "open", "2015-03-20", "2021-07-08", "",usedf=True)
+    err,df=w.wsd("T2109.CFE,T2106.CFE,T2103.CFE,T2012.CFE,T2009.CFE,T2006.CFE,T2003.CFE,T1912.CFE,T1909.CFE,T1906.CFE,T1903.CFE,T1812.CFE,T1809.CFE,T1806.CFE,T1803.CFE,T1712.CFE,T1709.CFE,T1706.CFE,T1703.CFE,T1612.CFE,T1609.CFE,T1606.CFE,T1603.CFE,T1512.CFE,T1509.CFE",\
+         "close", "2015-03-20", "2021-07-08", "",usedf=True)
+    # df.columns = ['m1','ppi']
+    df['date'] = df.index
+    # name='all_treasure_futures'
+    name = 'all_treasure_futures_vol'
+    columns_type = [Float(),Float(),Float(),Float(),Float(),
+                     Float(),Float(),Float(),Float(),Float(),
+                     Float(),Float(),Float(),Float(),Float(),
+                     Float(),Float(),Float(),Float(),Float(),
+                     Float(),Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
 
-    host = config[0]  
-    username = config[1]  # 用户名 
-    password = config[2]  # 密码
-    schema = config[3]
-    port = int(config[4])
-    engine_txt = config[5]
+def t10():
+    err,df = w.wsd("T.CFE", "close,open,high,low,oi_loi,oi_soi,volume",\
+         "2015-03-20", "2021-07-11", "order=25",usedf=True)
+    df['date'] = df.index
+    name='t10'
+    columns_type = [Float(),Float(),Float(),
+                    Float(),Float(), Float(), Float(),         
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
 
-    conn = pymysql.connect(	
-        host = host,	
-        user = username,	
-        passwd = password,	
-        db = schema,	
-        port=port,	
-        charset = 'utf8'	
-    )	
-    engine = create_engine(engine_txt)
-    return conn, engine
+def bond_future_h():
+    # err,df=w.wsi("T.CFE", "open,close",\
+    #      "2021-03-01 09:00:00", "2021-07-10 23:48:15", \
+    #     "BarSize=60",usedf=True)
+    err,df=w.wsi("T.CFE", "open,close",\
+         "2021-03-01 09:00:00", "2021-07-10 23:48:15", \
+        "BarSize=30",usedf=True)
+    df['date']=df.index
+    name='t2109_halfhour'
+    columns_type = [Float(),Float(),       
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+def bond_future_min():
+    err,df=w.wsi("T.CFE", "open,close",\
+         "2021-03-01 09:00:00", "2021-07-10 23:48:15", \
+        "BarSize=5",usedf=True)
+    # err,df = w.wsi("T.CFE", "open,close", \
+    #     "2021-01-13 09:00:00", "2021-07-13 10:28:15", "BarSize=60")
+    df['date']=df.index
+    name='t2109_5min'
+    columns_type = [Float(),Float(),       
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
 
-def main():
+def bond_v2():
+    err,df=w.wsi("T2109.CFE,T2106.CFE,T2103.CFE,T2012.CFE,T2009.CFE,\
+         T2006.CFE,T2003.CFE,T1912.CFE,T1909.CFE,T1906.CFE,\
+         T1903.CFE,T1812.CFE,T1809.CFE,T1806.CFE,T1803.CFE", \
+    "open,close", "2018-01-01 09:00:00", "2021-07-21 21:17:00", "BarSize=30",usedf=True)
+    df['date']=df.index
+    name='t10_30min'
+    columns_type = [VARCHAR(10),Float(),Float(),       
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+def main(): 
     """
     db_path = "/Users/wdt/Desktop/tpy/db.txt"
     
@@ -395,8 +466,8 @@ def main():
  
     l = [fig_downstream()]
     conn , engine = do.get_db_conn()
-
-    l=[hs300()]
+    l=[bond_future_h()]
+    l=[t10()]
     for a,b,c in l:
         # for i in range(len(a)):
             # try:
@@ -404,3 +475,6 @@ def main():
         print(b, '写入完成')
         
 main()
+
+
+

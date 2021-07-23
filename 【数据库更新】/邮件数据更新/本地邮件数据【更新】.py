@@ -220,8 +220,3 @@ def main():
         for a,b,c in l:
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
         print("成功上传"+dir+"的本地数据")
-#main()
-d = do.get_data('Repo_amt_prc_for_terms','2020-06-01','2020-06-30')
-d = do.get_data('Repo_amt_prc_for_collateral','2020-06-01','2020-06-30')
-
-

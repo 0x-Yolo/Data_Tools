@@ -183,7 +183,7 @@ def rates():
     df['date'] = df.index
     df = df.loc[df.date < end.date()]
 
-    name = 'rates1'
+    name = 'rates'
     columns_type=[Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),

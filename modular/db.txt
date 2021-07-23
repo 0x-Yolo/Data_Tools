@@ -1,0 +1,6 @@
+47.116.3.109
+dngj
+603603
+finance
+3306
+mysql+pymysql://dngj:603603@47.116.3.109:3306/finance?charset=utf8

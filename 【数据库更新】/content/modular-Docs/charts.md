@@ -2,31 +2,33 @@
 
 **便于日常调用**
 
-### cashFigs——资金数据与息差情况
+### cashRate——资金数据与息差情况
 
-* ##### RepoRate
+#### 函数列表
 
-* ##### rate_1D
+* ##### RepoRate()
 
-* ##### rate_7D
+* ##### cashrate_1D()
 
-* ##### vol_1D
+* ##### cashrate_7D()
 
-* ##### r_dr
+* ##### vol_1D()
 
-* ##### R_GC_7D
+* ##### r_dr_7D()
 
-* ##### volRatio
+* ##### r_gc_7D()
 
-* ##### irs
+* ##### repoVolRatio()
 
-* ##### cd6M
+* ##### irs()
 
-* ##### msPaper
+* ##### cd6M()
 
-  * 中票息差
+* ##### msPaper()
 
-* ##### gk_local
+  * 中票(1,3,5Y)息差
+
+* ##### gk_local()
 
 
 

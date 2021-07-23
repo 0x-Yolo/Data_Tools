@@ -61,7 +61,7 @@ def get_un_upload_timerange(table_name):
     conn.close()
     return start_time,rpt_date
 
-def get_data(table_name, start=0 ,end =0):
+def get_data(table_name, start=0 ,end ='2099-05-29'):
     """获取表名"""
     conn, engine = get_db_conn(path)
     excu="select * from "

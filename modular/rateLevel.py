@@ -68,6 +68,7 @@ def gz(year=1):
     ax.axhline(y=med,ls='-',color='orange')
     ax.set_xlabel('')
     ax.legend(['国债'+str(year)+'年'],ncol=1,loc=3, bbox_to_anchor=(0.3,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+    ax.set_title('国债'+str(year)+'年')
     return fig 
 
 def gk(year=1):
@@ -87,6 +88,7 @@ def gk(year=1):
     ax.axhline(y=q75,ls='--',color='lightgrey')
     ax.axhline(y=med,ls='-',color='orange')
     ax.legend(['国开'+str(year)+'年'],ncol=1,loc=3, bbox_to_anchor=(0.3,-0.65),borderaxespad = 0.,fontsize=10,frameon=False)
+    ax.set_title('国开'+str(year)+'年')
     ax.set_xlabel('')
     return fig 
 
@@ -142,6 +144,8 @@ def local_gz():
     ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.05,-0.6),borderaxespad = 0.,fontsize=10,frameon=False)
     ax_.legend(['地方债:5年:AAA','国债:5年'],\
         ncol=1,loc=3, bbox_to_anchor=(0.45,-0.7),borderaxespad = 0.,fontsize=10,frameon=False)
+    ax.set_title('地方债-国债')
+    
     return fig
 
 def gk_gz():
@@ -156,6 +160,7 @@ def gk_gz():
         label='国开债-国债',color='lightgrey',alpha=1)
     ax_= ax.twinx()
     df[['国开10年','国债10年']].plot(ax=ax_)
+    ax.set_title('国开债-国债')
 
     ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.05,-0.6),borderaxespad = 0.,fontsize=10,frameon=False)
     ax_.legend(['国开债:10年','国债:10年'],\
@@ -176,6 +181,7 @@ def cd_r007():
         label='存单-DR007',color='lightgrey',alpha=1)
     ax_= ax.twinx()
     df[['cd_3m_aaa+','DR007']].plot(ax=ax_)
+    ax.set_title('存单-DR007')
 
     ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.05,-0.6),borderaxespad = 0.,fontsize=10,frameon=False)
     ax_.legend(['存单:3个月:AAA+','DR007'],\
@@ -198,4 +204,10 @@ def msP():
     
     return fig 
 
-    
+
+figs = [yieldCurve('gz'),yieldCurve('gk'),gz(1),gz(10),gk(1),gk(10),\
+    CurveChange('gz'),CurveChange('gk'),local_gz(),gk_gz(),cd_r007(),msP()]
+
+for i in range(len(figs)):
+    f = figs[i]
+    f.savefig('./tmp/收益率水平/{}.jpg'.format(i),dpi=300,bbox_inches='tight')

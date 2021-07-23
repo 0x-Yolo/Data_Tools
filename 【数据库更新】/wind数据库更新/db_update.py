@@ -140,11 +140,11 @@ def repo_volume():
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
-    err, df=w.edb('M1004529,M0330244,M0330245,M0330246,\
+    err, df=w.edb('M1001794,M0330244,M0330245,M0330246,\
     M0330247,M0330248,M0330249,M0330250,\
     M0330251,M0330252,M0330253,M0330254,\
         M0041739',\
-       last_date,today_date.strftime("%Y-%m-%d"), "Fill=Previous",usedf=True)
+       last_date,today_date.strftime("%Y-%m-%d"),usedf=True)
     
     if df.shape[1] == 1:
         return [],name,[]
@@ -371,7 +371,8 @@ def rates_us():
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
-    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-06-18",usedf=True)
+    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", \
+        last_date, today_date,usedf=True)
     if df.shape[1] == 1:
         return [],name,[]
     df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
@@ -402,7 +403,8 @@ def main():
             daily_fig_rates(),industial_premium(),
             cash_cost(),policy_rate(),monetary_policy_tools(),\
             repo_volume(),interbank_deposit(),rates(),
-            cash_amt_prc(),spreads()]
+            cash_amt_prc(),spreads(),
+            rates_us()]
 
     for a,b,c in l:
         if len(np.array(a)) == 0:
