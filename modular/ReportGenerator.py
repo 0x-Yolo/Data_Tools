@@ -167,9 +167,15 @@ class weeklyReport:
         if self.isMonth=='no':
             pass
         elif self.isMonth:
-            plt.annotate('本月DR001' + spread(DR001_spread)+'\n'+'本月DR007' + spread(DR007_spread),xy=(endday,cash_cost['DR001'][-1]),xytext=(cash_cost['date'][-105],cash_cost['DR001'][-1]-1.4),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9,),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=7)
+            plt.annotate('本月DR001' + spread(DR001_spread)+'\n'+'本月DR007' + spread(DR007_spread),xy=(cash_cost.index[-1],cash_cost['DR001'][-1]),xytext=(cash_cost['date'][-105],cash_cost['DR001'][-1]-1.4),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9,),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=7)
         else:
-            plt.annotate('本周DR001' + spread(DR001_spread)+'\n'+'本周DR007' + spread(DR007_spread),xy=(endday,cash_cost['DR001'][-1]),xytext=(cash_cost['date'][-105],cash_cost['DR001'][-1]-1.4),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9,),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=7)
+            plt.annotate('本周DR001' + spread(DR001_spread)+'\n'+'本周DR007' + spread(DR007_spread),\
+            xy=(cash_cost.index[-1],cash_cost['DR001'][-1]),\
+            xytext=(cash_cost['date'][-105],cash_cost['DR001'][-1]-1.4),\
+            color="k",weight="bold",alpha=0.9,\
+            arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9,),\
+            bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},\
+            fontsize=7)
         
         plt.title('资金利率', fontsize=12)
         plt.legend(ncol=3,loc=3, bbox_to_anchor=(-0.05,-0.8),borderaxespad = 0.,fontsize=10,frameon=False)
@@ -277,10 +283,10 @@ class weeklyReport:
         if self.isMonth=='no':
             pass
         elif self.isMonth:
-            ax_.annotate('本月' + spread(cd_spread),xy=(endday,interbank_deposit['存单_股份行_1y'][-1]),\
+            ax_.annotate('本月' + spread(cd_spread),xy=(interbank_deposit.index[-1],interbank_deposit['存单_股份行_1y'][-1]),\
                 xytext=(interbank_deposit['date'][-130],interbank_deposit['存单_股份行_1y'][-1]-1.3),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':4},fontsize=7)
         else:
-            ax_.annotate('本周' + spread(cd_spread),xy=(endday,interbank_deposit['存单_股份行_1y'][-1]),\
+            ax_.annotate('本周' + spread(cd_spread),xy=(interbank_deposit.index[-1],interbank_deposit['存单_股份行_1y'][-1]),\
                 xytext=(interbank_deposit['date'][-130],interbank_deposit['存单_股份行_1y'][-1]-1.3),\
                 color="k",weight="bold",alpha=0.9,arrowprops=\
                 dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9),\

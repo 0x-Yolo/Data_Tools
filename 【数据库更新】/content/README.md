@@ -4,17 +4,7 @@
 
 ## Python入门
 
-* 重点名词
-  * 集成开发环境IDE（类似Office的Word）
-  * 库、包、lib、package（丰富的第三方库是Python最强大的地方，里面包含了函数和类）
-  * 环境变量（一般会在安装时自动配置）
-* 基本语法、库、函数与循环
-* [各种数据类型介绍（列表、集合、数据框）](how-to-use/py-types.md)
-* [演示](how-to-use/notebook.pdf)
-  * [用Python连接Excel](how-to-use/py-excel.md)
-  * [用Python连接数据库](how-to-use/py-sql.md)
-  * [例子](how-to-use/examples.md)
-* [常用包](how-to-use/py-libs.md)
+* [入门系列Docs](how-to-use/start-py.md)
 
 ## 数据库的使用
 
@@ -32,7 +22,7 @@
   * [ReportGenerator库](docs/函数池-ReportGenerator.md)
   * [data_organize库](docs/函数池-data_organize.md)
   * [画图代码库](modular-Docs/charts.md)
-    * cashFigs
+    * cashRate
     * rateLevel
     * rateDiff
 * [数据表](docs/数据表信息.md)

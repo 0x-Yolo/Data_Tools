@@ -160,8 +160,8 @@ def main():
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        # if idx < 2327:
-        #     continue
+        if idx != 194:
+            continue
         print(idx)
 
         code = df.loc[idx,'代码']
@@ -253,7 +253,7 @@ def main():
         else:
             x = w.wsd(code,"ptmyear", net_date, net_date, "").Data[0][0]
         df.loc[idx,'剩余期限'] = x
-
+    
     # * Step3:生成统计数据
     df = df[['方向','代码','价格','时间','估值时间',\
         '名字','到期估值','行权估值','行权日','price','type','估值偏离',\
@@ -265,7 +265,7 @@ def main():
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
     l = [upload2(stat_table),upload1(df)]
-    l = [upload2(stat_table)]
+    # l = [upload2(stat_table)]
     # l = [upload1(df)]
     for a,b,c in l:
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)

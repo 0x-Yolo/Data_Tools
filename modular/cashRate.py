@@ -19,7 +19,7 @@ def RepoRate(start='2019-01-01',end='2099-05-29'):
     ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.2,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_xlabel('')
     ax.set_title('质押式回购资金利率')
-    fig.show()
+    
     return df
 
 def cashrate_1D(start='2019-01-01',end='2099-05-29'):
@@ -37,7 +37,7 @@ def cashrate_1D(start='2019-01-01',end='2099-05-29'):
     ax_.legend(ncol=1,loc=3, bbox_to_anchor=(0.7,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
     
     ax.set_title('隔夜利率')
-    fig.show()
+    
     return df
 
 def cashrate_7D(start='2019-01-01',end='2099-05-29'):
@@ -56,7 +56,7 @@ def cashrate_7D(start='2019-01-01',end='2099-05-29'):
     
     ax.set_title('7天资金利率')
     ax.set_xlabel('')
-    fig.show()
+    
     return df
 
 def vol_1D(start='2019-01-01',end='2099-05-29'):
@@ -75,7 +75,7 @@ def vol_1D(start='2019-01-01',end='2099-05-29'):
     ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.2,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
     ax_.legend(ncol=1,loc=3, bbox_to_anchor=(0.7,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_title('隔夜成交量')
-    fig.show()
+    
     return df
 
 def r_dr_7D(start='2015-01-01'):
@@ -94,7 +94,7 @@ def r_dr_7D(start='2015-01-01'):
     ax.set_title('R007-DR007')
     ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.1,-0.2),borderaxespad = 0.,fontsize=10,frameon=False)
     ax_.legend(ncol=2,loc=3, bbox_to_anchor=(0.5,-0.2),borderaxespad = 0.,fontsize=10,frameon=False)
-    fig.show()
+    
     return df
 
 def r_gc_7D(start='2016-01',end='2099-05-29'):
@@ -108,7 +108,7 @@ def r_gc_7D(start='2016-01',end='2099-05-29'):
     ax.set_xlabel('')
     ax.set_title('银行间与交易所资金利率')
     ax.legend(ncol=2,loc=3, bbox_to_anchor=(0.25,-0.2),borderaxespad = 0.,fontsize=10,frameon=False)
-    fig.show()
+    
     return df
 
 def repoVolRatio(start='2015-01-01',end='2099-05-29'):
@@ -128,7 +128,7 @@ def repoVolRatio(start='2015-01-01',end='2099-05-29'):
         label = '七天回购占比',color='orange',alpha=1)
     ax.legend(ncol=2,loc=3, bbox_to_anchor=(0.2,-0.2),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_title('隔夜与七天')
-    fig.show()
+    
     return df
 
 def irs(start='2009-01-01',end='2099-05-29'):
@@ -142,7 +142,7 @@ def irs(start='2009-01-01',end='2099-05-29'):
     ax.set_xlabel('')
     ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.05,-0.25),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_title('IRS')
-    fig.show()
+    
     return df
 
 def cd6M(start='2015-01-01',end='2099-05-29'):
@@ -161,7 +161,7 @@ def cd6M(start='2015-01-01',end='2099-05-29'):
     ax.legend(ncol=1,loc=3, bbox_to_anchor=(0.1,-0.2),borderaxespad = 0.,fontsize=10,frameon=False)
     ax_.legend(ncol=2,loc=3, bbox_to_anchor=(0.4,-0.2),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_title('6M存单-R007')
-    fig.show()
+    
     return df
 
 def msPaper(start='2016-01-01',end='2099-05-29'):
@@ -179,7 +179,7 @@ def msPaper(start='2016-01-01',end='2099-05-29'):
     ax.set_xlabel('')
     ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.25,-0.25),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_title('中短票:AA+-R007')
-    fig.show()
+    
     return df
 
 def gk_local(start='2016-01-01',end='2099-05-29'):
@@ -198,7 +198,7 @@ def gk_local(start='2016-01-01',end='2099-05-29'):
     ax.set_xlabel('')
     ax.legend(ncol=3,loc=3, bbox_to_anchor=(0.15,-0.25),borderaxespad = 0.,fontsize=10,frameon=False)
     ax.set_title('国开10年与地方债3年-R007')
-    fig.show()
+    
     return df
 
 

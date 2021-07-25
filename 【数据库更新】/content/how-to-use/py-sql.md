@@ -1,13 +1,14 @@
 ### pandas库连接外部数据库
+#### Method1
 
-1. #### 在Python编辑器中导入需要用到的库
+1. ##### 在Python编辑器中导入需要用到的库
 
    ```python
    import pymysql
    from sqlalchemy import create_engine
    ```
 
-2. #### 创建数据库连接
+2. ##### 创建数据库连接
 
    ```python
    conn = pymysql.connect(	
@@ -21,7 +22,7 @@
    engine = create_engine(mysql+pymysql://user:password@host:port/finance?charset=utf8)
    ```
 
-3. #### 从数据库拉取表格，并保存为本地excel文件
+3. ##### 从数据库拉取表格，并保存为本地excel文件
 
    ```python
    # 创建查询语句（SQL语法）
@@ -35,3 +36,15 @@
    df.to_excel('现券交易数据.xlsx')
    ```
 
+#### Method2
+
+1. ##### 在Python编辑器中导入需要用到的库
+
+   ```python
+   import data_organize as do
+   ```
+1. ##### 获取数据库内数据
+
+   ```python
+   df = do.get_data('Net_buy_bond')
+   ```
