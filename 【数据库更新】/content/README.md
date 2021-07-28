@@ -5,6 +5,7 @@
 ## Python入门
 
 * [入门系列Docs](how-to-use/start-py.md)
+  * [P1](how-to-use/p1.md)
 
 ## 数据库的使用
 
