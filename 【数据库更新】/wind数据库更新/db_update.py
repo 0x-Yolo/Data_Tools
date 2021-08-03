@@ -198,7 +198,10 @@ def rates():
             S0059722,S0059724,S0059725,\
             S0059715,S0059717,S0059718,\
             S0059729,S0059731,S0059732,\
-            M1007675,S0059838,S0059752",\
+            M1007675,S0059838,S0059752,\
+            S0059741,S0059742,S0059751,\
+            M1004260,M1004261,M1004273,M1004274,\
+            M1006615,S0059745",\
          last_date,today_date,usedf = True)
     if df.shape[1] == 1:
         return [],name,[]
@@ -212,7 +215,10 @@ def rates():
         '中票_AA+_1y','中票_AA+_3y','中票_AA+_5y',\
         '中票_AA_1y','中票_AA_3y','中票_AA_5y',\
         '中票_AA-_1y','中票_AA-_3y','中票_AA-_5y',
-        '农发10年','口行10年','国债30年']
+        '农发10年','口行10年','国债30年',
+        '国债3月','国债6月','国债20年',\
+        '国开3月','国开6月','国开20年','国开30年',
+        'cd_3m_aaa+','国债2年']
     df['date'] = df.index
     df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
 
@@ -225,6 +231,9 @@ def rates():
     Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),
+    Float(),Float(),Float(),
+    Float(),Float(),Float(),Float(),
+    Float(),Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name , dtypelist

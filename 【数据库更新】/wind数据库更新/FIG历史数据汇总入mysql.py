@@ -281,7 +281,7 @@ def broad_liquid():
     return df,name,dtypelist
 
 def rates_us():
-    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-06-18",usedf=True)
+    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-07-29",usedf=True)
     df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
     df['date'] = df.index
     name = 'rates_us'
@@ -301,9 +301,22 @@ def local():
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
 
+def fundAmt():
+    name = 'fundAmt'
+    err,df = w.edb("M5207867,M5207864,M5207865,M5207866", \
+            "2020-01-01", "2021-08-02",usedf=True)
+    df.columns = ['货币基金份额', '股票基金份额', \
+        '混合型基金份额','债券基金份额']
+    df['date'] = df.index
+
+    columns_type=[Float(),Float(),Float(),Float(),
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
 def indices():
     err,df = w.edb("M0051553,M0340363,M0340367,M0265754,M0051568,M0051567,M0265766,M0265767,M0265768,M0265769",\
-         "2003-12-01", "2022-06-30",usedf=True)
+         "2003-12-01", "2022-07-31",usedf=True)
     df.columns=['中债总指数','1-5年政金债指数','7-10年政金债指数',\
         '中债信用总指数','中债短融总指数','中债中票总指数','中债企业债AAA指数',\
         '中债企业债AA+指数','中债企业债AA指数','中债企业债AA-指数']
@@ -346,7 +359,7 @@ def rate_syn():
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
 
-def quanti():
+def quanti2():
     # err,df = w.edb("M0290392,M0327992,M0265778,\
     #     M0265865,M0265846,M0265884",\
     #      "2000-01-01", "2021-07-01",usedf=True)
@@ -466,8 +479,8 @@ def main():
  
     l = [fig_downstream()]
     conn , engine = do.get_db_conn()
-    l=[bond_future_h()]
-    l=[t10()]
+    l=[fundAmt()]
+    l=[indices()]
     for a,b,c in l:
         # for i in range(len(a)):
             # try:

@@ -10,6 +10,10 @@ import os
 for p in sys.path:
     if 'modular' in p :
         path = os.path.abspath(p +'/db.txt')
+import matplotlib.pyplot as plt
+plt.style.use({'figure.figsize':(10, 4)})
+plt.rcParams['font.family']=['STKaiti']
+plt.rcParams['axes.unicode_minus'] = False
 
 def get_db_conn(io = path):
     '''
@@ -112,3 +116,9 @@ def get_date(dir):
     date = dt.datetime(int(x),int(y),int(z))
 
     return date
+
+def set_axes_rotation(axes,rotation = 30):
+    for label in axes.get_xticklabels():
+        label.set_rotation(rotation)
+        label.set_horizontalalignment('center')
+    return axes.get_xticklabels()

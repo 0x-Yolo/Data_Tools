@@ -160,8 +160,8 @@ def main():
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        if idx != 194:
-            continue
+        # if idx != 194:
+        #     continue
         print(idx)
 
         code = df.loc[idx,'代码']

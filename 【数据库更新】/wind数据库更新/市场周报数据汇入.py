@@ -203,11 +203,11 @@ def rates():
 
 
 
-conn,engine = do.get_db_conn()
 l = [policy_rate(), monetary_policy_tools(), repo_volume(),\
     interbank_deposit(), rates()]
 l=[rates()]
 l=[cash_amt_prc(),spreads()]
+conn,engine = do.get_db_conn()
 for a,b,c in l:
     a.to_sql(name=b,con = engine,schema='finance',if_exists = 'replace',index=False,dtype=c)
     print(b, '写入完成')

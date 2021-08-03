@@ -25,23 +25,3 @@ list02 = list([1,2,3,4,5])
 pd.DataFrame([],)
 ```
 
-#### list()
-
-```python
-list01 = [1,2,3,4,5]
-list02 = list([1,2,3,4,5])
-```
-
-#### list()
-
-```python
-list01 = [1,2,3,4,5]
-list02 = list([1,2,3,4,5])
-```
-
-#### list()
-
-```python
-list01 = [1,2,3,4,5]
-list02 = list([1,2,3,4,5])
-```
