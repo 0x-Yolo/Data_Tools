@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime as dt
 import pymysql
-from sqlalchemy.types import String, Float, Integer
+from sqlalchemy.types import String, Float, Integer,VARCHAR
 from sqlalchemy import DateTime
 from sqlalchemy import create_engine
 from sqlalchemy import exc
@@ -272,21 +272,47 @@ def daily_fig_bond_leverage():
     today_date = dt.datetime.now()
     print('表{}的最近更新日期为{}'.format(name,last_date))
 
-    err, df=w.edb('M0041739,M5639029',last_date,today_date,usedf = True)
+    err, df=w.edb('M0041754,M0041746',last_date,today_date,usedf = True)
     
     if df.shape[1] == 1:
         return [],name,[]
     
-    df.columns = ['成交量:银行间质押式回购', '债券市场托管余额']
+    df.columns =['银行间质押式回购余额', '中债托管余额']
     # df = df.dropna(axis = 0)
     df['date'] = df.index
     df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
-
-    columns_type=[Float(4),
-                  Float(1),
+    columns_type=[Float(),
+                  Float(),
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
 
+def daily_netfinancing_amt():
+    name = 'net_financing_amt'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err, df= w.wset("bondissuanceandmaturity",\
+            "startdate={};enddate={};frequency=day;\
+            maingrade=all;zxgrade=all;datetype=startdate;type=default;\
+            bondtype=default;bondid=1000008489000000,a101020100000000,\
+            a101020200000000,a101020300000000,1000011872000000,a101020400000000,\
+            a101020700000000,a101020800000000,a101020b00000000,a101020500000000,\
+            1000013981000000,1000002993000000,1000004571000000,1000040753000000,\
+            a101020a00000000,a101020600000000,1000016455000000,a101020900000000;\
+            field=startdate,netfinancingamount".format\
+                ((last_date.date().strftime('%Y-%m-%d')), \
+                (today_date.date().strftime('%Y-%m-%d'))),\
+            usedf=True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    
+    df.columns =['date', 'netfinancingamount']
+    df = df.loc[(df.date > last_date) & (df.date < today_date)]
+    columns_type=[
+                  DateTime(),Float()]
+    dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
 def daily_fig_rates():
@@ -386,16 +412,202 @@ def rates_us():
         return [],name,[]
     df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date < today_date.date())].dropna()
 
     columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
 
+def gz_issue_amt():
+    name = 'gz_issue_amt'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err,df = w.wset("nationaldebtissueandclosesub",\
+        "startdate={};enddate={};\
+        frequency=day;maingrade=all;zxgrade=all;\
+        datetype=startdate;type=default;bondtype=governmentbonds;\
+        bondid=1000008489000000,a101020100000000,a101020200000000,a101020300000000,1000011872000000,a101020400000000,a101020700000000,a101020800000000,a101020b00000000,a101020500000000,1000013981000000,1000002993000000,1000004571000000,a101020a00000000,a101020600000000,1000016455000000,a101020900000000;\
+        field=startdate,windcode,issueprice,term,issuer".format\
+        ((last_date.date().strftime('%Y-%m-%d')), \
+         (today_date.date().strftime('%Y-%m-%d'))),usedf=True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    df.columns = ['date','windcode','issueprice','term','issuer']
+    # df['date'] = df.index
+    df = df.loc[(df.date > last_date) & (df.date < today_date)]
+    columns_type=[DateTime(),VARCHAR(20),Float(),Float(),VARCHAR(15)]
+    dtypelist = dict(zip(df.columns,columns_type))
+    
+    return df , name , dtypelist
+
+def zj_issue_amt():
+    name = 'zj_issue_amt'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err,df = w.wset("nationaldebtissueandclosesub",\
+        "startdate={};enddate={};\
+        frequency=day;maingrade=all;zxgrade=all;\
+        datetype=startdate;type=default;bondtype=policybankbonds;\
+        bondid=1000008489000000,a101020100000000,a101020200000000,a101020300000000,1000011872000000,a101020400000000,a101020700000000,a101020800000000,a101020b00000000,a101020500000000,1000013981000000,1000002993000000,1000004571000000,a101020a00000000,a101020600000000,1000016455000000,a101020900000000;\
+        field=startdate,windcode,issueprice,term,issuer".format\
+        ((last_date.date().strftime('%Y-%m-%d')), \
+         (today_date.date().strftime('%Y-%m-%d'))),usedf=True)
+    if df.shape[1] == 1:
+        return [],name,[]
+    df.columns = ['date','windcode','issueprice','term','issuer']
+    # df['date'] = df.index
+    df = df.loc[(df.date > last_date) & (df.date < today_date)]
+    columns_type=[DateTime(),VARCHAR(20),Float(),Float(),VARCHAR(15)]
+    dtypelist = dict(zip(df.columns,columns_type))
+    
+    return df , name , dtypelist
 
 
+def net_bond_daily_volume():
+    # 具体个券每日成交量
+    def namelist2str_gz(l):
+        # name_list to name_string
+        strr = ''
+        for i in range(len(l)):
+            name = l[i]
+            if 'x' in name or 'X' in name or 'IB' not in name:
+                continue
+            strr = strr + name + ','
+        return strr
+    def namelist2str_zj(l):
+        # name_list to name_string
+        strr = ''
+        for i in range(len(l)):
+            name = l[i]
+            if 'z' in name or 'Z' in name or 'H' in name:
+                continue
+            strr = strr + name + ','
+        return strr
+    def get_gz_issue():
+        gz_issue = do.get_data('gz_issue_amt')
+        gz_issue.index = gz_issue.date
+        for j in range(gz_issue.shape[0]):
+            idx = gz_issue.index[j] ; n = gz_issue.iloc[j,1] # windcode
+            t = gz_issue.iloc[j,3]# term
+            if ('x' in n) or ('X' in n):
+                continue
+            gz_issue.loc[(gz_issue.date==idx)&(gz_issue.windcode==n) \
+                ,'到期日'] = idx.date() + dt.timedelta(days=365 * t)
+        for j in range(gz_issue.shape[0]):
+            idx = gz_issue.index[j] ; n = gz_issue.iloc[j,1] # windcode
+            t = gz_issue.iloc[j,3]# term
+            if 'x' not in n and 'X' not in n:
+                continue
+            if 'x' in n :
+                idxx = n.index('x')
+            else:
+                idxx = n.index('X')
+            main_name = n[:idxx] + n[-3:]
+            gz_issue.loc[(gz_issue.date==idx)&(gz_issue.windcode==n) \
+                ,'到期日'] = gz_issue.loc[(gz_issue.windcode==main_name) \
+                ,'到期日'][0]
+        ii=[]
+        for i in range(gz_issue.shape[0]):
+            if gz_issue.iloc[i,1][-3:]=='.IB':
+                ii.append(i)
+        gz_issue = gz_issue.iloc[ii]
+        return gz_issue
+    def get_zj_issue():
+        zj_issue = do.get_data('zj_issue_amt')
+        zj_issue.index = zj_issue.date
+        for j in range(zj_issue.shape[0]):
+            idx = zj_issue.index[j] ; n = zj_issue.iloc[j,1]
+            t = zj_issue.iloc[j,3]
+            if (('z' in n[:-3]) | ('Z' in n[:-3]) | ('H' in n[:-3])) :
+                continue
+            zj_issue.loc[(zj_issue.date==idx)&(zj_issue.windcode==n) \
+                ,'到期日'] = idx.date() + dt.timedelta(days=365 * t)
+            
+        for j in range(zj_issue.shape[0]):
+            idx = zj_issue.index[j] ; n = zj_issue.iloc[j,1] # windcode
+            t = zj_issue.iloc[j,3] # term
+            if (('z' not in n[:-3]) & ('Z' not in n[:-3])) :
+                continue
+            if 'z' in n :
+                idxx = n.index('z')
+            elif 'Z' in n:
+                idxx = n.index('Z')
+            elif 'H' in n:
+                idxx = n.index('H')
+            main_name = n[:idxx] + n[-3:]
+            zj_issue.loc[(zj_issue.date==idx)&(zj_issue.windcode==n) \
+                ,'到期日'] = zj_issue.loc[(zj_issue.windcode==main_name) \
+                ,'到期日'][0]
+        jj=[]
+        for i in range(zj_issue.shape[0]):
+            if zj_issue.iloc[i,1][-3:]=='.IB':
+                jj.append(i)
+        zj_issue = zj_issue.iloc[jj]
+        return zj_issue
+    gz_issue = get_gz_issue()
+    zj_issue = get_zj_issue()
 
+    gz_all = pd.read_excel('Z:\\Users\\wdt\\Desktop\\tpy\\Signals\\个券成交量\\gz_all.xlsx',index_col=0)
+    last_date = dt.datetime.strptime(gz_all.columns.max(),'%Y%m%d')
+    today_date = dt.datetime.now()
+
+    # * get all-year-gz namelist
+    gz_names = gz_issue.windcode.tolist(); gz_name_list = []
+    for i in range(len(gz_names)):
+        name = gz_names[i]
+        if 'x' in name or 'X' in name or 'IB' not in name:
+            continue
+        gz_name_list.append(name)
+    # * get from wind
+    d = pd.DataFrame([],index = gz_name_list)
+    for date in do.get_data('rates')['date']:
+        if date <= last_date:
+            continue
+        print(date)
+        names=gz_issue.loc[(gz_issue.index<=date)&(gz_issue['到期日']>date.date()),'windcode'].tolist()
+        names_str = namelist2str_gz(names)
+
+        da = date.date().strftime(format='%Y%m%d')
+        err, df= w.wss(names_str, "volume",\
+            "tradeDate={};cycle=D".format(int(da)),\
+                usedf=True)
+        df.columns=[da]
+        d[da] = df
+    d[gz_all.columns] = gz_all
+    d.to_excel('gz_all_update.xlsx')
+    #######################
+    zj_all = pd.read_excel('Z:\\Users\\wdt\\Desktop\\tpy\\Signals\\个券成交量\\zj_all.xlsx',index_col=0)
+    last_date = dt.datetime.strptime(zj_all.columns.max(),'%Y%m%d')
+    today_date = dt.datetime.now()
+    # * get all-year-zj namelist
+    zj_names = zj_issue.windcode.tolist(); zj_name_list = []
+    for i in range(len(zj_names)):
+        name = zj_names[i]
+        if 'Z' in name[:-3] or 'z' in name[:-3] or 'H' in name[:-3]:
+            continue
+        zj_name_list.append(name)
+    # * get from wind
+    d = pd.DataFrame([],index = zj_name_list)
+    for date in do.get_data('rates')['date']:
+        if date <= last_date:
+            continue
+
+        names=zj_issue.loc[(zj_issue.index<=date)&(zj_issue['到期日']>date.date()),'windcode'].tolist()
+        names_str = namelist2str_zj(names)
+
+        da = date.date().strftime(format='%Y%m%d')
+        err, df= w.wss(names_str, "volume",\
+            "tradeDate={};cycle=D".format(int(da)),\
+                usedf=True)
+        df.columns=[da]
+        d[da] = df
+    d[gz_all.columns] = zj_all
+    d.to_excel('zj_all_update.xlsx')
 
 
 
@@ -406,14 +618,14 @@ def main():
     conn , engine = do.get_db_conn()
     
     l =    [
-            daily_fig_bond_leverage(),
+            daily_fig_bond_leverage(),daily_netfinancing_amt(),
             daily_fig_credit_premium(),
             daily_fig_liquidity_premium(),
             daily_fig_rates(),industial_premium(),
             cash_cost(),policy_rate(),monetary_policy_tools(),\
             repo_volume(),interbank_deposit(),rates(),
-            cash_amt_prc(),spreads(),
-            rates_us()]
+            cash_amt_prc(),spreads(),]
+    # l =   [rates_us()]
 
     for a,b,c in l:
         if len(np.array(a)) == 0:

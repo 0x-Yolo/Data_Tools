@@ -54,7 +54,7 @@ credit = do.get_data('secondary_credit_sec')
 credit_stat = do.get_data('secondary_credit_sec_stat')
 # rate = do.get_data('secondary_rate_sec')
 
-credit.to_excel('信用债成交-0730.xlsx',index=False)
-credit_stat.to_excel('信用债成交统计-0730.xlsx',index=False)
+credit.to_excel('信用债成交-0813.xlsx',index=False)
+credit_stat.to_excel('信用债成交统计-0813.xlsx',index=False)
 # rate.to_excel('利率债成交.xlsx',index=False)
 

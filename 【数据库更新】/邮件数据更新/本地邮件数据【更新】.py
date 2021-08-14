@@ -76,6 +76,7 @@ def daily_Net_buy_bond(dir_name):#每天数据的转换
     df=df.replace('---',0)
 
     name = "Net_buy_bond"
+    # name = 'sec_buy_amt'
     columns_type=[#图表的数据口径
     String(30),
     String(30),
@@ -198,7 +199,7 @@ def main():
     dir_list = upload_date_list('Net_buy_bond')
     dir_list.sort()
     for dir in dir_list:
-        if 'xlsx' in dir :
+        if 'xlsx' in dir or '.DS' in dir:
             print(dir)# 0522.xlsx
             continue
         l = [daily_Net_buy_bond(dir)]

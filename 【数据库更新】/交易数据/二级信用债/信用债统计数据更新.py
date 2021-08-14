@@ -49,7 +49,7 @@ def organize(df):
     def get_riskpreference(se):
         """按照隐含评级对债券分类"""
         dict_ = {'AAA+' : 1,'AAA' : 2,'AAA-' : 3,'AA+' : 4,'AA' : 5,\
-        'AA(2)' : 6,'AA-' : 7,'A+' : 8,'A' : 9,'A-' : 10} 
+        'AA(2)' : 6,'AA-' : 7,'A+' : 8,'A' : 9,'A-' : 10, 'CCC':12} 
         l = se.tolist()
         for i in range(len(l)):
             if (not l[i]) or (type(l[i]) == float):
@@ -157,10 +157,13 @@ def main():
             print(idx)
             df.drop(idx,axis=0,inplace = True)
 
+    df.to_excel('tmp.xlsx',index=False)
+    df = pd.read_excel('tmp.xlsx')
+
     # * Step2:添加windapi指标
     w.start()
     for idx in df.index:
-        # if idx != 194:
+        # if idx < 3305:
         #     continue
         print(idx)
 

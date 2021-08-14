@@ -119,3 +119,6 @@ def fundamt():
     return fig
 
     # fig.savefig('xw.jpg',dpi=300,bbox_inches='tight')
+
+
+    

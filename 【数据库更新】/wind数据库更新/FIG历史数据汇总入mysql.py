@@ -23,9 +23,7 @@ start=dt.datetime.now() - dt.timedelta(days=years*365)
 start=start.strftime("%Y-%m-%d")
 end=end.strftime("%Y-%m-%d")
 end = '2021-07-07'
-# test
-# err, df=w.edb('M1004529,M0330244,M0330245,M0330246,M0330247,M0330248,M0330249,M0330250,M0330251,M0330252,M0330253',
-#               '2021-04-20','2021-04-20',usedf=True) 
+
 
 
 
@@ -47,15 +45,24 @@ def daily_fig_liquidity_premium():
     return df, name, dtypelist
 
 def daily_fig_bond_leverage():
-    err, df=w.edb('M0041739,M5639029',start,end,usedf = True)
-    df.columns = ['成交量:银行间质押式回购', '债券市场托管余额']
+    err, df=w.edb('M0041754,M0041746',start,'2021-06-30',usedf = True)
+    df.columns = ['银行间质押式回购余额', '中债托管余额']
     # df = df.dropna(axis = 0)
     df['date'] = df.index
 
     name = 'fig_bond_leverage'
-    columns_type=[Float(4),
-                  Float(1),
+    columns_type=[
+                  Float(),Float(),
                   DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
+def net_financing_amt():
+    err,df = \
+        w.wset("bondissuanceandmaturity",\
+            "startdate=2015-01-01;enddate=2021-08-01;frequency=day;maingrade=all;zxgrade=all;datetype=startdate;type=default;bondtype=default;bondid=1000008489000000,a101020100000000,a101020200000000,a101020300000000,1000011872000000,a101020400000000,a101020700000000,a101020800000000,a101020b00000000,a101020500000000,1000013981000000,1000002993000000,1000004571000000,1000040753000000,a101020a00000000,a101020600000000,1000016455000000,a101020900000000;field=startdate,netfinancingamount",\
+            usedf=True)
+    name = 'net_financing_amt'
+    columns_type=[DateTime(),Float()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
@@ -330,16 +337,13 @@ def indices():
     return df , name , dtypelist
 
 def hs300():
-    err,df1 = w.wsd("000300.SH", "dividendyield2", \
+    err,df = w.wsd("000300.SH", "dividendyield2", \
         "2002-01-01", "2021-06-30", usedf=True)
-    df1.columns = ['股息率']
-    err,df2 = w.edb("M0058003", "2010-01-01", "2021-06-30",usedf=True)
-    df2.columns = ['一般贷款']
-    df1['一般贷款'] = df2['一般贷款']
-    df1['date'] = df1.index
+    df.columns = ['股息率']
+
+    df['date'] = df.index
     name = 'hs300Div'
-    df=df1
-    columns_type=[Float(),Float(),
+    columns_type=[Float(),
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name , dtypelist
@@ -347,7 +351,7 @@ def hs300():
 def rate_syn():
     # 利率同步指标
     err,df = w.edb("S6002167,S5914515,S5700047,S5103920,S5705131,S6604459,M0017126,M0001714,M0001689,M0000271,S0180904,S0180903",\
-         "2000-07-02", "2021-06-30",usedf=True)
+         "2000-07-02", "2021-08-08",usedf=True)
     df.columns = ['挖掘机销量同比','水泥价格指数','重点企业粗钢产量','重点电厂煤耗总量',\
         '国内铁矿石港口库存量','电影票房收入','PMI','其他存款性公司:总资产',\
         '货币当局:总资产','美元指数','铜价','金价']
@@ -366,19 +370,20 @@ def quanti2():
     err,df = w.wsd("CBA00623.CS,CBA00653.CS,\
         CBA00621.CS, CBA00651.CS,\
         CBA02411.CS,\
-        CBA02523.CS,CBA02553.CS,CBA02521.CS,CBA02551.CS,CBA02552.CS", \
+        CBA02523.CS,CBA02553.CS,\
+        CBA02521.CS,CBA02551.CS,CBA02552.CS,CBA00652.CS,", \
     "close", "2010-01-01", "2021-07-20", "",usedf=True)
     df.columns = ['国债全价1-3y','国债全价7-10y',
             '国债总财富1-3y','国债总财富7-10y',
             'cd_1y',
             '国开债全价1-3y','国开债全价7-10y',
-            '国开债总财富1-3y','国开债总财富7-10y','国开债净价7-10y']
+            '国开债总财富1-3y','国开债总财富7-10y','国开债净价7-10y','国债净价7-10y']
     df['date'] = df.index
     name = 'quanti2'
     columns_type=[DECIMAL(10,4),DECIMAL(10,4),DECIMAL(10,4),
                   DECIMAL(10,4),DECIMAL(10,4),
                   DECIMAL(10,4),DECIMAL(10,4),
-                  DECIMAL(10,4),DECIMAL(10,4),DECIMAL(10,4),
+                  DECIMAL(10,4),DECIMAL(10,4),DECIMAL(10,4),DECIMAL(10,4),
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
@@ -408,7 +413,6 @@ def bond_future():
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
-
 def t10():
     err,df = w.wsd("T.CFE", "close,open,high,low,oi_loi,oi_soi,volume",\
          "2015-03-20", "2021-07-11", "order=25",usedf=True)
@@ -419,7 +423,6 @@ def t10():
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
-
 def bond_future_h():
     # err,df=w.wsi("T.CFE", "open,close",\
     #      "2021-03-01 09:00:00", "2021-07-10 23:48:15", \
@@ -445,7 +448,6 @@ def bond_future_min():
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
-
 def bond_v2():
     err,df=w.wsi("T2109.CFE,T2106.CFE,T2103.CFE,T2012.CFE,T2009.CFE,\
          T2006.CFE,T2003.CFE,T1912.CFE,T1909.CFE,T1906.CFE,\
@@ -457,6 +459,68 @@ def bond_v2():
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
+
+
+def gz_issue_amt():
+    # 国债发行
+    err,df = w.wset("nationaldebtissueandclosesub",\
+        "startdate=2010-07-04;enddate=2021-08-4;\
+        frequency=day;maingrade=all;zxgrade=all;\
+        datetype=startdate;type=default;bondtype=governmentbonds;\
+        bondid=1000008489000000,a101020100000000,a101020200000000,a101020300000000,1000011872000000,a101020400000000,a101020700000000,a101020800000000,a101020b00000000,a101020500000000,1000013981000000,1000002993000000,1000004571000000,a101020a00000000,a101020600000000,1000016455000000,a101020900000000;\
+        field=startdate,windcode,issueprice,term,issuer",usedf=True)
+    name = 'gz_issue_amt'
+    columns_type = [DateTime(),VARCHAR(20),Float(),Float(),VARCHAR(15)]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+def zj_issue_amt():
+    # 政金发行
+    err,df = w.wset("nationaldebtissueandclosesub",\
+        # "startdate=2010-07-04;enddate=2021-08-04;\
+        "startdate=2000-07-04;enddate=2010-07-03;\
+        frequency=day;maingrade=all;zxgrade=all;\
+        datetype=startdate;type=default;bondtype=policybankbonds;\
+        bondid=1000008489000000,a101020100000000,a101020200000000,a101020300000000,1000011872000000,a101020400000000,a101020700000000,a101020800000000,a101020b00000000,a101020500000000,1000013981000000,1000002993000000,1000004571000000,a101020a00000000,a101020600000000,1000016455000000,a101020900000000;\
+        field=startdate,windcode,name,issueprice,term,issuer",usedf=True)
+    name = 'zj_issue_amt'
+    columns_type = [DateTime(),VARCHAR(20),VARCHAR(20),\
+        Float(),Float(),VARCHAR(15)]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+def bond_index():
+    err,df = w.wsd("CBA05821.CS,CBA05831.CS,CBA05841.CS,CBA05851.CS,CBA02711.CS,CBA02721.CS,CBA02731.CS,CBA02741.CS,CBA02751.CS,CBA05801.CS,CBA02701.CS,CBA01901.CS,CBA03801.CS", "pct_chg", "2015-01-01", "2021-08-11", "",usedf=True)
+    name = 'bond_idx'
+    df['date'] = df.index
+    columns_type = [Float(),Float(),Float(),Float(), Float(),Float(),
+            Float(),Float(),Float(),Float(), Float(),Float(),Float(),          
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+def bond_index():
+    err,df = w.wsd("CBA05821.CS,CBA05831.CS,CBA05841.CS,CBA05851.CS,CBA02711.CS,CBA02721.CS,CBA02731.CS,CBA02741.CS,CBA02751.CS,CBA05801.CS,CBA02701.CS,CBA01901.CS,CBA03801.CS", "duration", "2015-01-01", "2021-08-11", "",usedf=True)
+    name = 'bond_dura'
+    df['date'] = df.index
+    columns_type = [Float(),Float(),Float(),Float(), Float(),Float(),
+            Float(),Float(),Float(),Float(), Float(),Float(),Float(),          
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
+def bond_fund():
+    # 基金dura - 中长期纯债
+    err,df = w.wsd("000005.OF,000015.OF,000016.OF,000024.OF,000025.OF,000032.OF,\
+    000033.OF,000037.OF,000053.OF,000064.OF,000069.OF,000070.OF,000074.OF,\
+    000077.OF,000078.OF,000079.OF,000086.OF,000104.OF,000105.OF,000106.OF,000111.OF,000112.OF,000113.OF,000115.OF,000116.OF,000122.OF,000123.OF,000134.OF,000135.OF,000137.OF,000138.OF,000139.OF,000141.OF,000147.OF,000148.OF,000152.OF,000153.OF,000174.OF,000175.OF,000183.OF,000186.OF,000187.OF,000188.OF,000191.OF,000192.OF,000194.OF,000197.OF,000200.OF,000201.OF,000205.OF,000206.OF,000212.OF,000213.OF,\
+    000221.OF,000222.OF,000227.OF,000235.OF,000239.OF,000240.OF,000244.OF,000245.OF,000246.OF,000252.OF,000253.OF,000254.OF,000255.OF,000265.OF,000266.OF,000267.OF,000268.OF,000271.OF,000272.OF,000277.OF,000286.OF,000289.OF,000295.OF,000296.OF,000298.OF,000299.OF,000305.OF,000310.OF,000319.OF,000320.OF,000329.OF,000335.OF,000345.OF,000346.OF,000347.OF,000355.OF,000356.OF,000372.OF,000395.OF,000396.OF,000402.OF,000403.OF,000415.OF,000416.OF,000419.OF,000420.OF,000465.OF,000469.OF,000489.OF,000490.OF,000497.OF,000516.OF,000517.OF,000521.OF,000546.OF,000552.OF,000553.OF,000561.OF,000562.OF,000563.OF,000564.OF,000583.OF,000606.OF,000655.OF,",\
+        "NAV_adj_return1", "2015-01-01", "2021-08-11", "", usedf=True)
+    
+    name = 'fund_nav'
+    df['date'] = df.index
+    columns_type =[DECIMAL(10,6) for _ in range(df.shape[0]-1)]+[DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
 
 def main(): 
     """
@@ -479,8 +543,9 @@ def main():
  
     l = [fig_downstream()]
     conn , engine = do.get_db_conn()
-    l=[fundAmt()]
-    l=[indices()]
+    l=[daily_fig_bond_leverage()]
+    l=[net_financing_amt()]
+    l=[rate_syn()]
     for a,b,c in l:
         # for i in range(len(a)):
             # try:
