@@ -29,7 +29,7 @@ def cash_amt_prc():
     df.columns = ['R001','R007','R021','GC001','GC007','DR001','DR007',\
         '成交量:R001','成交量:银行间质押式回购','成交量:银行间债券现券']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
     
     columns_type=[Float(),Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),Float(),
@@ -53,7 +53,7 @@ def spreads():
         '中短票_AA+_1y','中短票_AA+_3y','中短票_AA+_5y',\
         '国开10年','地方债_AAA_3y']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),Float(),
@@ -74,7 +74,7 @@ def cash_cost():
         return [],name,[]
     df.columns = ['DR001','DR007','GC007','shibor_3m','R007']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
 
     columns_type=[Float(),Float(),Float(),Float(),Float(),
@@ -97,7 +97,7 @@ def policy_rate():
          '逆回购利率：63天', 'MLF：3m', 'MLF：6m',
          'MLF：1y']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),
@@ -124,7 +124,7 @@ def monetary_policy_tools():
         '逆回购_到期','国库现金：中标量','国库现金：到期量',\
         'SLO_投放','SLO_回笼']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < dt.datetime.now().date())]
+    df = df.loc[(df.date > last_date) & (df.date <= dt.datetime.now().date())]
 
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -154,7 +154,7 @@ def repo_volume():
               '成交量:R4M', '成交量:R6M', '成交量:R9M','成交量:R1Y',\
                   '成交量:银行间质押式回购']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -175,7 +175,7 @@ def interbank_deposit():
         return [],name,[]
     df.columns = ['存单_股份行_1y', 'MLF：1y']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),Float(),
                   DateTime()]
@@ -220,7 +220,7 @@ def rates():
         '国开3月','国开6月','国开20年','国开30年',
         'cd_3m_aaa+','国债2年']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),Float(),Float(),Float(),Float(),
     Float(),Float(),Float(),Float(),Float(),
@@ -257,7 +257,7 @@ def daily_fig_liquidity_premium():
                 "shibor_3m","IRS：FR007：1y","存单_AAA_3m","存单_AAA_1y","MLF：1年",
                  "国股银票转贴现收益率_3m"]
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
 
     columns_type=[Float(),Float(),Float(),Float(),
@@ -266,7 +266,7 @@ def daily_fig_liquidity_premium():
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
-def daily_fig_bond_leverage():
+def monthly_fig_bond_leverage():
     name = 'fig_bond_leverage'
     last_date = do.get_latest_date(name)
     today_date = dt.datetime.now()
@@ -280,10 +280,34 @@ def daily_fig_bond_leverage():
     df.columns =['银行间质押式回购余额', '中债托管余额']
     # df = df.dropna(axis = 0)
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
     columns_type=[Float(),
                   Float(),
                   DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df, name, dtypelist
+
+def monthly_sq():
+    name = 'sq_dps_amt'
+    last_date = do.get_latest_date(name)
+    today_date = dt.datetime.now()
+    print('表{}的最近更新日期为{}'.format(name,last_date))
+
+    err, df=w.edb("M0096412,M0341750,M0096433,M0329565,M0329612,M0096484,\
+            M0096505,M0096547,M0096526,M0096307,M0329591,M0340603,\
+            M0340624,M0340645,M0340666,M0340687,M0340708",\
+                last_date,today_date,usedf = True)
+    
+    if df.shape[1] == 1:
+        return [],name,[]
+    
+    # df = df.dropna(axis = 0)
+    df['date'] = df.index
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
+    columns_type = [Float(),Float(),Float(),Float(), Float(),Float(),
+                Float(),Float(),Float(),Float(), Float(),Float(), 
+                Float(),Float(),Float(),Float(), Float(),        
+                    DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
@@ -309,7 +333,7 @@ def daily_netfinancing_amt():
         return [],name,[]
     
     df.columns =['date', 'netfinancingamount']
-    df = df.loc[(df.date > last_date) & (df.date < today_date)]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date)]
     columns_type=[
                   DateTime(),Float()]
     dtypelist = dict(zip(df.columns,columns_type))
@@ -330,7 +354,7 @@ def daily_fig_rates():
     df.columns=["1年国债","3年国债","5年国债","10年国债","1年国开","3年国开","5年国开","10年国开"]
     df = df.dropna(axis = 0)
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),
                   Float(),
@@ -368,7 +392,7 @@ def daily_fig_credit_premium():
                 "中债商业银行二级资本债到期收益率(AAA-):1年","中债商业银行二级资本债到期收益率(AAA-):3年","中债商业银行二级资本债到期收益率(AAA-):5年",
                 "中债可续期产业债到期收益率(AAA):3年","中债中短期票据到期收益率(AAA):3年"]
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
 
     columns_type=[Float(),Float(),Float(),Float(),
                   Float(),Float(),Float(),Float(),
@@ -378,27 +402,6 @@ def daily_fig_credit_premium():
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
 
-def industial_premium():
-    name = 'fig_industries_premium'
-    last_date = do.get_latest_date(name)
-    today_date = dt.datetime.now()
-    print('表{}的最近更新日期为{}'.format(name,last_date))
-
-    err,df = w.edb("M1008950,M1008953,M1008973,M1008971,M1008964", 
-                   last_date, today_date, usedf = True) 
-    if df.shape[1] == 1:
-        return [],name,[]
-    df.columns = ["信用利差_地产","信用利差_钢铁","信用利差_煤炭",\
-                  "信用利差_有色","信用利差_汽车"]
-    df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
-
-    columns_type = [Float(),Float(),Float(),Float(),
-                  Float(),
-                  DateTime()]
-    dtypelist = dict(zip(df.columns,columns_type))
-
-    return df,name,dtypelist
 
 def rates_us():
     name = 'rates_us'
@@ -412,7 +415,7 @@ def rates_us():
         return [],name,[]
     df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())].dropna()
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())].dropna()
 
     columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),
                     DateTime()]
@@ -615,18 +618,18 @@ def main():
     w.start()
 
     # @ 读取db.txt内的邮箱信息
-    conn , engine = do.get_db_conn()
     
     l =    [
-            daily_fig_bond_leverage(),daily_netfinancing_amt(),
+            monthly_fig_bond_leverage(),monthly_sq(),daily_netfinancing_amt(),
             daily_fig_credit_premium(),
             daily_fig_liquidity_premium(),
-            daily_fig_rates(),industial_premium(),
+            daily_fig_rates(),
             cash_cost(),policy_rate(),monetary_policy_tools(),\
             repo_volume(),interbank_deposit(),rates(),
             cash_amt_prc(),spreads(),]
-    # l =   [rates_us()]
+    l =   [monthly_fig_bond_leverage(),monthly_sq()]
 
+    conn , engine = do.get_db_conn()
     for a,b,c in l:
         if len(np.array(a)) == 0:
             print(b , '已是最新，无需更新')

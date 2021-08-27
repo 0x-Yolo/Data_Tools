@@ -56,6 +56,21 @@ def daily_fig_bond_leverage():
                   DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df, name, dtypelist
+
+def get_sq_data():
+    err,df = w.edb("M0096412,M0341750,M0096433,M0329565,M0329612,M0096484,\
+            M0096505,M0096547,M0096526,M0096307,M0329591,M0340603,\
+            M0340624,M0340645,M0340666,M0340687,M0340708", \
+            "2010-01-01", "2021-08-12",usedf=True)
+    df['date'] = df.index
+    name='sq_dps_amt'
+    columns_type = [Float(),Float(),Float(),Float(), Float(),Float(),
+                Float(),Float(),Float(),Float(), Float(),Float(), 
+                Float(),Float(),Float(),Float(), Float(),        
+                    DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
+
 def net_financing_amt():
     err,df = \
         w.wset("bondissuanceandmaturity",\
@@ -288,11 +303,11 @@ def broad_liquid():
     return df,name,dtypelist
 
 def rates_us():
-    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898", "2010-06-21", "2021-07-29",usedf=True)
-    df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m']
+    err,df = w.edb("G0000886,G0000887,G0000891,G8455661,M0000185,G0000898,M0000271", "2000-06-21", "2021-08-17",usedf=True)
+    df.columns = ['美债1年','美债2年','美债10年','美债10-2','美元兑人民币','libor_3m','美元指数']
     df['date'] = df.index
     name = 'rates_us'
-    columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),
+    columns_type=[Float(),Float(),Float(),Float(),Float(),Float(),Float(),
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
@@ -497,7 +512,8 @@ def bond_index():
                     DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
-def bond_index():
+    
+def bond_dura():
     err,df = w.wsd("CBA05821.CS,CBA05831.CS,CBA05841.CS,CBA05851.CS,CBA02711.CS,CBA02721.CS,CBA02731.CS,CBA02741.CS,CBA02751.CS,CBA05801.CS,CBA02701.CS,CBA01901.CS,CBA03801.CS", "duration", "2015-01-01", "2021-08-11", "",usedf=True)
     name = 'bond_dura'
     df['date'] = df.index
@@ -521,6 +537,15 @@ def bond_fund():
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
 
+def organs_nav():
+    err,df=w.edb("M0265776,M0265774,M0265775,M0265773,M0265777",\
+         "2015-01-01", "2021-08-11",usedf=True)
+    name = 'organs_nav'
+    # df.columns = ['证券','基金','保险','商业银行','信托']
+    df['date'] = df.index
+    columns_type =[DECIMAL(10,4) for _ in range(df.shape[1]-1)]+[DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df , name , dtypelist
 
 def main(): 
     """
@@ -542,10 +567,10 @@ def main():
 
  
     l = [fig_downstream()]
-    conn , engine = do.get_db_conn()
     l=[daily_fig_bond_leverage()]
     l=[net_financing_amt()]
-    l=[rate_syn()]
+    l=[rates_us()]
+    conn , engine = do.get_db_conn()
     for a,b,c in l:
         # for i in range(len(a)):
             # try:

@@ -18,14 +18,14 @@ import plotly.graph_objects as go
 import data_organize as do
 from primary_market_plot import GK,GZ
 
-#基础的图像设置：
-plt.style.use({'figure.figsize':(6, 4)})
-set_style_A={'grid.linestyle': '--',
-     'axes.spines.left': True,
-     'axes.spines.bottom': True,
-     'axes.spines.right': False,
-     'axes.spines.top': False}
-# sns.set_style("whitegrid")
+# #基础的图像设置：
+# plt.style.use({'figure.figsize':(6, 4)})
+# set_style_A={'grid.linestyle': '--',
+#      'axes.spines.left': True,
+#      'axes.spines.bottom': True,
+#      'axes.spines.right': False,
+#      'axes.spines.top': False}
+# # sns.set_style("whitegrid")
 
 # plt.rcParams['font.family']=['Kaiti SC']
 plt.rcParams['font.family']=['STKaiti']

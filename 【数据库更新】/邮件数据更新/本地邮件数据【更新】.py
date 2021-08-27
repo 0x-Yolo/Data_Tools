@@ -45,6 +45,8 @@ def upload_date_list(name):
         path = input_path+"/现券市场交易情况总结/日报"
     elif 'Repo' in name :
         path = input_path+'/质押式回购市场交易情况总结/日报'
+    elif 'sec_buy_amt' in name:
+        path = input_path+"/现券市场交易情况总结/日报"
 
     for dir in os.listdir(path ):
         if 'DS' in dir or 'xlsx' in dir :
@@ -67,7 +69,14 @@ def daily_Net_buy_bond(dir_name):#每天数据的转换
     date = re.match(".*\\d{8}\\.",dir_name).group()[-9:-1]
     excel_io= input_path+"/现券市场交易情况总结/日报/" + dir_name
     sheet_name = "机构净买入债券成交金额统计表_" + date#读取sheet路径
-    df = pd.read_excel(excel_io, header=4, sheet_name=sheet_name,nrows = 120)#
+    
+    tmp = pd.read_excel(excel_io,sheet_name=sheet_name)
+    if tmp.shape[0] == 125:
+        nr = 120
+    elif tmp.shape[0] == 135:
+        nr = 130
+    
+    df = pd.read_excel(excel_io, header=4, sheet_name=sheet_name,nrows = nr)#
     df["date"]=date # 加盖时间戳
     df = organize(df)
     df.rename(columns={'Unnamed: 0':'机构名称'},inplace=True)
@@ -77,6 +86,51 @@ def daily_Net_buy_bond(dir_name):#每天数据的转换
 
     name = "Net_buy_bond"
     # name = 'sec_buy_amt'
+    columns_type=[#图表的数据口径
+    String(30),
+    String(30),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    Float(),
+    DateTime(),
+    String(30)]
+    dtypelist = dict(zip(df.columns,columns_type))
+    return df,name,dtypelist
+
+def daily_sec_buy_amt(dir_name):#每天数据的转换
+    """
+    现券市场净买入数据
+    文件是从邮件内自动下载好的
+    需要匹配一个最新日期*
+    """
+    date = re.match(".*\\d{8}\\.",dir_name).group()[-9:-1]
+    excel_io= input_path+"/现券市场交易情况总结/日报/" + dir_name
+    sheet_name = "机构买入债券成交金额统计表_" + date#读取sheet路径
+    
+    tmp = pd.read_excel(excel_io,sheet_name=sheet_name)
+    if tmp.shape[0] == 125:
+        nr = 120
+    elif tmp.shape[0] == 135:
+        nr = 130
+
+    df = pd.read_excel(excel_io, header=4, sheet_name=sheet_name,nrows = nr)#
+    df["date"]=date # 加盖时间戳
+    df = organize(df)
+    df.rename(columns={'Unnamed: 0':'机构名称'},inplace=True)
+    df = df.reset_index(drop=True) 
+    df=df.replace("—",0)
+    df=df.replace('---',0)
+
+    name = "sec_buy_amt"
     columns_type=[#图表的数据口径
     String(30),
     String(30),
@@ -207,6 +261,17 @@ def main():
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
         print("成功上传"+dir+"的本地数据")
 
+    dir_list = upload_date_list('sec_buy_amt')
+    dir_list.sort()
+    for dir in dir_list:
+        if 'xlsx' in dir or '.DS' in dir:
+            print(dir)# 0522.xlsx
+            continue
+        l = [daily_sec_buy_amt(dir)]
+        for a,b,c in l:
+            a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
+        print("成功上传"+dir+"的本地数据")
+
     dir_list = upload_date_list('Repo_price_for_investors')
     dir_list.sort()
     for dir in dir_list:
@@ -221,3 +286,19 @@ def main():
         for a,b,c in l:
             a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
         print("成功上传"+dir+"的本地数据")
+
+    # 首次汇入
+    # dir_list = []
+    # for dir in os.listdir(input_path+"/现券市场交易情况总结/日报/"):
+    #     if 'xlsx' in dir or 'DS' in dir:
+    #         continue
+    #     dir_list.append(dir)
+    # dir_list.sort()
+    
+    # for dir in dir_list:
+    #     l = [daily_sec_buy_amt(dir)]
+    #     for a,b,c in l:
+    #         a.to_sql(name='tmp',con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
+    #     print("成功上传"+dir+"的本地数据")
+        
+    # do.get_data('tmp')
