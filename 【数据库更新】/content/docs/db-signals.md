@@ -2,11 +2,13 @@
 
 1. ### 换手率指标
 
-##### gz_issue_amt 
+##### gz_issue_amt ：国债发行
 
-##### zj_issue_amt
+##### zj_issue_amt ：政金债发行
 
-##### gz_all & zj_all (未入表)
+##### gk10_yield：10年国开个券日度到期收益率，用于新老券计算
+
+##### gz_all & zj_all (未入表)：国债/国开债个券日度成交量
 
 2. ### 公募基金久期
 

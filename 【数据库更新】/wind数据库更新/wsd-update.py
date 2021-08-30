@@ -40,7 +40,7 @@ def bond_index():
     if df.shape[1] == 1:
         return [],name,[]
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
     columns_type = [Float(),Float(),Float(),Float(), Float(),Float(),
             Float(),Float(),Float(),Float(), Float(),Float(),Float(),          
                     DateTime()]
@@ -57,7 +57,7 @@ def bond_dura():
     if df.shape[1] == 1:
         return [],name,[]
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())]
     columns_type = [Float(),Float(),Float(),Float(), Float(),Float(),
             Float(),Float(),Float(),Float(), Float(),Float(),Float(),          
                     DateTime()]
@@ -76,7 +76,7 @@ def organs_nav():
         return [],name,[]
     # df.columns = ['证券','基金','保险','商业银行','信托']
     df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date.date())].dropna()
+    df = df.loc[(df.date > last_date) & (df.date <= today_date.date())].dropna()
     columns_type =[DECIMAL(10,4) for _ in range(df.shape[1]-1)]+[DateTime()]
     dtypelist = dict(zip(df.columns,columns_type))
     return df , name , dtypelist
@@ -102,8 +102,74 @@ def fund_nav():
     columns_type =[DECIMAL(10,6) for _ in range(tmp.shape[1]-1)]+[DateTime()]
     dtypelist = dict(zip(tmp.columns,columns_type))
 
-    # do.upload_data(tmp, name, dtypelist, 'append')
+    # do.upload_data(tmp, name, dtypelist, 'replace')
     return tmp , name , dtypelist
+
+
+def fund_risk_dura():
+    # 基金季度公布久期
+    fund_nav = do.get_data('fund_nav')
+    code_list = fund_nav.columns[:-1]
+
+    err,df = w.wsd(','.join(code_list), "risk_duration", \
+        "2018-01-01", "2021-08-25", "Period=Q",usedf=True)
+    df.dropna().to_excel('quarter_dura.xlsx')
+
+
+def lunwen():    
+    # gz_yield
+    gz_all = pd.read_excel('Z:\\Users\\wdt\\Desktop\\tpy\\Signals\\个券成交量\\gz_all.xlsx',index_col=0)
+    
+    code_list = list(gz_all.index)
+    err,df = w.wsd(",".join(code_list),\
+         "yield_cnbd", "2018-01-01", "2021-08-25", "credibility=1", usedf=True)
+    df
+
+    err,df2 = w.wsd(",".join(code_list),\
+         "yield_cnbd", "2015-01-01", "2018-01-01", "credibility=1", usedf=True)
+    df2
+    dff = df2.append(df)
+
+    err,df3 = w.wsd(",".join(code_list),\
+         "yield_cnbd", "2012-01-01", "2015-01-01", "credibility=1", usedf=True)
+    dff=df3.append(dff)
+
+    err,df4 = w.wsd(",".join(code_list),\
+         "yield_cnbd", "2008-01-01", "2012-01-01", "credibility=1", usedf=True)
+    dff=df4.append(dff)
+
+    err,df5= w.wsd(",".join(code_list),\
+         "yield_cnbd", "2004-01-01", "2008-01-01", "credibility=1", usedf=True)
+    dff=df5.append(dff)
+
+    dff.to_excel('gz_all_yield.xlsx')
+    dff
+
+def gk_yield():
+    zj_issue = do.get_data('zj_issue_amt')
+    zj_issue.index = zj_issue.date
+    gk_list = zj_issue.loc[(zj_issue.term==10)&
+        (zj_issue['issuer']=='国家开发银行'),'windcode'
+        ].unique().tolist()
+
+    def namelist2str_zj(l,rtnlist=False):
+        # name_list to name_string
+        strr = '' ; listt = []
+        for i in range(len(l)):
+            name = l[i]
+            if 'z' in name[:-3] or 'Z' in name[:-3] or 'H' in name[:-3]:
+                continue
+            strr = strr + name + ','
+            listt.append(name)
+        return listt if rtnlist else strr
+
+    _,df = w.wsd(namelist2str_zj(gk_list),\
+         "yield_cnbd", "2014-01-01", "2021-08-29", "credibility=1", usedf=True)
+    df['date'] = df.index
+    columns_type =[DECIMAL(10,6) for _ in range(df.shape[1]-1)]+[DateTime()]
+    dtypelist = dict(zip(df.columns,columns_type))
+    
+    do.upload_data(df,'gk10_yield',dtypelist,'replace')
 
 
 

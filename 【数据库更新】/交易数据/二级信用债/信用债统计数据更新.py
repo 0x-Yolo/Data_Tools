@@ -11,8 +11,15 @@ from sqlalchemy import create_engine
 from sqlalchemy import exc
 import os
 import re
-from WindPy import w
 import data_organize as do
+
+# stat=do.get_data('secondary_credit_sec_stat')
+# credit=do.get_data('secondary_credit_sec')
+
+# stat.to_excel('信用债成交统计-0829.xlsx',index=False)
+# credit.to_excel('信用债成交-0829.xlsx',index=False)
+
+# from WindPy import w
 
 plt.rcParams['font.family']=['STKaiti']
 plt.rcParams['axes.unicode_minus'] = False
@@ -158,7 +165,6 @@ def main():
             df.drop(idx,axis=0,inplace = True)
 
     df.to_excel('tmp.xlsx',index=False)
-    df = pd.read_excel('tmp.xlsx')
 
     # * Step2:添加windapi指标
     w.start()
@@ -257,6 +263,7 @@ def main():
             x = w.wsd(code,"ptmyear", net_date, net_date, "").Data[0][0]
         df.loc[idx,'剩余期限'] = x
     
+    df = pd.read_excel('tmp.xlsx')
     # * Step3:生成统计数据
     df = df[['方向','代码','价格','时间','估值时间',\
         '名字','到期估值','行权估值','行权日','price','type','估值偏离',\
@@ -268,8 +275,6 @@ def main():
     # * Step4:原始数据与统计数据写进数据库
     conn,engine = do.get_db_conn()
     l = [upload2(stat_table),upload1(df)]
-    # l = [upload2(stat_table)]
-    # l = [upload1(df)]
     for a,b,c in l:
         a.to_sql(name=b,con = engine,schema='finance',if_exists = 'append',index=False,dtype=c)
 

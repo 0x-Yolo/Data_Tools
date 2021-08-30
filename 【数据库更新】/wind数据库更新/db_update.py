@@ -440,10 +440,10 @@ def gz_issue_amt():
         return [],name,[]
     df.columns = ['date','windcode','issueprice','term','issuer']
     # df['date'] = df.index
-    df = df.loc[(df.date > last_date) & (df.date < today_date)]
+    df = df.loc[(df.date > last_date) & (df.date <= today_date)]
     columns_type=[DateTime(),VARCHAR(20),Float(),Float(),VARCHAR(15)]
     dtypelist = dict(zip(df.columns,columns_type))
-    
+    # do.upload_data(df,name,dtypelist,'append')
     return df , name , dtypelist
 
 def zj_issue_amt():
@@ -467,9 +467,32 @@ def zj_issue_amt():
     df = df.loc[(df.date > last_date) & (df.date < today_date)]
     columns_type=[DateTime(),VARCHAR(20),Float(),Float(),VARCHAR(15)]
     dtypelist = dict(zip(df.columns,columns_type))
-    
+    # do.upload_data(df,name,dtypelist,'append')
     return df , name , dtypelist
 
+def cd_dps():
+    name = 'interbank_dps_vol_weekly'
+    data = do.get_data(name)
+
+    _,df = w.wset("bondissuanceandmaturity",\
+        "startdate=2021-06-01;enddate=2021-08-27;\
+        frequency=weekly;maingrade=all;zxgrade=all;\
+        datetype=startdate;type=default;bondtype=cds;\
+        bondid=1000008489000000,a101020100000000,a101020200000000,\
+        a101020300000000,1000011872000000,a101020400000000,\
+        a101020700000000,a101020800000000,a101020b00000000,\
+        a101020500000000,1000013981000000,1000002993000000,\
+        1000004571000000,1000040753000000,a101020a00000000,\
+        a101020600000000,1000016455000000,a101020900000000;\
+        field=enddate,totalissuevolume,totalredemption,netfinancingamount",usedf=True)
+    df.columns = data.columns
+    d = df.iloc[-3:,:].append(data.iloc[2:,:]).\
+            sort_values(by='date',ascending=False)
+
+    columns_type=[DateTime(),Float(),Float(),Float()]
+    dtypelist = dict(zip(d.columns,columns_type))
+    do.upload_data(d,name,dtypelist,'replace')
+    return d, name , dtypelist
 
 def net_bond_daily_volume():
     # 具体个券每日成交量
@@ -582,7 +605,7 @@ def net_bond_daily_volume():
         df.columns=[da]
         d[da] = df
     d[gz_all.columns] = gz_all
-    d.to_excel('gz_all_update.xlsx')
+    d.to_excel('Z:\\Users\\wdt\\Desktop\\tpy\\Signals\\个券成交量\\gz_all.xlsx')
     #######################
     zj_all = pd.read_excel('Z:\\Users\\wdt\\Desktop\\tpy\\Signals\\个券成交量\\zj_all.xlsx',index_col=0)
     last_date = dt.datetime.strptime(zj_all.columns.max(),'%Y%m%d')
@@ -609,8 +632,8 @@ def net_bond_daily_volume():
                 usedf=True)
         df.columns=[da]
         d[da] = df
-    d[gz_all.columns] = zj_all
-    d.to_excel('zj_all_update.xlsx')
+    d[zj_all.columns] = zj_all
+    d.to_excel('Z:\\Users\\wdt\\Desktop\\tpy\\Signals\\个券成交量\\zj_all.xlsx')
 
 
 

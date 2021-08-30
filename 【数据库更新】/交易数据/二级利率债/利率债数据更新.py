@@ -32,13 +32,24 @@ for idx in d.index:
     if type(d.loc[idx,'价格']) == str:
         print(idx)
         d.drop(idx,axis=0,inplace = True)
+        
+for idx in d.index:
+    strr = d.loc[idx,'剩余期限']
+    if 'D' in strr:
+        i = strr.index('D')
+        d.loc[idx,'term'] = float(strr[:i]) / 365
+        continue
+    elif 'Y' in strr:
+        i = strr.index('Y')
+        d.loc[idx,'term'] = float(strr[:i]) 
+        continue
 
 name = 'secondary_rate_sec'
 columns_type = [VARCHAR(10),VARCHAR(10),VARCHAR(30),\
     VARCHAR(30),VARCHAR(30),VARCHAR(30),VARCHAR(30),\
     Float(),VARCHAR(30),Float(),Float(),VARCHAR(30),\
     VARCHAR(30),Float(),Float(),Float(),Float(),\
-    VARCHAR(30),DateTime()]
+    VARCHAR(30),DateTime(),Float()]
 dtypelist = dict(zip(d.columns,columns_type))
 
 conn,engine = do.get_db_conn()

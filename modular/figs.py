@@ -14,38 +14,18 @@ from signals import turnover as to
 
 def cash_fig():
     cash_amt_prc = do.get_data('cash_amt_prc'); cash_amt_prc.index=cash_amt_prc.date
+    df = do.get_data('policy_rate','2018-01-01',)
+    df.index = df.date
     
     plt.style.use({'font.size' : 12}) 
     fig,ax = plt.subplots(ncols=2,nrows=7,figsize=(6*2,4*7), dpi=300)
     
     # * P0,0 OMO & DR007
-    df = do.get_data('monetary_policy_tools','2020-01-01',)
-    df.index = df.date
-    ## 数据处理，周频统计
-    dql = ['MLF_到期','逆回购_到期','国库现金：到期量']
-    tfl = ['MLF_数量_3m', 'MLF_数量_6m', '逆回购_数量_7d',\
-        '逆回购_数量_14d', '逆回购_数量_28d', '逆回购_数量_63d',\
-        'MLF_数量_1y', '国库现金：中标量']
-    df_weekly = df.loc[:,['OMO：净投放', 'OMO：投放', 'OMO：回笼']].dropna()
-    tmp_workday_list = []
-    for idx in df.index:
-        if np.isnan(df.loc[idx, 'OMO：投放'] ):
-            tmp_workday_list.append(idx)
-        else:
-            tmp_workday_list.append(idx)
-            df_weekly.loc[idx , 'MLF-逆回购-国库现金_回笼量'] =\
-                df.loc[tmp_workday_list, dql].sum().sum()
-            df_weekly.loc[idx , 'MLF-逆回购-国库现金_投放量']= \
-                df.loc[tmp_workday_list, tfl].sum().sum()
-            tmp_workday_list = []
-    df_weekly['MLF-逆回购-国库现金_净投放量'] = \
-        df_weekly['MLF-逆回购-国库现金_投放量']-df_weekly['MLF-逆回购-国库现金_回笼量']
-    ## plot
-    ax[0,0].bar(df_weekly.index,df_weekly['MLF-逆回购-国库现金_净投放量'],\
-        color = '#3778bf',width = 3)
-    ax_=ax[0,0].twinx()
-    cash_amt_prc.R007['2020':].plot(ax=ax_,color='#f0833a',lw=1)
-    do.set_axes_rotation(ax[0,0])
+    df['逆回购利率：7天'].fillna(method='ffill')['2020':].plot(ax=ax[0,0])
+    cash_amt_prc.R007['2020':].plot(ax=ax[0,0],color='#f0833a',lw=1)
+    ax[0,0].set_ylabel('%')
+    ax[0,0].legend(loc=9,frameon=False,ncol=2)
+    do.set_axes_rotation(ax[0,0],)
     ax[0,0].set_title('OMO与R007')
     
     # * P0,1 MLF & 1Y-CD
@@ -111,7 +91,7 @@ def cash_fig():
 
     # * P3,0 R-DR
     cash_amt_prc['R007-DR007'] = (cash_amt_prc['R007']-cash_amt_prc['DR007'])*100
-    ax[3,0].fill_between(cash_amt_prc.date['2016':], 0, cash_amt_prc['R007-DR007']['2016':], \
+    ax[3,0].fill_between(cash_amt_prc.date['2015':], 0, cash_amt_prc['R007-DR007']['2015':], \
         label = 'R007-DR007(左,BP)',color='lightgrey',alpha=1)
     ax[3,0].set_ylim([-50,200])
     ax[3,0].set_title('R007-DR007')
@@ -120,7 +100,7 @@ def cash_fig():
     ax[3,0].set_ylabel('(BP)',fontsize=10)
 
     # * P3,1
-    ax[3,1].plot(cash_amt_prc['date']['2016':],cash_amt_prc[['R007','GC007']]['2016':],alpha=0.8)
+    ax[3,1].plot(cash_amt_prc['date']['2015':],cash_amt_prc[['R007','GC007']]['2015':],alpha=0.8)
     ax[3,1].set_xlabel('')
     ax[3,1].set_title('银行间与交易所资金利率')
     ax[3,1].legend(['R007','GC007'],loc=9,ncol=2,frameon=False)
@@ -141,7 +121,7 @@ def cash_fig():
 
     # * P4,1
     irs = do.get_data('spreads');irs.index=irs.date
-    irs[['IRS_1y_FR007', 'IRS_5y_FR007','IRS_5y_shibor3m']].dropna().plot(ax=ax[4,1],\
+    irs[['IRS_1y_FR007', 'IRS_5y_FR007','IRS_5y_shibor3m']]['2015':].dropna().plot(ax=ax[4,1],\
         ylim=(0,7),color=['#3778bf','#f0833a','grey'])
     ax[4,1].set_xlabel('')
     ax[4,1].set_title('IRS')
@@ -170,7 +150,7 @@ def cash_fig():
     irs['1年'] = irs['中短票_AA+_1y']-cash_amt_prc['R007']
     irs['3年'] = irs['中短票_AA+_3y']-cash_amt_prc['R007']
     irs['5年'] = irs['中短票_AA+_5y']-cash_amt_prc['R007']
-    irs[['1年', '3年','5年']]['2016':].plot(ax=ax[5,1],\
+    irs[['1年', '3年','5年']]['2015':].plot(ax=ax[5,1],\
         color=['#3778bf','#f0833a','grey'],ylim=(-3,4))
     ax[5,1].set_xlabel('')
     ax[5,1].set_title('中短票:AA+-R007')
@@ -183,7 +163,7 @@ def cash_fig():
     irs['国开债:10年-R007'] = (irs['国开10年']-cash_amt_prc['R007'])
     irs['地方债:3年:AAA-R007'] = (irs['地方债_AAA_3y']-cash_amt_prc['R007'])
     irs = irs[['国开债:10年-R007','地方债:3年:AAA-R007']]
-    irs[['国开债:10年-R007','地方债:3年:AAA-R007']]['2016':].plot(ax=ax[6,0],\
+    irs[['国开债:10年-R007','地方债:3年:AAA-R007']]['2015':].plot(ax=ax[6,0],\
         ylim=(-3,3),color=['#3778bf','#f0833a'])
     ax[6,0].set_xlabel('')
     ax[6,0].set_title('国开10年与地方债3年-R007')
@@ -217,9 +197,9 @@ def rate_level_fig():
     d = pd.DataFrame(columns=[0,1,2,3,6,9,12,24,36])
     d.loc[today.date()] = df.loc[today,l].tolist()
     d.loc[base.date()] = df.loc[base,l].tolist()
-    d.loc['25分位数'] = [np.quantile(df[x]['2007':],0.25) for x in l]
-    d.loc['75分位数'] = [np.quantile(df[x]['2007':],0.75) for x in l]
-    d.loc['中位数'] = [np.quantile(df[x]['2007':],0.5) for x in l]
+    d.loc['25分位数'] = [np.quantile(df[x]['2015':],0.25) for x in l]
+    d.loc['75分位数'] = [np.quantile(df[x]['2015':],0.75) for x in l]
+    d.loc['中位数'] = [np.quantile(df[x]['2015':],0.5) for x in l]
     #plot 
     d.loc[today.date()].plot(ax=ax[0,0],label='现值('+today.date().strftime('%Y%m%d')+')',\
         marker='o',color='#3778bf')
@@ -231,7 +211,7 @@ def rate_level_fig():
     ax[0,0].set_xticks([0,3,6,9,12,24,36])
     ax[0,0].set_xticklabels(['3M','3Y','5Y','7Y','10Y','20Y','30Y'])
     ax[0,0].legend(ncol=2,loc='best',frameon=False,fontsize=10)
-    ax[0,0].set_title(name+'到期收益率曲线')
+    ax[0,0].set_title(name+'到期收益率曲线(2015以来)')
     ax[0,0].set_ylabel('(%)',fontsize=10)
     # 国开
     name = '国开'
@@ -241,9 +221,9 @@ def rate_level_fig():
     d = pd.DataFrame(columns=[0,1,2,3,6,9,12,24,36])
     d.loc[today.date()] = df.loc[today,l].tolist()
     d.loc[base.date()] = df.loc[base,l].tolist()
-    d.loc['25分位数'] = [np.quantile(df[x]['2007':],0.25) for x in l]
-    d.loc['75分位数'] = [np.quantile(df[x]['2007':],0.75) for x in l]
-    d.loc['中位数'] = [np.quantile(df[x]['2007':],0.5) for x in l]
+    d.loc['25分位数'] = [np.quantile(df[x]['2015':],0.25) for x in l]
+    d.loc['75分位数'] = [np.quantile(df[x]['2015':],0.75) for x in l]
+    d.loc['中位数'] = [np.quantile(df[x]['2015':],0.5) for x in l]
     #plot
     d.loc[today.date()].plot(ax=ax[0,1],label='现值('+today.date().strftime('%Y%m%d')+')',\
         marker='o',color='#3778bf')
@@ -255,7 +235,7 @@ def rate_level_fig():
     ax[0,1].set_xticks([0,3,6,9,12,24,36])
     ax[0,1].set_xticklabels(['3M','3Y','5Y','7Y','10Y','20Y','30Y'])
     ax[0,1].legend(ncol=2,loc='best',frameon=False,fontsize=10)
-    ax[0,1].set_title(name+'到期收益率曲线')
+    ax[0,1].set_title(name+'到期收益率曲线(2015以来)')
     ax[0,1].set_ylabel('(%)',fontsize=10)
 
     # * P1.0 & P1.1 国债10&1y
@@ -265,15 +245,15 @@ def rate_level_fig():
     q25 = np.percentile(a.values, 25,interpolation='linear')
     q75 = np.percentile(a.values, 75,interpolation='linear')
     med = np.median(a.values)
-    a.iloc[750:,0].plot(ax=ax[1,0],label='国债'+str(year)+'年')
-    a.iloc[:,0].rolling(750).quantile(0.75).plot(ax=ax[1,0],label='25/75分位数',\
+    a['2015':].plot(ax=ax[1,0],label='国债'+str(year)+'年')
+    a.iloc[:,0].rolling(750).quantile(0.75)['2015':].plot(ax=ax[1,0],label='25/75分位数',\
         ls='--',lw='0.8')
-    a.iloc[:,0].rolling(750).quantile(0.5).plot(ax=ax[1,0],label='中位数',\
+    a.iloc[:,0].rolling(750).quantile(0.5)['2015':].plot(ax=ax[1,0],label='中位数',\
         ls='--',lw='0.8')
     # ax[1,0].axhline(y=q25,ls='--',color='lightgrey',label='25/75分位数')
     # ax[1,0].axhline(y=med,ls='-',color='orange',label='中位数')
     # ax[1,0].axhline(y=q75,ls='--',color='lightgrey',label='25/75分位数')
-    a.iloc[:,0].rolling(750).quantile(0.25).plot(ax=ax[1,0],\
+    a.iloc[:,0].rolling(750).quantile(0.25)['2015':].plot(ax=ax[1,0],\
         ls='--',lw='0.8',label='')
     ax[1,0].set_xlabel('')
     ax[1,0].set_ylim([2,5])
@@ -288,16 +268,16 @@ def rate_level_fig():
     q75 = np.percentile(a.values, 75,interpolation='linear')
     med = np.median(a.values)
 
-    a.iloc[750:,0].plot(ax=ax[1,1],label='国债'+str(year)+'年')
-    a.iloc[:,0].rolling(750).quantile(0.75).plot(ax=ax[1,1],label='25/75分位数',\
+    a.iloc[750:,0]['2015':].plot(ax=ax[1,1],label='国债'+str(year)+'年')
+    a.iloc[:,0].rolling(750).quantile(0.75)['2015':].plot(ax=ax[1,1],label='25/75分位数',\
         ls='--',lw='0.8')
-    a.iloc[:,0].rolling(750).quantile(0.5).plot(ax=ax[1,1],label='中位数',\
+    a.iloc[:,0].rolling(750).quantile(0.5)['2015':].plot(ax=ax[1,1],label='中位数',\
         ls='--',lw='0.8')
     # ax[1,1].axhline(y=q25,ls='--',color='lightgrey',label='25/75分位数')
     # ax[1,1].axhline(y=med,ls='-',color='orange',label='中位数')
     ax[1,1].set_xlabel('')
     ax[1,1].legend(ncol=3,frameon=False,loc=9,fontsize=10)
-    a.iloc[:,0].rolling(750).quantile(0.25).plot(ax=ax[1,1],label='',\
+    a.iloc[:,0].rolling(750).quantile(0.25)['2015':].plot(ax=ax[1,1],label='',\
         ls='--',lw='0.8')
     # ax[1,1].axhline(y=q75,ls='--',color='lightgrey',label='25/75分位数')
     ax[1,1].set_ylim([0,5])
@@ -313,16 +293,16 @@ def rate_level_fig():
     q75 = np.percentile(a.values, 75,interpolation='linear')
     med = np.median(a.values)
 
-    a.iloc[750:,0].plot(ax=ax[2,0],label='国开'+str(year)+'年')
-    a.iloc[:,0].rolling(750).quantile(0.75).plot(ax=ax[2,0],label='25/75分位数',\
+    a.iloc[750:,0]['2015':].plot(ax=ax[2,0],label='国开'+str(year)+'年')
+    a.iloc[:,0].rolling(750).quantile(0.75)['2015':].plot(ax=ax[2,0],label='25/75分位数',\
         ls='--',lw='0.8')
-    a.iloc[:,0].rolling(750).quantile(0.5).plot(ax=ax[2,0],label='中位数',\
+    a.iloc[:,0].rolling(750).quantile(0.5)['2015':].plot(ax=ax[2,0],label='中位数',\
         ls='--',lw='0.8')
     # ax[2,0].axhline(y=q25,ls='--',color='lightgrey',label='25/75分位数')
     # ax[2,0].axhline(y=med,ls='-',color='orange',label='中位数')
     ax[2,0].set_xlabel('')
     ax[2,0].legend(ncol=3,frameon=False,loc=9,fontsize=10)
-    a.iloc[:,0].rolling(750).quantile(0.25).plot(ax=ax[2,0],label='',\
+    a.iloc[:,0].rolling(750).quantile(0.25)['2015':].plot(ax=ax[2,0],label='',\
         ls='--',lw='0.8')
     # ax[2,0].axhline(y=q75,ls='--',color='lightgrey',label='25/75分位数')
     ax[2,0].set_ylim([2.5,6.5])
@@ -336,16 +316,16 @@ def rate_level_fig():
     q75 = np.percentile(a.values, 75,interpolation='linear')
     med = np.median(a.values)
 
-    a.iloc[750:,0].plot(ax=ax[2,1],label='国开'+str(year)+'年')
-    a.iloc[:,0].rolling(750).quantile(0.75).plot(ax=ax[2,1],label='25/75分位数',\
+    a.iloc[750:,0]['2015':].plot(ax=ax[2,1],label='国开'+str(year)+'年')
+    a.iloc[:,0].rolling(750).quantile(0.75)['2015':].plot(ax=ax[2,1],label='25/75分位数',\
         ls='--',lw='0.8')
-    a.iloc[:,0].rolling(750).quantile(0.5).plot(ax=ax[2,1],label='中位数',\
+    a.iloc[:,0].rolling(750).quantile(0.5)['2015':].plot(ax=ax[2,1],label='中位数',\
         ls='--',lw='0.8')
     # ax[2,1].axhline(y=q25,ls='--',color='lightgrey',label='25/75分位数')
     # ax[2,1].axhline(y=med,ls='-',color='orange',label='中位数')
     ax[2,1].set_xlabel('')
     ax[2,1].legend(ncol=3,frameon=False,loc=9,fontsize=10)
-    a.iloc[:,0].rolling(750).quantile(0.25).plot(ax=ax[2,1],label='',\
+    a.iloc[:,0].rolling(750).quantile(0.25)['2015':].plot(ax=ax[2,1],label='',\
         ls='--',lw='0.8')
     # ax[2,1].axhline(y=q75,ls='--',color='lightgrey',label='25/75分位数')
     ax[2,1].set_ylim([0,6.5])
@@ -439,10 +419,10 @@ def rate_level_fig():
 
     # * P4.0地方债-国债
     df['地方债-国债'] = (df['地方5年']-df['国债5年'])*100
-    ax[5,0].fill_between(df.date['2016':],0,df['地方债-国债']['2016':],\
+    ax[5,0].fill_between(df.date['2015':],0,df['地方债-国债']['2015':],\
         label='地方债-国债(左:BP)',color='lightgrey',alpha=1)
     ax_=ax[5,0].twinx()
-    df[['地方5年','国债5年']]['2016':].plot(ax=ax_,color=['#3778bf','#f0833a'])
+    df[['地方5年','国债5年']]['2015':].plot(ax=ax_,color=['#3778bf','#f0833a'])
     ax_.set_yticks(np.arange(1,6))
     ax[5,0].set_yticks(range(0,100,20))
     ax[5,0].legend(loc=2,frameon=False,fontsize=10)
@@ -456,10 +436,10 @@ def rate_level_fig():
 
     # * P5.1国开债-国债
     df['国开债-国债'] = (df['国开10年']-df['国债10年'])*100
-    ax[5,1].fill_between(df.date['2016':],0,df['国开债-国债']['2016':],\
+    ax[5,1].fill_between(df.date['2015':],0,df['国开债-国债']['2015':],\
         label='国开债-国债(左:BP)',color='lightgrey',alpha=1)
     ax_= ax[5,1].twinx()
-    df[['国开10年','国债10年']]['2016':].plot(ax=ax_,\
+    df[['国开10年','国债10年']]['2015':].plot(ax=ax_,\
         color=[ '#3778bf','#f0833a'])
     ax[5,1].set_title('国开债-国债(10Y)')
     ax[5,1].legend(loc=2,frameon=False,fontsize=10)
@@ -489,11 +469,11 @@ def rate_level_fig():
 
     # * P6.1中票
     # df[['中票_AAA_1y','中票_AAA_5y','中票_AA+_1y','中票_AA+_5y']]['2010':].\
-    df[['中票_AAA_5y','中票_AA+_5y','中票_AA_5y']]['2010':].\
+    df[['中票_AAA_5y','中票_AA+_5y','中票_AA_5y']]['2015':].\
         plot(ax=ax[6,1],color = ["#3778bf","lightgrey","#f0833a"])
-    ax[6,1].axhline(y=np.median(df['中票_AAA_5y']['2010':]),ls='--',color='grey',label='5Y:AAA:中位数')
-    ax[6,1].axhline(y=np.median(df['中票_AA+_5y']['2010':]),ls='--',color='brown',label='5Y:AA+:中位数')
-    ax[6,1].axhline(y=np.median(df['中票_AA_5y']['2010':]),ls='--',color='black',label='5Y:AA:中位数')
+    ax[6,1].axhline(y=np.median(df['中票_AAA_5y']['2015':]),ls='--',color='grey',label='5Y:AAA:中位数')
+    ax[6,1].axhline(y=np.median(df['中票_AA+_5y']['2015':]),ls='--',color='brown',label='5Y:AA+:中位数')
+    ax[6,1].axhline(y=np.median(df['中票_AA_5y']['2015':]),ls='--',color='black',label='5Y:AA:中位数')
     ax[6,1].set_xlabel('')
     ax[6,1].set_title('5Y中票收益率')
     ax[6,1].legend(ncol=3,loc=9,fontsize=10,frameon=False)
@@ -570,7 +550,7 @@ def rate_diff_fig():
     l = do.set_axes_rotation(ax[1,1])
 
     # * P2.0 国债期限利差
-    rates1 = rates.loc[rates['date'] >= '2016-01-01']
+    rates1 = rates.loc[rates['date'] >= '2015-01-01']
     #计算利差
     margin1 = rates1['国债10年']-rates1['国债1年']
     margin2 = rates1['国债10年']-rates1['国债3年']
@@ -585,7 +565,7 @@ def rate_diff_fig():
     ax[2,0].legend(ncol=3,loc=9,fontsize=10,frameon=False)
 
     # * P2.1 国债、国开债10年-1年
-    rates2 = rates.loc[rates['date'] >= '2008-01-01']
+    rates2 = rates.loc[rates['date'] >= '2015-01-01']
     margin4 = rates2['国债10年']-rates2['国债1年']
     margin5 = rates2['国开10年']-rates2['国开1年']
     df = pd.DataFrame([margin4,margin5])
@@ -599,31 +579,31 @@ def rate_diff_fig():
     ax[2,1].legend(ncol=3,loc=9,fontsize=10,frameon=False)
 
     # * P3.0 国债1年收益率与10年-1年利差
-    rates3 = rates.loc[rates['date'] >= '2009-01-01']
+    rates3 = rates.loc[rates['date'] >= '2015-01-01']
     margin6 = rates3['国债10年']-rates3['国债1年']
     ax[3,0].grid(ls='--')
     ax[3,0].set_axisbelow(True)
     ax[3,0].scatter(rates3['国债1年'][:-1],margin6[:-1], marker='o',color = '', edgecolors='#3778bf')
     ax[3,0].scatter(rates3['国债1年'][:1],margin6[:1], marker='o',color = '', edgecolors='#f0833a')
-    ax[3,0].set_title('国债1年收益率与10年-1年利差(2009以来)' )
+    ax[3,0].set_title('国债1年收益率与10年-1年利差(2015以来)' )
     ax[3,0].annotate('当前值',xy=(rates3['国债1年'][:1],margin6[:1]),xytext=(rates3['国债1年'][:1],margin6[:1]-1),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=10)
     ax[3,0].set_ylabel('利差(%)',fontsize=10)
     ax[3,0].set_xlabel('到期收益率(%)',fontsize=10)
 
     # * P3.1 国债10年收益率与10年-1年利差
-    rates3 = rates.loc[rates['date'] >= '2009-01-01']
+    rates3 = rates.loc[rates['date'] >= '2015-01-01']
     margin7 = rates3['国债30年']-rates3['国债10年']
     ax[3,1].grid(ls='--')
     ax[3,1].set_axisbelow(True)
     ax[3,1].scatter(rates3['国债10年'][:-1],margin7[:-1], marker='o',color = '', edgecolors='#3778bf')
     ax[3,1].scatter(rates3['国债10年'][:1],margin7[:1], marker='o',color = '', edgecolors='#f0833a')
-    ax[3,1].set_title('国债10年收益率与30年-10年利差(2009以来)' )
+    ax[3,1].set_title('国债10年收益率与30年-10年利差(2015以来)' )
     ax[3,1].annotate('当前值',xy=(rates3['国债10年'][:1],margin7[:1]),xytext=(rates3['国债10年'][:1],margin7[:1]-0.1),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=10)
     ax[3,1].set_ylabel('利差(%)',fontsize=10)
     ax[3,1].set_xlabel('到期收益率(%)',fontsize=10)
 
     # * P4.0 国债2*5Y-(1Y+10Y)
-    rates4 = rates.loc[rates['date'] >= '2015-10-08']
+    rates4 = rates.loc[rates['date'] >= '2015-01-01']
     gz = rates4['国债5年']*2 - ( rates4['国债1年'] + rates4['国债10年'])
     ax[4,0].plot(rates4['date'],gz,'#3778bf',label="2*5Y-(1Y+10Y)")
     ax[4,0].set_title('国债2*5Y-(1Y+10Y)')
@@ -632,7 +612,7 @@ def rate_diff_fig():
     ax[4,0].set_ylabel('(%)',fontsize=10)
 
     # * P4.1 国开债2*5Y-(1Y+10Y)
-    rates4 = rates.loc[rates['date'] >= '2015-10-08']
+    rates4 = rates.loc[rates['date'] >= '2015-01-01']
     gkz = rates4['国开5年']*2 - ( rates4['国开1年'] + rates4['国开10年'])
     ax[4,1].plot(rates4['date'],gkz,'#3778bf',label="2*5Y-(1Y+10Y)")
     ax[4,1].set_title('国开债2*5Y-(1Y+10Y)', )
@@ -641,13 +621,13 @@ def rate_diff_fig():
     ax[4,1].set_ylabel('（%）',fontsize=10)
 
     # * P5.0 10年期国债与国开债-国债利差
-    rates1 = rates.loc[rates['date'] >= '2009-01-05']
+    rates1 = rates.loc[rates['date'] >= '2015-01-01']
     margin1 = rates1['国开10年']-rates1['国债10年']
     ax[5,0].grid(ls='--')
     ax[5,0].set_axisbelow(True)
     ax[5,0].scatter(rates1['国债10年'][:-1],margin1[:-1], marker='o',color = '', edgecolors='#3778bf')
     ax[5,0].scatter(rates1['国债10年'][:1],margin1[:1], marker='o',color = '', edgecolors='#f0833a')
-    ax[5,0].set_title('10年期国债与国开债-国债利差', )
+    ax[5,0].set_title('10年期国债与国开债-国债利差(2015以来)', )
     ax[5,0].annotate('当前值',xy=(rates1['国债10年'][:1],margin1[:1]),xytext=(rates1['国债10年'][:1],margin1[:1]+0.5),color="k",weight="bold",alpha=0.9,arrowprops=dict(arrowstyle="-",connectionstyle="arc3",color="k",alpha=0.9),bbox={'facecolor': 'lightsteelblue', 'edgecolor':'k','alpha': 0.9,'pad':2},fontsize=10)
     ax[5,0].set_ylabel('利差(%)',fontsize=10)
     ax[5,0].set_xlabel('到期收益率(%)',fontsize=10)
@@ -677,7 +657,7 @@ def rate_diff_fig():
     ax_.set_title('国开债-国债关键期限利差', )
 
     # * 6.0 农发、口行-国开利差:10年
-    rates2 = rates.loc[rates['date'] >= '2016-01-04']
+    rates2 = rates.loc[rates['date'] >= '2015-01-01']
     rates2.index = rates2['date']
     rates2 = rates2[['国开10年', '农发10年', '口行10年']]
     rates2['农发-国开'] = (rates2['农发10年'] - rates2['国开10年'])*100
@@ -828,9 +808,9 @@ def rate_diff_fig():
 
     # * 8.0 中美利差:10年
     rates_us = do.get_data('rates_us');rates_us.index=rates_us.date
-    rates1 = rates.loc[rates['date'] >= '2010-01-04']
+    rates1 = rates.loc[rates['date'] >= '2015-01-04']
     rates1.index = rates1['date']
-    rates_us1 = rates_us.loc[rates_us['date'] >= '2010-01-04']
+    rates_us1 = rates_us.loc[rates_us['date'] >= '2015-01-04']
     rates_us1.index = rates_us1['date']
     rates_us1 = rates_us1.dropna()
     #计算利差
@@ -852,9 +832,9 @@ def rate_diff_fig():
     ax_.set_title('中美利差:10年', )
 
     # * 8.1 中美利差:2年
-    rates1 = rates.loc[rates['date'] >= '2010-01-04']
+    rates1 = rates.loc[rates['date'] >= '2015-01-04']
     rates1.index = rates1['date']
-    rates_us1 = rates_us.loc[rates_us['date'] >= '2010-01-04']
+    rates_us1 = rates_us.loc[rates_us['date'] >= '2015-01-04']
     rates_us1.index = rates_us1['date']
     rates_us1 = rates_us1.dropna()
     #计算利差
@@ -876,9 +856,9 @@ def rate_diff_fig():
     ax_.set_title('中美利差:2年', )
 
     # * 9.0 中美利差:1年
-    rates1 = rates.loc[rates['date'] >= '2010-01-04']
+    rates1 = rates.loc[rates['date'] >= '2015-01-04']
     rates1.index = rates1['date']
-    rates_us1 = rates_us.loc[rates_us['date'] >= '2010-01-04']
+    rates_us1 = rates_us.loc[rates_us['date'] >= '2015-01-04']
     rates_us1.index = rates_us1['date']
     rates_us1 = rates_us1.dropna()
     #计算利差
@@ -901,9 +881,9 @@ def rate_diff_fig():
 
     # * 9.1 中美利差与人民币汇率
     rates_us = do.get_data('rates_us');rates_us.index=rates_us.date
-    rates2 = rates.loc[rates['date'] >= '2011-01-04']
+    rates2 = rates.loc[rates['date'] >= '2015-01-04']
     rates2.index = rates2['date']
-    rates_us2 = rates_us.loc[rates_us['date'] >= '2011-01-04']
+    rates_us2 = rates_us.loc[rates_us['date'] >= '2015-01-04']
     rates_us2.index = rates_us2['date']
     rates_us2 = rates_us2.dropna()
     #计算利差
@@ -924,11 +904,11 @@ def rate_diff_fig():
 
     # * 10.0 中美市场利差
     cash_cost = do.get_data('cash_cost');cash_cost.index = cash_cost.date
-    rates1 = rates.loc[rates['date'] >= '2010-06-21']
+    rates1 = rates.loc[rates['date'] >= '2015-01-01']
     rates1.index = rates1['date']
-    rates_us1 = rates_us.loc[rates_us['date'] >= '2010-01-04']
+    rates_us1 = rates_us.loc[rates_us['date'] >= '2015-01-01']
     rates_us1.index = rates_us1['date']
-    cash_cost1 = cash_cost.loc[cash_cost['date'] >= '2010-06-21']
+    cash_cost1 = cash_cost.loc[cash_cost['date'] >= '2015-01-01']
     cash_cost1.index = cash_cost1['date']
     #计算利差
     margin5 = (cash_cost1['shibor_3m']-rates_us1['libor_3m']) * 100
@@ -949,7 +929,7 @@ def rate_diff_fig():
     ax_.set_title('中美市场利差', )
 
     # * 10.1 美债期限利差
-    rates_us1 = rates_us.loc[rates_us['date'] >= '2007-01-04']
+    rates_us1 = rates_us.loc[rates_us['date'] >= '2015-01-04']
     rates_us1.index = rates_us1['date']
     rates_us1 = rates_us1.dropna()
     margin6 = (rates_us1['美债10年']-rates_us1['美债2年']) * 100    
@@ -975,6 +955,7 @@ def rate_diff_fig():
     return fig
 
 def tmp():
+    rates = do.get_data('rates'); rates.index = rates.date
     # calculate turnover
     a = to.mktEmotion()
     gz30 = a.getTurnOver_gz(y1=20,y2=30)
@@ -984,10 +965,10 @@ def tmp():
     dff = pd.DataFrame([])
     dff[['gz30_turn','gz30_turn_mdf']] = \
         pd.DataFrame([gz30.gz_turn, gz30.gz_turn_modified]).T
-    dff[['gk10_turn']] = gk10_top2.amt_topN / gk10_top2.tot_topN/100000000*100 
+    dff[['gk10_turn']] = gk10_top2.amt_topN / gk10_top2.tot_topN/100000000*100
     dff[['gk10_turn_mdf']] = \
         dff.gk10_turn.rolling(20).mean()/dff.gk10_turn.rolling(60).mean()
-    dff[['gk3_turn']] = gk3_top2.amt_topN / gk3_top2.tot_topN/100000000*100  
+    dff[['gk3_turn']] = gk3_top2.amt_topN / gk3_top2.tot_topN/100000000*100
     dff[['gk3_turn_mdf']] = \
         dff.gk3_turn.rolling(20).mean()/dff.gk3_turn.rolling(60).mean()
         
@@ -1012,39 +993,65 @@ def tmp():
     dff[['gk3_turn']].dropna().rolling(20).mean().plot(ax=ax[2,0],)
     dff[['gk3_turn_mdf']].dropna().plot(ax=ax[2,1],ylim=(0,2))
     
-    ax[3,0].plot(stat['全市场杠杆_估计']['2021-06'].tolist(),label='6月')
-    ax[3,0].plot(stat['全市场杠杆_估计']['2021-07'].tolist(),label='7月')
-    ax[3,0].plot(stat['全市场杠杆_估计']['2021-08'].tolist(),label='8月')
+    # ax[3,0].plot(stat['全市场杠杆_估计']['2021-06'].tolist(),label='6月')
+    # ax[3,0].plot(stat['全市场杠杆_估计']['2021-07'].tolist(),label='7月')
+    # ax[3,0].plot(stat['全市场杠杆_估计']['2021-08'].tolist(),label='8月')
     
-    dur.median(axis=1).rolling(4).mean().plot(ax=ax[3,1],title='基金久期中位数')
-    (dur.std(axis=1)/dur.mean(axis=1)).rolling(10).mean().plot(ax=ax[4,0],\
-        title='基金久期变异系数(分歧指数)')
+    # dur.median(axis=1).rolling(4).mean().plot(ax=ax[3,1],title='基金久期中位数')
+    # (dur.std(axis=1)/dur.mean(axis=1)).rolling(10).mean().plot(ax=ax[4,0],\
+    #     title='基金久期变异系数(分歧指数)')
     
-    dur.quantile(0.9,axis=1).rolling(4).mean().plot(ax=ax[4,1])
-    dur.quantile(0.5,axis=1).rolling(4).mean().plot(ax=ax[4,1])
-    dur.quantile(0.1,axis=1).rolling(4).mean().plot(ax=ax[4,1])
+    # dur.quantile(0.9,axis=1).rolling(4).mean().plot(ax=ax[4,1])
+    # dur.quantile(0.5,axis=1).rolling(4).mean().plot(ax=ax[4,1])
+    # dur.quantile(0.1,axis=1).rolling(4).mean().plot(ax=ax[4,1])
     
-    (dur <= dur.rolling(250).quantile(0.10)).sum(axis=1)['2020':].\
-        plot(label='久期10%分位数以下产品数量',ax=ax[5,0])
-    (dur >= dur.rolling(250).quantile(0.90)).sum(axis=1)['2020':].\
-        plot(label='久期90%分位数以上产品数量',ax=ax[5,0])
+    # (dur <= dur.rolling(250).quantile(0.10)).sum(axis=1)['2020':].\
+    #     plot(label='久期10%分位数以下产品数量',ax=ax[5,0])
+    # (dur >= dur.rolling(250).quantile(0.90)).sum(axis=1)['2020':].\
+    #     plot(label='久期90%分位数以上产品数量',ax=ax[5,0])
     
+    # ax[3,0].legend(loc='best',ncol=3)
+    # ax[4,1].legend(['90%','50%','10%',],loc='best',ncol=3)
+    # ax[5,0].legend(loc='best',ncol=1)
+    # ax[3,0].set_title('全市场日度杠杆率测算值')
     
-    ax[3,0].legend(loc='best',ncol=3)
-    ax[4,1].legend(['90%','50%','10%',],loc='best',ncol=3)
-    ax[5,0].legend(loc='best',ncol=1)
-    ax[3,0].set_title('全市场日度杠杆率测算值')
-    ax[0,0].set_title('30Y国债换手率')
-    ax[1,0].set_title('10Y国开换手率')
+    ax[0,0].set_title('30Y国债换手率(20-30Y)');ax[0,0].set_ylabel('%')
+    ax[1,0].set_title('10Y国开换手率(top2活跃券)');ax[1,0].set_ylabel('%')
     ax[0,1].set_title('30Y国债换手指标')
     ax[1,1].set_title('10Y国开换手指标')
-    ax[2,0].set_title('3Y国开换手率')
+    ax[2,0].set_title('3Y国开换手率(top2活跃券)');ax[2,0].set_ylabel('%')
     ax[2,1].set_title('3Y国开换手指标')
+    # TODO
+    rates.loc[dff[['gz30_turn']].dropna().rolling(20).mean().index[0]:
+              ,'国债30年'].plot(
+                  ax=ax[0,0].twinx(),color='red',alpha=0.6)
+    ax[0,1].set_ylim([0,6])
+    rates.loc[dff[['gz30_turn_mdf']].dropna().index[0]:
+              ,'国债30年'].plot(ax=ax[0,1].twinx(),
+                             color='red',alpha=0.6,ylim=(0,5))
+    rates.loc[dff[['gk10_turn']].dropna().rolling(20).mean().index[0]:
+              ,'国开10年'].plot(
+                  ax=ax[1,0].twinx(),color='red',alpha=0.6)
+    ax[1,1].set_ylim([0,4])
+    rates.loc[dff[['gk10_turn_mdf']].dropna().index[0]:
+              ,'国开10年'].plot(ax=ax[1,1].twinx(),
+                             color='red',alpha=0.6,ylim=(-1,6))
+    rates.loc[dff[['gk3_turn']].dropna().rolling(20).mean().index[0]:
+              ,'国开3年'].plot(
+                  ax=ax[2,0].twinx(),color='red',alpha=0.6)
+    ax[2,1].set_ylim([0,3])
+    rates.loc[dff[['gk3_turn_mdf']].dropna().index[0]:
+              ,'国开3年'].plot(
+                  ax=ax[2,1].twinx(),color='red',alpha=0.6,ylim=(-1,5))
+    
     ax[4,1].set_title('市场基金久期分位数')
     ax[5,0].set_title('极端久期基金个数')
+    
+    
     fig.tight_layout()
     
-    fig.savefig('补充.pdf', dpi=300, bbox_inches='tight')
+    return fig
+    # fig.savefig('补充.pdf', dpi=300, bbox_inches='tight')
     
     
 if __name__ == '__main__':

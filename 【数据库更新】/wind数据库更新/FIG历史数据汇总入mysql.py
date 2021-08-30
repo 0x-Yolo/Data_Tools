@@ -268,7 +268,6 @@ def ccl():
     return df,name,dtypelist
 
 def leverage_rate():
-    # TODO
     err,df = w.edb("M0341983,M0041754,M0341128,M0340862,M0340881,\
         M0341107,M0340845,M0340864", \
         "2010-06-16", "2021-06-16",usedf=True)
@@ -286,7 +285,6 @@ def leverage_rate():
     (dff['托管余额']/dff['净资产'])[-500:].plot()
 
 def broad_liquid():
-    # TODO 广义流动性
     err,df = w.edb("M0011456,M5525763,M0001385,M0061578,M1002334,\
             M0001227,M0001383,M0010075",\
          "2000-06-17", "2021-06-17",usedf=True)
@@ -382,6 +380,9 @@ def quanti2():
     # err,df = w.edb("M0290392,M0327992,M0265778,\
     #     M0265865,M0265846,M0265884",\
     #      "2000-01-01", "2021-07-01",usedf=True)
+    _,df = w.wsd("CBA02501.CS,CBA02511.CS,CBA02521.CS,CBA02531.CS,CBA02541.CS,CBA02551.CS,CBA02561.CS,CBA00101.CS",\
+         "close", "2015-01-01", "2021-08-29", "",usedf=True)
+
     err,df = w.wsd("CBA00623.CS,CBA00653.CS,\
         CBA00621.CS, CBA00651.CS,\
         CBA02411.CS,\

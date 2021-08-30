@@ -477,12 +477,13 @@ class weeklyReport:
         for co in co_list:
             df_co = df_net_week[df_net_week['机构名称'] == co]
             stat[co] = df_co.groupby(['期限备注'])['合计'].sum()
-        stat2 = pd.DataFrame([],columns = co_list,index = ['7-10年\n国债新债', '7-10年\n政金债新债'])
+        stat2 = pd.DataFrame([],columns = co_list,index = ['7-10年\n国债', '7-10年\n政金债'])
         for co in co_list:
             df_co = df_net_week[(df_net_week['机构名称'] == co)&(df_net_week['期限'] == '7-10年')]
-            stat2.loc['7-10年\n国债新债',co] = df_co.groupby('date')['国债-新债'].sum().sum()
-            stat2.loc['7-10年\n政金债新债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()
-
+            stat2.loc['7-10年\n国债',co] = df_co.groupby('date')['国债-新债'].sum().sum()+\
+                df_co.groupby('date')['国债-老债'].sum().sum()
+            stat2.loc['7-10年\n政金债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()+\
+                df_co.groupby('date')['政策性金融债-老债'].sum().sum()
         # 画图
         plt.style.use({'font.size' : 10})     
         fig1, ax = plt.subplots(nrows=1,ncols=1,\
@@ -541,25 +542,25 @@ class weeklyReport:
             bar_width = 0.25
             ax.grid(ls='--', axis='y')
             ax.set_axisbelow(True)
-            ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="7-10年国债-新债")
-            ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="7-10年政策性金融债-新债")
+            ax.bar(x, y1, bar_width, align="center",color=sns.xkcd_rgb['bluish'], edgecolor='black', label="7-10年国债")
+            ax.bar(x+bar_width, y2, bar_width, color=sns.xkcd_rgb['dull red'], edgecolor='black', align="center", label="7-10年政策性金融债")
             ax.set_ylabel("（亿元）",fontsize=10)
             ax.set_xticks(x+bar_width/2)
             ax.set_xticklabels(tick_label,fontsize=8)
             ax.axhline(y = 0, color = "dimgray", ls = '-',linewidth = 1)
             # ax.legend(fontsize=15)
-            ax.legend(ncol=5,loc=1, bbox_to_anchor=(1.1,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
+            ax.legend(ncol=5,loc=1, bbox_to_anchor=(0.9,-0.3),borderaxespad = 0.,fontsize=10,frameon=False)
 
         if self.isMonth=='no':
-            title = '各机构7-10年政金新债、国债新债半年度净买入情况'
+            title = '各机构7-10年政金债、国债半年度净买入情况'
         elif self.isMonth:
-            title = '各机构7-10年政金新债、国债新债月度净买入情况'
+            title = '各机构7-10年政金债、国债月度净买入情况'
         else:
-            title = '各机构7-10年政金新债、国债新债周度净买入情况'
+            title = '各机构7-10年政金债、国债周度净买入情况'
         ax.set_title(title,fontsize=12)
 
         self.pic_list.append(fig2)
-        self.title_list.append('各机构7-10年政金新债、国债新债净买入情况')
+        self.title_list.append('各机构7-10年政金债、国债净买入情况')
 
         return [fig1,fig2]
 
@@ -585,8 +586,8 @@ class weeklyReport:
                 for name , grp in df_co.groupby(['期限']):
                     # name分期限
 
-                    stat_table.loc[:, name+'国债-新债'] = grp.groupby(['date'])['国债-新债'].sum().tolist()
-                    stat_table1.loc[:, name+'政策性金融债-新债'] = grp.groupby(['date'])['政策性金融债-新债'].sum().tolist()
+                    stat_table.loc[:, name+'国债'] = grp.groupby(['date'])[['国债-新债','国债-老债']].sum().sum(axis=1).tolist()
+                    stat_table1.loc[:, name+'政策性金融债'] = grp.groupby(['date'])['政策性金融债-新债','政策性金融债-老债'].sum().sum(axis=1).tolist()
                     stat_table2.loc[:, name+'地方政府债'] = grp.groupby(['date'])['地方政府债'].sum().tolist()
 
                 # 以不含双休日的日期索引为准
@@ -597,21 +598,21 @@ class weeklyReport:
                 plt.style.use({'font.size' : 12}) 
                 fig, ax = plt.subplots(nrows=2,ncols=2,figsize = (20,8), dpi=100)
 
-                pd.Series.rolling(stat_table['7-10年国债-新债'],window=windows).mean().plot(\
-                    ax = ax[0][0],label='7-10年国债-新债'+'(MA{})'.format(str(windows)))
+                pd.Series.rolling(stat_table['7-10年国债'],window=windows).mean().plot(\
+                    ax = ax[0][0],label='7-10年国债'+'(MA{})'.format(str(windows)))
                 ax[0][0].axhline(y=0, c="y", ls="--", lw=1.5)
                 ax_right = ax[0][0].twinx()
                 stat_table[['十年期国债收益率']].plot(ax = ax_right ,color = 'red')
-                ax[0][0].set_title('7-10年国债-新债')
+                ax[0][0].set_title('7-10年国债')
                 ax[0,0].legend(ncol=1,loc=3, bbox_to_anchor=(0,-0.3),borderaxespad = 0.)
                 ax_right.legend(ncol=1,loc=3, bbox_to_anchor=(0.78,-0.3),borderaxespad = 0.)
 
-                pd.Series.rolling(stat_table1['7-10年政策性金融债-新债'],window=windows).mean().plot(\
-                    ax = ax[0][1],label='7-10年政策性金融债-新债'+'(MA{})'.format(str(windows)))
+                pd.Series.rolling(stat_table1['7-10年政策性金融债'],window=windows).mean().plot(\
+                    ax = ax[0][1],label='7-10年政策性金融债'+'(MA{})'.format(str(windows)))
                 ax[0][1].axhline(y=0, c="y", ls="--", lw=1.5)
                 ax_right = ax[0][1].twinx()
                 stat_table[['十年期国债收益率']].plot(ax = ax_right ,color = 'red')
-                ax[0][1].set_title('7-10年政策性金融债-新债')
+                ax[0][1].set_title('7-10年政策性金融债')
                 ax[0,1].legend(ncol=1,loc=3, bbox_to_anchor=(0,-0.3),borderaxespad = 0.)
                 ax_right.legend(ncol=1,loc=3, bbox_to_anchor=(0.78,-0.3),borderaxespad = 0.)
 
@@ -955,8 +956,10 @@ class weeklyReport:
             stat[co] = df_co.groupby(['期限备注'])['合计'].sum()
 
             df_co = df_net_week[(df_net_week['机构名称'] == co)&(df_net_week['期限'] == '7-10年')]
-            stat.loc['7-10年\n国债新债',co] = df_co.groupby('date')['国债-新债'].sum().sum()
-            stat.loc['7-10年\n政金债新债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()
+            stat.loc['7-10年\n国债',co] = df_co.groupby('date')['国债-新债'].sum().sum()+\
+                df_co.groupby('date')['国债-老债'].sum().sum()
+            stat.loc['7-10年\n政金债',co] = df_co.groupby('date')['政策性金融债-新债'].sum().sum()+\
+                df_co.groupby('date')['政策性金融债-老债'].sum().sum()
         
         tmp = np.sign(stat.astype(int))
 
@@ -1003,9 +1006,9 @@ class weeklyReport:
             ncol=2,loc=3, bbox_to_anchor=(0.15,-0.5),borderaxespad = 0.,fontsize=10,frameon=False)
         plt.ylim(-1,2)
         # ax.set_xticklabels(['农村金融机构', '证券公司','保险公司', '基金公司','外资银行'])
-        ax.set_title('分机构7-10年政金新债、国债新债净买入情况',fontsize=12)
+        ax.set_title('分机构7-10年政金债、国债净买入情况',fontsize=12)
         self.pic_list.append(fig2)
-        self.title_list.append('分机构7-10年政金新债、国债新债周度净买入情况(不标注金额)')
+        self.title_list.append('分机构7-10年政金债、国债周度净买入情况(不标注金额)')
         
         return [fig1,fig2]
 
@@ -1360,7 +1363,6 @@ class Report:
         print("成功打印"+str(n)+"张图片,保存为\n" , os.getcwd() +'/'+self.title + '.pdf')
 
     def pic_SRDI(self,window=14):
-        # TODO
         start=self.start.strftime("%Y%m%d")
         end=self.end.strftime("%Y%m%d")
         
@@ -1616,7 +1618,6 @@ class Report:
         return dff
 
     def fig_industries_premium(self):
-        # TODO 行业情绪指数
         # 地产钢铁煤炭有色汽车
         # 近十年
         end=self.end.strftime("%Y%m%d")
