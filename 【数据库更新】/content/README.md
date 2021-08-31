@@ -32,6 +32,6 @@
   * [二级成交](docs/数据表-二级市场.md)
   * [宏观高频](docs/数据表-宏观高频.md)
   * [其他](docs/数据表信息.md)
-  * [signals](docs/db-signals.md)
+  * [交易热度指标](docs/db-signals.md)
   * 
 
